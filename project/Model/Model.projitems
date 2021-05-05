@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>59d513f0-4fd2-49ad-a79a-848752ea8750</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>LSP.Model</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)capabilities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeLens.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Completion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DidOpenTextDocument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DocumentFormatting.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DocumentOnTypeFormatting.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DocumentRangeFormatting.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DocumentSymbols.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExecuteCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FindReferences.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GoToDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GoToImplementation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Hover.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Initialize.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Initialized .cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Message.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NotificationMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rename.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RequestMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ResponseMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Signature.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TextDocument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkDone.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkspaceFolders.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorkspaceSymbols.cs" />
+  </ItemGroup>
+</Project>
