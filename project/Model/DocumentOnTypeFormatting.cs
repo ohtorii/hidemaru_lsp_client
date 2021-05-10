@@ -4,6 +4,13 @@ using System.Text;
 
 namespace LSP.Model
 {
+	class DocumentOnTypeFormattingClientCapabilities
+	{
+		/**
+		 * Whether on type formatting supports dynamic registration.
+		 */
+		public bool dynamicRegistration;
+	}
 	interface IDocumentOnTypeFormattingOptions
 	{		
 		string firstTriggerCharacter { get; set; }
@@ -25,4 +32,17 @@ namespace LSP.Model
 		public string firstTriggerCharacter { get; set; }
 		public string[] moreTriggerCharacter { get; set; }
 	}
+#if false
+	interface DocumentOnTypeFormattingParams extends TextDocumentPositionParams {
+		/**
+		 * The character that has been typed.
+		 */
+		ch: string;
+
+		/**
+		 * The format options.
+		 */
+		options: FormattingOptions;
+	}
+#endif
 }

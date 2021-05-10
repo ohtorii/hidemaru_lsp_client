@@ -19,4 +19,19 @@ namespace LSP.Model
 		string text { get; set; }
 	}
 
+	class TextDocumentItem : ITextDocumentItem
+	{
+		public string uri { get; set; }
+		public string languageId { get; set; }
+		public int version { get; set; }
+		public string text { get; set; }
+	}
+	class DidOpenTextDocumentParams : IDidOpenTextDocumentParams
+	{
+		public DidOpenTextDocumentParams()
+		{
+			this.textDocument = new TextDocumentItem();
+		}
+		public ITextDocumentItem textDocument { get; set; }
+	}
 }

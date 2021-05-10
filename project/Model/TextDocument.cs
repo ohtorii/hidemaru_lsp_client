@@ -1,35 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using DocumentUri = System.String;
 
 namespace LSP.Model
 {
-#if false
-	export interface TextDocumentSyncClientCapabilities
+	interface IPosition
 	{
-		/**
-		 * Whether text document synchronization supports dynamic registration.
-		 */
-		dynamicRegistration?: boolean;
+		uint line { get; set; }
+		uint character { get; set; }
+	}
+	class Position : IPosition
+	{
+		public uint line { get; set; }
+		public uint character { get; set; }
+	}
 
-	/**
-	 * The client supports sending will save notifications.
-	 */
-	willSave?: boolean;
+	interface IRange
+	{
+		IPosition start { get; set; }
+		IPosition end { get; set; } 
+	}
+	class Range : IRange
+	{
+		public IPosition start { get; set; } = new Position();
+		public IPosition end { get; set; } = new Position();
+	}
+	interface ILocation
+	{
+		DocumentUri uri { get; set; }
+		IRange range { get; set; } 
+	}
+	class Location : ILocation
+	{
+		public string uri { get; set; }
+		public IRange range { get; set; } = new Range();
+	}
 
-	/**
-	 * The client supports sending a will save request and
-	 * waits for a response providing text edits which will
-	 * be applied to the document before it is saved.
-	 */
-	willSaveWaitUntil?: boolean;
-
-	/**
-	 * The client supports did save notifications.
-	 */
-	didSave?: boolean;
-}
-#endif
 
 	/**
 	 * Defines how the host (editor) should sync document changes
@@ -63,30 +70,30 @@ namespace LSP.Model
 		 * Open and close notifications are sent to the server.
 		 * If omitted, open close notification should not be sent.
 		 */
-		bool openClose;
+		public bool openClose;
 		/**
 		 * Change notifications are sent to the server.
 		 * See TextDocumentSyncKind.None, TextDocumentSyncKind.Full,
 		 * and TextDocumentSyncKind.Incremental.
 		 * If omitted, it defaults to TextDocumentSyncKind.None.
 		 */
-		int change;
+		public int change;
 		/**
 		 * If present will save notifications are sent to the server.
 		 * If omitted, the notification should not be sent.
 		 */
-		bool willSave;
+		public bool willSave;
 		/**
 		 * If present will save wait until requests are sent to the server.
 		 * If omitted, the request should not be sent.
 		 */
-		bool willSaveWaitUntil;
+		public bool willSaveWaitUntil;
 		/**
 		 * If present save notifications are sent to the server.
 		 * If omitted, the notification should not be sent.
 		 */
 		/*boolean |*/
-		SaveOptions save;
+		public SaveOptions save;
 	}
 
 	class SaveOptions
@@ -94,7 +101,20 @@ namespace LSP.Model
 		/**
 		 * The client is supposed to include the content on save.
 		 */
-		bool includeText;
+		public bool includeText;
+	}
+	interface ITextDocumentIdentifier
+	{
+		DocumentUri uri {get;set;}
+	}
+	class TextDocumentIdentifier : ITextDocumentIdentifier
+	{
+		public string uri { get; set; }
+	}
+	interface ITextDocumentPositionParams
+	{
+		ITextDocumentIdentifier textDocument  { get;set; }
+		IPosition position  { get; set; }
 	}
 
 	class DocumentFilter

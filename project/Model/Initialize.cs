@@ -41,10 +41,10 @@ namespace LSP.Model
 	class InitializeParams : IInitializeParams
 	{
 		public int processId { get; set; }
-		public ClientInfo_ clientInfo { get; set; } = new ClientInfo_();
+		public ClientInfo_ clientInfo { get; set; }
 		public string rootUri { get; set; }
 		public object initializationOptions { get; set; }
-		public ClientCapabilities capabilities { get; set; } = new ClientCapabilities();
+		public ClientCapabilities capabilities { get; set; }
 		public string trace { get; set; } = "off"; //"off" | "messages" | "verbose";
 		/*Memo: インスタンスを生成するとサーバがResponseを返さないため、nullで運用中。
 		 */
@@ -216,13 +216,62 @@ namespace LSP.Model
 
 		/**
 		 * Workspace specific server capabilities
-		 */
-		public WorkspaceSpecificServerCapabilities_ workspace;
+		 */	
+		public class _workspace {
+			/**
+			 * The server supports workspace folder.
+			 *
+			 * @since 3.6.0
+			 */
+			public WorkspaceFoldersServerCapabilities workspaceFolders;
+
+			/**
+			 * The server is interested in file notifications/requests.
+			 *
+			 * @since 3.16.0
+			 */
+			public class _fileOperations {
+				/**
+				 * The server is interested in receiving didCreateFiles
+				 * notifications.
+				 */
+				public FileOperationRegistrationOptions didCreate;
+
+				/**
+				 * The server is interested in receiving willCreateFiles requests.
+				 */
+				public FileOperationRegistrationOptions willCreate;
+
+				/**
+				 * The server is interested in receiving didRenameFiles
+				 * notifications.
+				 */
+				public FileOperationRegistrationOptions didRename;
+
+				/**
+				 * The server is interested in receiving willRenameFiles requests.
+				 */
+				public FileOperationRegistrationOptions willRename;
+
+				/**
+				 * The server is interested in receiving didDeleteFiles file
+				 * notifications.
+				 */
+				public FileOperationRegistrationOptions didDelete;
+
+				/**
+				 * The server is interested in receiving willDeleteFiles file
+				 * requests.
+				 */
+				public FileOperationRegistrationOptions willDelete;
+			}
+			public _fileOperations fileOperations;
+		}
+		public _workspace workspace;
 
 		/**
 		 * Experimental server capabilities.
 		 */
 		public object experimental;
 	}
-
 }

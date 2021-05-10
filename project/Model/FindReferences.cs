@@ -4,6 +4,14 @@ using System.Text;
 
 namespace LSP.Model
 {
+	class ReferenceClientCapabilities
+	{
+		/**
+		 * Whether references supports dynamic registration.
+		 */
+		public bool dynamicRegistration;
+	}
+
 	interface IReferenceOptions : IWorkDoneProgressOptions
 	{
 	}
@@ -17,5 +25,16 @@ namespace LSP.Model
 	{
 		public DocumentFilter[] documentSelector { get; set; }
 		public bool workDoneProgress { get; set; }
+	}
+	interface IReferenceParams : ITextDocumentPositionParams,IWorkDoneProgressParams, IPartialResultParams {
+		IReferenceContext context { get; set; }
+	}
+
+	interface IReferenceContext
+	{
+		/**
+		 * Include the declaration of the current symbol.
+		 */
+		bool includeDeclaration { get; set; }
 	}
 }

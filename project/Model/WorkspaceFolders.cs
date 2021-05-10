@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using DocumentUri = System.String;
+using ProgressToken = System.String; //integer | string;
+
 
 namespace LSP.Model
 {
@@ -17,6 +19,14 @@ namespace LSP.Model
 		DocumentUri uri { get; set; }
 		string name { get; set; }
 	}
+	interface IPartialResultParams
+	{
+		ProgressToken partialResultToken { get; set; }
+	}
+
+
+
+
 	class WorkspaceFoldersServerCapabilities : IWorkspaceFoldersServerCapabilities
 	{
 		public bool supported { get; set; }

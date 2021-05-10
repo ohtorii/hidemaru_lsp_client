@@ -6,19 +6,16 @@ using System.Threading.Tasks;
 
 namespace LSP.Model
 {
-	class NotificationMessage
-	{
-		/**
-		 * The method to be invoked.
-		 */
-		public string method;
-
-		/**
-		 * The notification's params.
-		 */
-		public object @params;
+	interface INotificationMessage
+	{		
+		string method { get; set; }
+		object @params { get; set; }
 	}
-
+	class NotificationMessage : INotificationMessage
+	{
+		public string method { get; set; }
+		public object @params { get; set; }
+	}
 	enum MessageType
 	{
 		/**

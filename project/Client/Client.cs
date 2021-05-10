@@ -56,7 +56,7 @@ namespace LSP.Client
 		
 		void OnResponseError(ResponseMessage response)
 		{
-			Console.WriteLine("OnResponseError");
+			Console.WriteLine("[OnResponseError]");
 		}
 		void OnWindowLogMessage(LogMessageParams param)
 		{
@@ -83,10 +83,10 @@ namespace LSP.Client
 			source.Cancel();
 		}
 		
-		public void SendInitialize(InitializeParams param)
+		public void SendInitialize(IInitializeParams param)
 		{
 			Debug.Assert(Status == Mode.Init);
-			Send(param, "initialize", ResponseInitialize);			
+			SendRequest(param, "initialize", ResponseInitialize);			
 			Status = Mode.ServerInitializeStart;
 		}		
 		//Memo: デバッグ用にpublicとしている
@@ -95,34 +95,40 @@ namespace LSP.Client
 			var result = arg.ToObject<InitializeResult>();
 			Status = Mode.ServerInitializeFinish;
 		}
-		public void SendInitialized(InitializedParams param)
+		public void SendInitialized(IInitializedParams param)
 		{
 			Debug.Assert(Status == Mode.ServerInitializeFinish);
 			//Memo: クライアントからサーバへの通知なので、サーバからクライアントへの返信は無い。			
-			Send(param, "initialized");
+			SendNotification(param, "initialized");
 			Status = Mode.ClientInitializeFinish;
 		}
+		public void SendDigOpenTextDocument(IDidOpenTextDocumentParams param)
+		{
+			Debug.Assert(Status == Mode.ClientInitializeFinish);
+			SendNotification(param, "textDocument/didOpen");
+		}
+		public void SendTextDocumentCompletion(ICompletionParams param)
+		{
+			Debug.Assert(Status == Mode.ClientInitializeFinish);
+			SendRequest(param, "textDocument/completion", ResponseTextDocumentCompletion);
+		}
+		public void ResponseTextDocumentCompletion(JObject arg)
+		{
 
-
-
+		}
 		//
 		//低レイヤー
 		//
-		public void Send(object param, string method, Action<JObject> callback)
+		public void SendRequest(object param, string method, Action<JObject> callback)
 		{
 			var id = requestIdGenerator.NextId();
 			handler.StoreCallback(id, callback);
-			Send(param,method,id);
+			SendRequest(param,method,id);
 		}
-		/// <summary>
-		/// デバッグ用途のメソッド
-		/// </summary>
-		/// <param name="jsonRpc"></param>
-		/// <param name="id"></param>
-		/// <param name="callback"></param>
-		public void Send(string jsonRpc, int id, Action<JObject> callback)
+		public void SendRequest(object param, string method, int id)
 		{
-			handler.StoreCallback(id, callback);
+			var request = new RequestMessage { id = id, method = method, @params = param };
+			var jsonRpc = JsonConvert.SerializeObject(request, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = NullValueHandling.Ignore });
 			var payload = CreatePayLoad(jsonRpc);
 			server.WriteLineStandardInput(payload);
 		}
@@ -130,14 +136,23 @@ namespace LSP.Client
 		/// 投げっぱなしのリクエスト
 		/// </summary>
 		/// <param name="jsonRpc"></param>
-		public void Send(object param, string method)
-		{
-			Send(param, method, requestIdGenerator.NextId());
+		public void SendNotification(object param, string method)
+		{			
+			var notification = new NotificationMessage {method = method, @params = param };
+			var jsonRpc = JsonConvert.SerializeObject(notification, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = NullValueHandling.Ignore });
+			var payload = CreatePayLoad(jsonRpc);
+			server.WriteLineStandardInput(payload);
 		}
-		public void Send(object param, string method, int id)
+		
+		/// <summary>
+		/// デバッグ用途のメソッド
+		/// </summary>
+		/// <param name="jsonRpc"></param>
+		/// <param name="id"></param>
+		/// <param name="callback"></param>
+		public void SendRaw(string jsonRpc, int id, Action<JObject> callback)
 		{
-			var request = new RequestMessage { id = id, method = method, @params = param };
-			var jsonRpc = JsonConvert.SerializeObject(request);
+			handler.StoreCallback(id, callback);
 			var payload = CreatePayLoad(jsonRpc);
 			server.WriteLineStandardInput(payload);
 		}

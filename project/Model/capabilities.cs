@@ -14,147 +14,128 @@ namespace LSP.Model
 		public class _workspace
 		{
 			/**
-			* クライアントは `workspace/applyEdit` リクエストをサポートすることにより、
-			* ワークスペースへのバッチ編集をサポートする。
-			*/
+			 * The client supports applying batch edits
+			 * to the workspace by supporting the request
+			 * 'workspace/applyEdit'
+			 */
 			public bool applyEdit;
+			public WorkspaceEditClientCapabilities workspaceEdit;
 
-			/**
-			* `WorkspaceEdit` 固有の機能。
-			*/
-			//workspaceEdit?: WorkspaceEditClientCapabilities;
+			public DidChangeConfigurationClientCapabilities didChangeConfiguration;
 
-			/**
-			* `workspace/didChangeConfiguration` 通知固有の機能。
-			*/
-			//didChangeConfiguration?: DidChangeConfigurationClientCapabilities;
+			public DidChangeWatchedFilesClientCapabilities didChangeWatchedFiles;
 
-			/**
-			* `workspace/didChangeWatchedFiles` 通知固有の機能。
-			*/
-			//didChangeWatchedFiles?: DidChangeWatchedFilesClientCapabilities;
-
-			/**
-			* `workspace/symbol` リクエスト固有の機能。
-			*/
-			//symbol?: WorkspaceSymbolClientCapabilities;
-
-			/**
-			* `workspace/executeCommand` リクエスト固有の機能。
-			*/
-			//executeCommand?: ExecuteCommandClientCapabilities;
-
-
-			/**
-			* The client has support for workspace folders.
-			*
-			* Since 3.6.0
-			*/
+			public WorkspaceSymbolClientCapabilities symbol;
+			public ExecuteCommandClientCapabilities executeCommand;
 			public bool workspaceFolders;
-
-			/**
-			* The client supports `workspace/configuration` requests.
-			*
-			* Since 3.6.0
-			*/
 			public bool configuration;
+			public SemanticTokensWorkspaceClientCapabilities semanticTokens;
+			public CodeLensWorkspaceClientCapabilities codeLens;
+
+			public class _fileOperations {				
+				public bool dynamicRegistration;
+				public bool didCreate;
+				public bool willCreate;
+				public bool didRename;
+				public bool willRename;
+				public bool didDelete;
+				public bool willDelete;
+			};
+			public _fileOperations fileOperations;
 		};
-		public _workspace workspace = new _workspace();
 
-		/**
-		 * テキストドキュメント固有のクライアント機能。
-		 */
-		public TextDocumentClientCapabilities textDocument = new TextDocumentClientCapabilities();
-
-		/**
-		* Whether client supports handling progress notifications.
-		* If set, servers are allowed to report in `workDoneProgress` property
-		* in the request specific server capabilities.
-		*
-		* Since 3.15.0
-		*/
-		public WorkDoneProgressOptions window = new WorkDoneProgressOptions();
-
-		/**
-		 * 実験的なクライアント機能。
-		 */
-		//experimental?: any;
+		public _workspace workspace ;
+		public TextDocumentClientCapabilities textDocument;
+	
+		public class _window {
+			public bool workDoneProgress;
+			public ShowMessageRequestClientCapabilities showMessage;
+			public ShowDocumentClientCapabilities showDocument;
+		};
+		public _window window;
+	
+		public class _general {
+			public RegularExpressionsClientCapabilities regularExpressions ;
+			public MarkdownClientCapabilities markdown ;
+		};
+		public _general general;		
+		public object experimental;
 	}
 
 	class TextDocumentClientCapabilities
 	{
-		public TextDocumentSyncClientCapabilities synchronization = new TextDocumentSyncClientCapabilities();
+		public TextDocumentSyncClientCapabilities synchronization ;
 
 		/**
 		 * Capabilities specific to the `textDocument/completion` request.
 		 */
-		public CompletionClientCapabilities completion = new CompletionClientCapabilities();
+		public CompletionClientCapabilities completion ;
 
 		/**
 		 * Capabilities specific to the `textDocument/hover` request.
 		 */
-		//hover?: HoverClientCapabilities;
+		public HoverClientCapabilities hover;
 
 		/**
 		 * Capabilities specific to the `textDocument/signatureHelp` request.
 		 */
-		//signatureHelp?: SignatureHelpClientCapabilities;
+		public SignatureHelpClientCapabilities signatureHelp;
 
 		/**
 		 * Capabilities specific to the `textDocument/declaration` request.
 		 *
 		 * @since 3.14.0
 		 */
-		//declaration?: DeclarationClientCapabilities;
+		public DeclarationClientCapabilities declaration;
 
 		/**
 		 * Capabilities specific to the `textDocument/definition` request.
 		 */
-		//definition?: DefinitionClientCapabilities;
+		public DefinitionClientCapabilities definition;
 
 		/**
 		 * Capabilities specific to the `textDocument/typeDefinition` request.
 		 *
 		 * @since 3.6.0
 		 */
-		//typeDefinition?: TypeDefinitionClientCapabilities;
+		public TypeDefinitionClientCapabilities typeDefinition;
 
 		/**
 		 * Capabilities specific to the `textDocument/implementation` request.
 		 *
 		 * @since 3.6.0
 		 */
-		//implementation?: ImplementationClientCapabilities;
+		public ImplementationClientCapabilities implementation;
 
 		/**
 		 * Capabilities specific to the `textDocument/references` request.
 		 */
-		//references?: ReferenceClientCapabilities;
+		public ReferenceClientCapabilities references;
 
 		/**
 		 * Capabilities specific to the `textDocument/documentHighlight` request.
 		 */
-		//documentHighlight?: DocumentHighlightClientCapabilities;
+		public DocumentHighlightClientCapabilities documentHighlight;
 
 		/**
 		 * Capabilities specific to the `textDocument/documentSymbol` request.
 		 */
-		//documentSymbol?: DocumentSymbolClientCapabilities;
+		public DocumentSymbolClientCapabilities documentSymbol;
 
 		/**
 		 * Capabilities specific to the `textDocument/codeAction` request.
 		 */
-		//codeAction?: CodeActionClientCapabilities;
+		public CodeActionClientCapabilities codeAction;
 
 		/**
 		 * Capabilities specific to the `textDocument/codeLens` request.
 		 */
-		//codeLens?: CodeLensClientCapabilities;
+		public CodeLensClientCapabilities codeLens;
 
 		/**
 		 * Capabilities specific to the `textDocument/documentLink` request.
 		 */
-		//documentLink?: DocumentLinkClientCapabilities;
+		public DocumentLinkClientCapabilities documentLink;
 
 		/**
 		 * Capabilities specific to the `textDocument/documentColor` and the
@@ -162,47 +143,47 @@ namespace LSP.Model
 		 *
 		 * @since 3.6.0
 		 */
-		//colorProvider?: DocumentColorClientCapabilities;
+		public DocumentColorClientCapabilities colorProvider;
 
 		/**
 		 * Capabilities specific to the `textDocument/formatting` request.
 		 */
-		//formatting?: DocumentFormattingClientCapabilities
+		public DocumentFormattingClientCapabilities formatting;
 
 		/**
 		 * Capabilities specific to the `textDocument/rangeFormatting` request.
 		 */
-		//rangeFormatting?: DocumentRangeFormattingClientCapabilities;
+		public DocumentRangeFormattingClientCapabilities rangeFormatting;
 
 		/** request.
 		 * Capabilities specific to the `textDocument/onTypeFormatting` request.
 		 */
-		//onTypeFormatting?: DocumentOnTypeFormattingClientCapabilities;
+		public DocumentOnTypeFormattingClientCapabilities onTypeFormatting;
 
 		/**
 		 * Capabilities specific to the `textDocument/rename` request.
 		 */
-		//rename?: RenameClientCapabilities;
+		public RenameClientCapabilities rename;
 
 		/**
 		 * Capabilities specific to the `textDocument/publishDiagnostics`
 		 * notification.
 		 */
-		//publishDiagnostics?: PublishDiagnosticsClientCapabilities;
+		public PublishDiagnosticsClientCapabilities publishDiagnostics;
 
 		/**
 		 * Capabilities specific to the `textDocument/foldingRange` request.
 		 *
 		 * @since 3.10.0
 		 */
-		//foldingRange?: FoldingRangeClientCapabilities;
+		public FoldingRangeClientCapabilities foldingRange;
 
 		/**
 		 * Capabilities specific to the `textDocument/selectionRange` request.
 		 *
 		 * @since 3.15.0
 		 */
-		//selectionRange?: SelectionRangeClientCapabilities;
+		public SelectionRangeClientCapabilities selectionRange;
 	}
 
 	class TextDocumentSyncClientCapabilities
@@ -230,140 +211,6 @@ namespace LSP.Model
 		public bool didSave = false;
 	}
 
-	/**
-	 * Describes the content type that a client supports in various
-	 * result literals like `Hover`, `ParameterInfo` or `CompletionItem`.
-	 *
-	 * Please note that `MarkupKinds` must not start with a `$`. This kinds
-	 * are reserved for internal usage.
-	 */
-	class MarkupKind
-	{
-		/**
-			* Plain text is supported as a content format
-			*/
-		public const string PlainText = "plaintext";
 
-		/**
-		 * Markdown is supported as a content format
-		 */
-		public const string Markdown = "markdown";
-	}
-
-
-	/**
-	 * The kind of a completion entry.
-	 */
-	enum CompletionItemKind
-	{
-		Text = 1,
-		Method = 2,
-		Function = 3,
-		Constructor = 4,
-		Field = 5,
-		Variable = 6,
-		Class = 7,
-		Interface = 8,
-		Module = 9,
-		Property = 10,
-		Unit = 11,
-		Value = 12,
-		Enum = 13,
-		Keyword = 14,
-		Snippet = 15,
-		Color = 16,
-		File = 17,
-		Reference = 18,
-		Folder = 19,
-		EnumMember = 20,
-		Constant = 21,
-		Struct = 22,
-		Event = 23,
-		Operator = 24,
-		TypeParameter = 25,
-	}
-
-	class CompletionClientCapabilities
-	{
-		/**
-		 * Whether completion supports dynamic registration.
-		 */
-		public bool dynamicRegistration;
-
-		/**
-		 * The client supports the following `CompletionItem` specific
-		 * capabilities.
-		 */
-		public class _completionItem {
-			/**
-			 * Client supports snippets as insert text.
-			 *
-			 * A snippet can define tab stops and placeholders with `$1`, `$2`
-			 * and `${3:foo}`. `$0` defines the final tab stop, it defaults to
-			 * the end of the snippet.
-			 * Placeholders with equal identifiers are linked, so that typing in
-			 * one will update others as well.
-			 */
-			public bool snippetSupport;
-
-			/**
-			 * Client supports commit characters on a completion item.
-			 */
-			public bool commitCharactersSupport;
-
-			/**
-			 * Client supports the follow content formats for the documentation
-			 * property. The order describes the preferred format of the client.
-			 */
-			public string /*MarkupKind*/[] documentationFormat;
-
-			/**
-			 * Client supports the deprecated property on a completion item.
-			 */
-			public bool deprecatedSupport;
-
-			/**
-			 * Client supports the preselect property on a completion item.
-			 */
-			public bool preselectSupport;
-#if false
-			/**
-			 * Client supports the tag property on a completion item.
-			 * Clients supporting tags have to handle unknown tags gracefully.
-			 * Clients especially need to preserve unknown tags when sending
-			 * a completion item back to the server in a resolve call.
-			 *
-			 * @since 3.15.0
-			 */
-			tagSupport?: {
-				/**
-				 * The tags supported by the client.
-				 */
-				valueSet: CompletionItemTag[]
-			}
-#endif
-		}
-		public _completionItem	completionItem=new _completionItem();
-
-		public class _completionItemKind {
-			/**
-			 * The completion item kind values the client supports. When this
-			 * property exists the client also guarantees that it will
-			 * handle values outside its set gracefully and falls back
-			 * to a default value when unknown.
-			 *
-			 * If this property is not present the client only supports
-			 * the completion items kinds from `Text` to `Reference` as defined in
-			 * the initial version of the protocol.
-			 */
-			public CompletionItemKind[] valueSet;
-		}
-		public _completionItemKind completionItemKind = new _completionItemKind();
-
-		/**
-		 * The client supports to send additional context information for a
-		 * `textDocument/completion` request.
-		 */
-		public bool contextSupport;
-	}
+	
 }
