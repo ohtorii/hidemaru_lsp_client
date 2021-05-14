@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Lsp.Model.Serialization.Converters;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -64,7 +65,7 @@ namespace LSP.Model
 		 */
 		public /*unknown*/ object data;
 	}
-	//[JsonConverter(typeof(NumberEnumConverter))]
+	[JsonConverter(typeof(NumberEnumConverter))]
 	public enum DiagnosticSeverity
 	{
 		Error = 1,
@@ -79,7 +80,7 @@ namespace LSP.Model
 	 *
 	 * @since 3.15.0
 	 */
-	//[JsonConverter(typeof(NumberEnumConverter))]
+	[JsonConverter(typeof(NumberEnumConverter))]
 	public enum DiagnosticTag
 	{
 		Unnecessary = 1,

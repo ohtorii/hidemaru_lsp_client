@@ -10,8 +10,7 @@ namespace LSP.Model
 	interface IWorkspaceFoldersServerCapabilities
 	{
 		bool supported { get; set; }
-		//仮でstringで実装した
-		/*boolean | */string changeNotifications { get; set; }
+		bool changeNotifications { get; set; }
 	}
 
 	interface IWorkspaceFolder
@@ -30,7 +29,7 @@ namespace LSP.Model
 	class WorkspaceFoldersServerCapabilities : IWorkspaceFoldersServerCapabilities
 	{
 		public bool supported { get; set; }
-		public string changeNotifications { get; set; }
+		public bool changeNotifications { get; set; }
 	}
 	class WorkspaceFolder : IWorkspaceFolder
 	{

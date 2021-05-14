@@ -38,6 +38,6 @@ namespace LSP.Model
 		 */
 		public object arguments;
 
-		public short workDoneToken { get; set; }
+		public string workDoneToken { get; set; } = null;
 	}
 }

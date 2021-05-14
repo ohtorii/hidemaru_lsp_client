@@ -44,7 +44,22 @@ namespace LSP.Model
 			public _fileOperations fileOperations;
 		};
 
-		public _workspace workspace ;
+		public _workspace workspace { 
+			get 
+			{
+				if (m_workspace == null)
+				{
+					m_workspace = new _workspace();
+				}
+				return m_workspace;
+			} 
+			set 
+			{
+				m_workspace = value;
+			} 
+		}
+		_workspace m_workspace=null;
+
 		public TextDocumentClientCapabilities textDocument;
 	
 		public class _window {
@@ -52,13 +67,42 @@ namespace LSP.Model
 			public ShowMessageRequestClientCapabilities showMessage;
 			public ShowDocumentClientCapabilities showDocument;
 		};
-		public _window window;
-	
+		public _window window { 
+			get 
+			{
+				if (m_window == null)
+				{
+					m_window = new _window();
+				}
+				return m_window;
+			} 
+			set 
+			{
+				m_window = value;
+			} 
+		}
+		_window m_window=null;
+
 		public class _general {
 			public RegularExpressionsClientCapabilities regularExpressions ;
 			public MarkdownClientCapabilities markdown ;
 		};
-		public _general general;		
+		public _general general { 
+			get 
+			{
+				if (m_general == null)
+				{
+					m_general = new _general();
+				}
+				return m_general;
+			}
+			set 
+			{
+				m_general = value;
+			} 
+		}
+		_general m_general = null;
+
 		public object experimental;
 	}
 

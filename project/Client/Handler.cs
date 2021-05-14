@@ -30,7 +30,7 @@ namespace LSP.Client
                 Runner = Task.Run(() => response.Parse());
             }
         }
-        public void StoreCallback(int id, Action<JObject> callback)
+        public void StoreCallback(int id, Action<JToken> callback)
 		{
             response.StoreJob(id, callback);
 		}

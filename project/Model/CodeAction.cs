@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using CodeActionKind =System.String;
 
 namespace LSP.Model
 {
@@ -18,24 +17,47 @@ namespace LSP.Model
 		 *
 		 * @since 3.8.0
 		 */
-		public class _codeActionLiteralSupport {
+		public class _codeActionLiteralSupport
+		{
 			/**
 			 * The code action kind is supported with the following value
 			 * set.
 			 */
-			public class _codeActionKind {
+			public class _codeActionKind
+			{
 				/**
 				 * The code action kind values the client supports. When this
 				 * property exists the client also guarantees that it will
 				 * handle values outside its set gracefully and falls back
 				 * to a default value when unknown.
 				 */
-				public CodeActionKind[]  valueSet;
+				public /*CodeActionKind[]*/ string[] valueSet;
 			}
-			public _codeActionKind codeActionKind;
+			public _codeActionKind codeActionKind
+			{
+				get
+				{
+					if (m_codeActionKind == null)
+					{
+						m_codeActionKind = new _codeActionKind();
+					}
+					return m_codeActionKind;
+				}
+			}
+			_codeActionKind m_codeActionKind = null;
 		}
-		public _codeActionLiteralSupport codeActionLiteralSupport;
-
+		public _codeActionLiteralSupport codeActionLiteralSupport
+		{
+			get
+			{
+				if (m_codeActionLiteralSupport == null)
+				{
+					m_codeActionLiteralSupport = new _codeActionLiteralSupport();
+				}
+				return m_codeActionLiteralSupport;
+			}
+		}
+		_codeActionLiteralSupport m_codeActionLiteralSupport=null;
 		/**
 		 * Whether code action supports the `isPreferred` property.
 		 *
@@ -87,21 +109,30 @@ namespace LSP.Model
 
 	interface ICodeActionOptions : IWorkDoneProgressOptions
 	{
-		CodeActionKind[] codeActionKinds  { get;set; }
+		/*CodeActionKind[]*/ string[] codeActionKinds  { get;set; }
+		/**
+		 * The server provides support to resolve additional
+		 * information for a code action.
+		 *
+		 * @since 3.16.0
+		 */
+		bool resolveProvider { get; set; }
 	}
 	interface ICodeActionRegistrationOptions : ITextDocumentRegistrationOptions, ICodeActionOptions {
 	}
 
 	class CodeActionOptions : ICodeActionOptions
-	{
-		public string[] codeActionKinds { get; set; }
+	{		
 		public bool workDoneProgress { get; set; }
+		public /*CodeActionKind[]*/ string[] codeActionKinds { get; set; }
+		public bool resolveProvider { get; set; }
 	}
 	class CodeActionRegistrationOptions : ICodeActionRegistrationOptions
 	{
-		public DocumentFilter[] documentSelector { get; set; }
-		public string[] codeActionKinds { get; set; }
+		public DocumentFilter[] documentSelector { get; set; }		
 		public bool workDoneProgress { get; set; }
+		public /*CodeActionKind[]*/ string[] codeActionKinds { get; set; }
+		public bool resolveProvider { get; set; }
 	}
 #if false
 /**
@@ -124,97 +155,99 @@ export interface CodeActionParams extends WorkDoneProgressParams,
 	 */
 	context: CodeActionContext;
 }
-
-/**
- * The kind of a code action.
- *
- * Kinds are a hierarchical list of identifiers separated by `.`,
- * e.g. `"refactor.extract.function"`.
- *
- * The set of kinds is open and client needs to announce the kinds it supports
- * to the server during initialization.
- */
-export type CodeActionKind = string;
-
-/**
- * A set of predefined code action kinds.
- */
-export namespace CodeActionKind {
+#endif
 
 	/**
-	 * Empty kind.
-	 */
-	export const Empty: CodeActionKind = '';
-
-	/**
-	 * Base kind for quickfix actions: 'quickfix'.
-	 */
-	export const QuickFix: CodeActionKind = 'quickfix';
-
-	/**
-	 * Base kind for refactoring actions: 'refactor'.
-	 */
-	export const Refactor: CodeActionKind = 'refactor';
-
-	/**
-	 * Base kind for refactoring extraction actions: 'refactor.extract'.
+	 * The kind of a code action.
 	 *
-	 * Example extract actions:
+	 * Kinds are a hierarchical list of identifiers separated by `.`,
+	 * e.g. `"refactor.extract.function"`.
 	 *
-	 * - Extract method
-	 * - Extract function
-	 * - Extract variable
-	 * - Extract interface from class
-	 * - ...
+	 * The set of kinds is open and client needs to announce the kinds it supports
+	 * to the server during initialization.
 	 */
-	export const RefactorExtract: CodeActionKind = 'refactor.extract';
+	//export type CodeActionKind = string;
+	
+	/// <summary>
+	/// The kind of a code action. Kinds are a hierarchical list of identifiers separated by <c>.</c>, e.g. <c>"refactor.extract.function"</c>.
+	/// </summary>
+	public static class CodeActionKind
+	{
 
+		/// <summary>
+		/// Empty kind.
+		/// </summary>
+		public const string Empty = "";
+
+		/// <summary>
+		/// Base kind for quickfix actions: "quickfix".
+		/// </summary>
+		public const string QuickFix = "quickfix";
+
+		/// <summary>
+		/// Base kind for refactoring actions: "refactor".
+		/// </summary>
+		public const string Refactor = "refactor";
+
+		/// <summary>
+		/// Base kind for refactoring extraction actions: "refactor.extract".
+		///
+		/// Example extract actions:
+		///
+		/// - Extract method
+		/// - Extract function
+		/// - Extract variable
+		/// - Extract interface from class
+		/// - ...
+		/// </summary>
+		public const string RefactorExtract = "refactor.extract";
+
+		/// <summary>
+		/// Base kind for refactoring inline actions: "refactor.inline".
+		///
+		/// Example inline actions:
+		///
+		/// - Inline function
+		/// - Inline variable
+		/// - Inline constant
+		/// - ...
+		/// </summary>
+		public const string RefactorInline = "refactor.inline";
+
+		/// <summary>
+		/// Base kind for refactoring rewrite actions: "refactor.rewrite".
+		///
+		/// Example rewrite actions:
+		///
+		/// - Convert JavaScript function to class
+		/// - Add or remove parameter
+		/// - Encapsulate field
+		/// - Make method static
+		/// - Move method to base class
+		/// - ...
+		/// </summary>
+		public const string RefactorRewrite = "refactor.rewrite";
+
+		/// <summary>
+		/// Base kind for source actions: `source`.
+		///
+		/// Source code actions apply to the entire file.
+		/// </summary>
+		public const string Source = "source";
+
+		/// <summary>
+		/// Base kind for an organize imports source action: `source.organizeImports`.
+		/// </summary>
+		public const string SourceOrganizeImports = "source.organizeImports";
+	}
+
+
+#if false
 	/**
-	 * Base kind for refactoring inline actions: 'refactor.inline'.
-	 *
-	 * Example inline actions:
-	 *
-	 * - Inline function
-	 * - Inline variable
-	 * - Inline constant
-	 * - ...
+	 * Contains additional diagnostic information about the context in which
+	 * a code action is run.
 	 */
-	export const RefactorInline: CodeActionKind = 'refactor.inline';
-
-	/**
-	 * Base kind for refactoring rewrite actions: 'refactor.rewrite'.
-	 *
-	 * Example rewrite actions:
-	 *
-	 * - Convert JavaScript function to class
-	 * - Add or remove parameter
-	 * - Encapsulate field
-	 * - Make method static
-	 * - Move method to base class
-	 * - ...
-	 */
-	export const RefactorRewrite: CodeActionKind = 'refactor.rewrite';
-
-	/**
-	 * Base kind for source actions: `source`.
-	 *
-	 * Source code actions apply to the entire file.
-	 */
-	export const Source: CodeActionKind = 'source';
-
-	/**
-	 * Base kind for an organize imports source action:
-	 * `source.organizeImports`.
-	 */
-	export const SourceOrganizeImports: CodeActionKind =
-		'source.organizeImports';
-}
-
-/**
- * Contains additional diagnostic information about the context in which
- * a code action is run.
- */
-export interface CodeActionContext {
+	export interface CodeActionContext {
 	/**
 	 * An array of diagnostics known on the client side overlapping the range
 	 * provided to the `textDocument/codeAction` request. They are provided so

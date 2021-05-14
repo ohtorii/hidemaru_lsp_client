@@ -1,16 +1,21 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.Serialization;
 
 namespace LSP.Model
 {
+	//Todo: 名前をPlainText,Markdownにする。
 	[JsonConverter(typeof(StringEnumConverter))]
 	public enum MarkupKind
 	{
-		PlainText = 0,
-		Markdown = 1
+		/// <summary>
+		/// Plain text is supported as a content format
+		/// </summary>
+		plaintext=0, 
+		/// <summary>
+		/// Markdown is supported as a content format
+		/// </summary>
+		markdown=1,
 	}
 	
 

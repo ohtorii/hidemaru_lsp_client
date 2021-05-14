@@ -39,7 +39,7 @@ namespace LSP.Client
             ParseContext,
         }
         Mode mode = Mode.FindContextLength;
-        Dictionary<int, Action<JObject>> responseCallback =new Dictionary<int, Action<JObject>>();
+        Dictionary<int, Action<JToken>> responseCallback =new Dictionary<int, Action<JToken>>();
 
         CancellationToken cancelToken_;
         
@@ -69,7 +69,7 @@ namespace LSP.Client
                 return true;
             }
         }        
-        public void StoreJob(int id, Action<JObject> callback)
+        public void StoreJob(int id, Action<JToken> callback)
 		{
             lock (responseCallback)
             {
@@ -271,7 +271,7 @@ namespace LSP.Client
             
             if (receiver.ContainsKey("id"))
             {
-                Action<JObject> callback;
+                Action<JToken> callback;
                 {
                     var id = receiver["id"].ToObject<int>();
                     try
@@ -293,7 +293,7 @@ namespace LSP.Client
                 var response = receiver.ToObject<ResponseMessage>();
                 if (response.error == null)
                 {
-                    callback((JObject)response.result);
+                    callback((JToken)response.result);
 				}
 				else
 				{

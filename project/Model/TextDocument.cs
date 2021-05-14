@@ -7,13 +7,13 @@ namespace LSP.Model
 {
 	interface IPosition
 	{
-		uint line { get; set; }
 		uint character { get; set; }
+		uint line { get; set; }
 	}
 	class Position : IPosition
 	{
-		public uint line { get; set; }
 		public uint character { get; set; }
+		public uint line { get; set; }
 	}
 
 	interface IRange
@@ -111,6 +111,37 @@ namespace LSP.Model
 	{
 		public string uri { get; set; }
 	}
+	interface IVersionedTextDocumentIdentifier : ITextDocumentIdentifier
+	{
+		/**
+		 * The version number of this document.
+		 *
+		 * The version number of a document will increase after each change,
+		 * including undo/redo. The number doesn't need to be consecutive.
+		 */
+		int version { get; set; }
+	}
+	class VersionedTextDocumentIdentifier : IVersionedTextDocumentIdentifier
+	{
+		public int version { get; set; }
+		public string uri { get; set; }
+	}
+	interface IOptionalVersionedTextDocumentIdentifier :ITextDocumentIdentifier
+	{
+		/**
+		 * The version number of this document. If an optional versioned text document
+		 * identifier is sent from the server to the client and the file is not
+		 * open in the editor (the server has not received an open notification
+		 * before) the server can send `null` to indicate that the version is
+		 * known and the content on disk is the master (as specified with document
+		 * content ownership).
+		 *
+		 * The version number of a document will increase after each change,
+		 * including undo/redo. The number doesn't need to be consecutive.
+		 */
+		/*integer | null*/ int? version { get; set; }
+	}
+	
 	interface ITextDocumentPositionParams
 	{
 		ITextDocumentIdentifier textDocument  { get;set; }

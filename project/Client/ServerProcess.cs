@@ -132,10 +132,12 @@ namespace LSP.Client
         public void WriteStandardInput(string s)
 		{
             process.StandardInput.Write(s);
-		}
+            process.StandardInput.Flush();
+        }
         public void WriteLineStandardInput(string s)
         {
             process.StandardInput.WriteLine(s);
+            process.StandardInput.Flush();
         }
         public void Kill()
 		{

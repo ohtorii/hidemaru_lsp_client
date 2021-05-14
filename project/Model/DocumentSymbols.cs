@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Lsp.Model.Serialization.Converters;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -29,8 +30,18 @@ namespace LSP.Model
 			 */
 			public SymbolKind[] valueSet;
 		}
-		public _symbolKind symbolKind;
-
+		public _symbolKind symbolKind
+		{
+			get
+			{
+				if (m_symbolKind == null)
+				{
+					m_symbolKind = new _symbolKind();
+				}
+				return m_symbolKind;
+			}
+		}
+		_symbolKind m_symbolKind=null;
 		/**
 		 * The client supports hierarchical document symbols.
 		 */
@@ -91,8 +102,8 @@ namespace LSP.Model
 
 
 
-//[JsonConverter(typeof(NumberEnumConverter))]
-public enum SymbolKind
+	[JsonConverter(typeof(NumberEnumConverter))]
+	public enum SymbolKind
 	{
 		File = 1,
 		Module = 2,
@@ -123,7 +134,7 @@ public enum SymbolKind
 	}
 
 
-	//[JsonConverter(typeof(NumberEnumConverter))]
+	[JsonConverter(typeof(NumberEnumConverter))]
 	public enum SymbolTag
 	{
 		Deprecated = 1
@@ -131,14 +142,14 @@ public enum SymbolKind
 
 	class DocumentSymbol
 	{
-		public string name;
-		public string detail;
+		public string name=null;
+		public string detail = null;
 		public SymbolKind kind;		
-		public SymbolTag[]  tags;
-		public bool deprecated;
-		public Range range;
-		public Range selectionRange;
-		public DocumentSymbol[] children;
+		public SymbolTag[]  tags = null;
+		public bool deprecated =false;
+		public Range range = null;
+		public Range selectionRange = null;
+		public DocumentSymbol[] children = null;
 	}
 
 	/**

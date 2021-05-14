@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Lsp.Model.Serialization.Converters;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,8 +22,8 @@ namespace LSP.Model
 		public WatchKind kind;
 	}
 
-	/*[Flags]
-	[JsonConverter(typeof(NumberEnumConverter))]*/
+	[Flags]
+	[JsonConverter(typeof(NumberEnumConverter))]
 	public enum WatchKind
 	{
 		Create = 1,
@@ -51,7 +52,7 @@ namespace LSP.Model
 	/**
 	 * The file event type.
 	 */
-	//[JsonConverter(typeof(NumberEnumConverter))]
+	[JsonConverter(typeof(NumberEnumConverter))]
 	enum FileChangeType
 	{		
 		Created = 1,	

@@ -14,22 +14,15 @@ namespace LSP.Model
     * @since 3.15.0
     */
     public class ClientInfo_
-    {
-        /**
-         * クライアント自身により定義されたクライアントの名前。
-         */
-        public string name = "hidemaru-lsp";
-
-        /**
-            * クライアント自身により定義されたクライアントのバージョン。
-            */
-        public string version = "1.111";
+    {        
+        public string name;        
+        public string version;
     };        
     
     interface IInitializeParams : IWorkDoneProgressParams
 	{                				
         int processId { get; set; }
-        ClientInfo_ clientInfo { get; set; }
+        ClientInfo_ clientInfo { get; /*set;*/ }
 		/* @deprecated in favour of rootUri.
 		string rootPath { get; set; }*/
         DocumentUri rootUri { get; set; }
@@ -41,7 +34,16 @@ namespace LSP.Model
 	class InitializeParams : IInitializeParams
 	{
 		public int processId { get; set; }
-		public ClientInfo_ clientInfo { get; set; }
+		public ClientInfo_ clientInfo {
+			get
+			{
+				if (m_clientInfo == null) { m_clientInfo = new ClientInfo_(); };
+				return m_clientInfo;
+			}
+			/*set {
+				m_clientInfo = value;
+			}*/
+		}
 		public string rootUri { get; set; }
 		public object initializationOptions { get; set; }
 		public ClientCapabilities capabilities { get; set; }
@@ -49,7 +51,9 @@ namespace LSP.Model
 		/*Memo: インスタンスを生成するとサーバがResponseを返さないため、nullで運用中。
 		 */
 		public WorkspaceFolder workspaceFolders { get; set; } = null; /*= new WorkspaceFolder();*/
-		public short workDoneToken { get; set; }
+		public string workDoneToken { get; set; } = null;
+
+		ClientInfo_ m_clientInfo = null;
 	}
 
 	interface IInitializeResult
@@ -265,7 +269,19 @@ namespace LSP.Model
 				 */
 				public FileOperationRegistrationOptions willDelete;
 			}
-			public _fileOperations fileOperations;
+			public _fileOperations fileOperations { 
+				get {
+					if (m_fileOperations == null)
+					{
+						m_fileOperations = new _fileOperations();
+					}
+					return m_fileOperations;
+				}
+				set {
+					m_fileOperations = value;
+				} 
+			}
+			_fileOperations m_fileOperations=null;
 		}
 		public _workspace workspace;
 

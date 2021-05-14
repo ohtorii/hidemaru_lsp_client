@@ -32,7 +32,7 @@ namespace LSP.Client
 		{
 			Status = Mode.Init;
 		}
-		public void StartLspProcess(string exeFinaleName, string Arguments)
+		public void StartLspProcess(string exeFileName, string Arguments)
 		{
 			Debug.Assert(Status==Mode.Init);
 
@@ -45,7 +45,7 @@ namespace LSP.Client
 							},
 							source.Token);
 
-			server = new ServerProcess(exeFinaleName, Arguments);			
+			server = new ServerProcess(exeFileName, Arguments);			
 			server.StartProcess();
 			server.standardErrorReceived += Client_standardErrorReceived;
 			server.standardOutputReceived += Client_standardOutputReceived;
@@ -56,7 +56,7 @@ namespace LSP.Client
 		
 		void OnResponseError(ResponseMessage response)
 		{
-			Console.WriteLine("[OnResponseError]");
+			Console.WriteLine(string.Format("[OnResponseError] error={0}", response.error));
 		}
 		void OnWindowLogMessage(LogMessageParams param)
 		{
@@ -76,6 +76,8 @@ namespace LSP.Client
 
 		private void Client_standardErrorReceived(object sender, byte[] e)
 		{
+			var unicodeString = Encoding.UTF8.GetString(e.ToArray());
+			Console.WriteLine(string.Format("[StandardError]", unicodeString));
 			//throw new NotImplementedException();
 		}
 		private void Server_Exited(object sender, EventArgs e)
@@ -90,7 +92,7 @@ namespace LSP.Client
 			Status = Mode.ServerInitializeStart;
 		}		
 		//Memo: デバッグ用にpublicとしている
-		public void ResponseInitialize(JObject arg)
+		public void ResponseInitialize(JToken arg)
 		{
 			var result = arg.ToObject<InitializeResult>();
 			Status = Mode.ServerInitializeFinish;
@@ -102,24 +104,51 @@ namespace LSP.Client
 			SendNotification(param, "initialized");
 			Status = Mode.ClientInitializeFinish;
 		}
-		public void SendDigOpenTextDocument(IDidOpenTextDocumentParams param)
+		public void SendTextDocumentDigOpen(IDidOpenTextDocumentParams param)
 		{
 			Debug.Assert(Status == Mode.ClientInitializeFinish);
 			SendNotification(param, "textDocument/didOpen");
+		}
+		public void SendWorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)
+		{
+			Debug.Assert(Status == Mode.ClientInitializeFinish);
+			SendNotification(param, "workspace/didChangeConfiguration");
+		}
+		public void SendTextDocumentDidChange(IDidChangeTextDocumentParams param)
+		{
+			Debug.Assert(Status == Mode.ClientInitializeFinish);
+			SendNotification(param, "textDocument/didChange");
 		}
 		public void SendTextDocumentCompletion(ICompletionParams param)
 		{
 			Debug.Assert(Status == Mode.ClientInitializeFinish);
 			SendRequest(param, "textDocument/completion", ResponseTextDocumentCompletion);
 		}
-		public void ResponseTextDocumentCompletion(JObject arg)
+		public void ResponseTextDocumentCompletion(JToken arg)
 		{
-
+			if (arg == null)
+			{
+				return;
+			}
+			if(arg is JArray)
+			{
+				//CompletionItem[]
+				var items = arg.ToObject<CompletionItem[]>();
+				return;
+			}
+			var obj = arg.ToObject<JObject>();
+			if(obj.ContainsKey("isIncomplete"))
+			{
+				//CompletionList
+				var list = obj.ToObject<CompletionList>();
+				return;
+			}
+			//Console.WriteLine("ResponseTextDocumentCompletion!!!!!!!!!!!!!!!!!!!!!!!");
 		}
 		//
 		//低レイヤー
 		//
-		public void SendRequest(object param, string method, Action<JObject> callback)
+		public void SendRequest(object param, string method, Action<JToken> callback)
 		{
 			var id = requestIdGenerator.NextId();
 			handler.StoreCallback(id, callback);
@@ -130,7 +159,7 @@ namespace LSP.Client
 			var request = new RequestMessage { id = id, method = method, @params = param };
 			var jsonRpc = JsonConvert.SerializeObject(request, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = NullValueHandling.Ignore });
 			var payload = CreatePayLoad(jsonRpc);
-			server.WriteLineStandardInput(payload);
+			server.WriteStandardInput(payload);
 		}
 		/// <summary>
 		/// 投げっぱなしのリクエスト
@@ -141,7 +170,7 @@ namespace LSP.Client
 			var notification = new NotificationMessage {method = method, @params = param };
 			var jsonRpc = JsonConvert.SerializeObject(notification, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = NullValueHandling.Ignore });
 			var payload = CreatePayLoad(jsonRpc);
-			server.WriteLineStandardInput(payload);
+			server.WriteStandardInput(payload);
 		}
 		
 		/// <summary>
@@ -150,11 +179,11 @@ namespace LSP.Client
 		/// <param name="jsonRpc"></param>
 		/// <param name="id"></param>
 		/// <param name="callback"></param>
-		public void SendRaw(string jsonRpc, int id, Action<JObject> callback)
+		public void SendRaw(string jsonRpc, int id, Action<JToken> callback)
 		{
 			handler.StoreCallback(id, callback);
 			var payload = CreatePayLoad(jsonRpc);
-			server.WriteLineStandardInput(payload);
+			server.WriteStandardInput(payload);
 		}
 		static string CreatePayLoad(string jsonRpc)
 		{

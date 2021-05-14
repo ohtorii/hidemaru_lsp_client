@@ -9,13 +9,20 @@
     <Import_RootNamespace>LSP.Model</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Converter\StringOrMarkupContentConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Converter\TextEditOrInsertReplaceEditConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Model\StringOrMarkupContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Model\TextEdit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Capabilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeLens.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeLensRefresh.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Command.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Completion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Converter\NumberEnumConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DidChangeConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DidChangeTextDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DidChangeWatchedFiles.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DidOpenTextDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DocumentColor.cs" />
@@ -28,6 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ExecuteCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FindReferences.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FoldingRange.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Generation\StringEnumAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GotoDeclaration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GoToDefinition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GoToImplementation.cs" />
@@ -49,6 +57,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ShowMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SignatureHelp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextDocument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TextEdit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WillCreateFiles.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WorkDone.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WorkspaceEdit.cs" />

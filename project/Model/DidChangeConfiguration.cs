@@ -4,13 +4,20 @@ using System.Text;
 
 namespace LSP.Model
 {
-	class DidChangeConfigurationClientCapabilities
+	interface IDidChangeConfigurationClientCapabilities
 	{
-		public bool dynamicRegistration;
+		bool dynamicRegistration { get; set; }
 	}
-
-	class DidChangeConfigurationParams
+	class DidChangeConfigurationClientCapabilities : IDidChangeConfigurationClientCapabilities
 	{
-		public object settings;
+		public bool dynamicRegistration { get; set; }
+	}
+	interface IDidChangeConfigurationParams
+	{
+		object settings { get; set; }
+	}
+	class DidChangeConfigurationParams : IDidChangeConfigurationParams
+	{
+		public object settings { get; set; }
 	}
 }
