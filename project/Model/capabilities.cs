@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -58,7 +59,7 @@ namespace LSP.Model
 				m_workspace = value;
 			} 
 		}
-		_workspace m_workspace=null;
+		[JsonIgnore] _workspace m_workspace=null;
 
 		public TextDocumentClientCapabilities textDocument;
 	
@@ -81,7 +82,7 @@ namespace LSP.Model
 				m_window = value;
 			} 
 		}
-		_window m_window=null;
+		[JsonIgnore] _window m_window=null;
 
 		public class _general {
 			public RegularExpressionsClientCapabilities regularExpressions ;
@@ -101,7 +102,7 @@ namespace LSP.Model
 				m_general = value;
 			} 
 		}
-		_general m_general = null;
+		[JsonIgnore] _general m_general = null;
 
 		public object experimental;
 	}

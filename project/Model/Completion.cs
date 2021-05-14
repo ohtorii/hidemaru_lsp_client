@@ -67,7 +67,21 @@ namespace LSP.Model
 				 */
 				public CompletionItemTag[] valueSet;
 			}
-			public _tagSupport tagSupport;
+			public _tagSupport tagSupport{ 
+				get 
+				{
+					if (m_tagSupport == null)
+					{
+						m_tagSupport = new _tagSupport();
+					}
+					return m_tagSupport;
+				}
+				set 
+				{
+					m_tagSupport = value;
+				} 
+			}
+			[JsonIgnore] _tagSupport m_tagSupport = null;
 			/**
 			 * Client supports insert replace edit to control different behavior if
 			 * a completion item is inserted in the text or should replace text.
@@ -100,7 +114,8 @@ namespace LSP.Model
 					return m_resolveSupport;
 				}
 			}
-			_resolveSupport m_resolveSupport;
+			[JsonIgnore] _resolveSupport m_resolveSupport;
+
 			/**
 			 * The client supports the `insertTextMode` property on
 			 * a completion item to override the whitespace handling mode
@@ -111,7 +126,19 @@ namespace LSP.Model
 			public class _insertTextModeSupport {
 				public InsertTextMode[]  valueSet;
 			};
-			public _insertTextModeSupport insertTextModeSupport;
+			public _insertTextModeSupport insertTextModeSupport {
+				get {
+					if (m_insertTextModeSupport == null)
+					{
+						m_insertTextModeSupport = new _insertTextModeSupport();
+					}
+					return m_insertTextModeSupport;
+				} 
+				set {
+					m_insertTextModeSupport = value;
+				} 
+			}
+			[JsonIgnore] _insertTextModeSupport m_insertTextModeSupport = null;
 		}
 
 		public _completionItem completionItem
@@ -125,7 +152,7 @@ namespace LSP.Model
 				return m_completionItem;
 			}
 		}
-		_completionItem m_completionItem = null;
+		[JsonIgnore] _completionItem m_completionItem = null;
 
 		public class _completionItemKind
 		{
@@ -152,7 +179,8 @@ namespace LSP.Model
 				return m_completionItemKind;
 			}
 		}
-		_completionItemKind m_completionItemKind=null;
+		[JsonIgnore] _completionItemKind m_completionItemKind=null;
+
 		/**
 		 * The client supports to send additional context information for a
 		 * `textDocument/completion` request.
