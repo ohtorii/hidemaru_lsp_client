@@ -67,18 +67,13 @@ namespace LSP.Client
 		}
 		private void Client_standardOutputReceived(object sender, byte[] e)
 		{
-			//string text = System.Text.Encoding.UTF8.GetString(e);
 			handler.StoreBuffer(e);
-			//parser.Parse();
-			//Console.WriteLine("[Received]"+text);
-			//throw new NotImplementedException();
 		}
 
 		private void Client_standardErrorReceived(object sender, byte[] e)
 		{
 			var unicodeString = Encoding.UTF8.GetString(e.ToArray());
 			Console.WriteLine(string.Format("[StandardError]", unicodeString));
-			//throw new NotImplementedException();
 		}
 		private void Server_Exited(object sender, EventArgs e)
 		{

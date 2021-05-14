@@ -7,7 +7,7 @@ using LSP.Model;
 namespace UnitTest
 {
 	[TestClass]
-	public class UnitTest1
+	public class Model
 	{
 		[TestMethod]
 		public void TestMethod1()

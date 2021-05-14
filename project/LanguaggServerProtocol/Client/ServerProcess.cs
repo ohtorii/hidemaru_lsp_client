@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
+
 namespace LSP.Client
 {
 	class ServerProcess
@@ -62,10 +63,10 @@ namespace LSP.Client
 		}
         public bool HasExited { get { return process.HasExited; } }
         
-        ProcessStartInfo processStartInfo;
-        Process process;
-        AsyncStreamReader standardOutput;
-        AsyncStreamReader standardError;
+        private ProcessStartInfo processStartInfo = null;
+        private Process process = null;
+        private AsyncStreamReader standardOutput =null;
+        private AsyncStreamReader standardError = null;
 
         public ServerProcess(string filename, string arguments)
 		{

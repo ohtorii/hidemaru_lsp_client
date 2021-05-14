@@ -1,10 +1,11 @@
 ﻿using LSP.Model;
+using LSP.Client;
 using System;
 using System.IO;
 using System.Threading;
 
 
-namespace LSP.Client
+namespace ClientExample
 {
 
     class Program

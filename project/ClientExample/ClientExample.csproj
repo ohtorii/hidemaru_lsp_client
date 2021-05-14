@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E676FB19-B4A8-42ED-B64D-64349EACBC28}</ProjectGuid>
+    <ProjectGuid>{C433A9A6-1EFC-4229-A670-8458D3F7D95A}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>LSP.Client</RootNamespace>
-    <AssemblyName>LSPClient</AssemblyName>
+    <RootNamespace>ClientExample</RootNamespace>
+    <AssemblyName>ClientExample</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -22,7 +22,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>CS0649</NoWarn>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -47,11 +46,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client.cs" />
-    <Compile Include="AsyncStreamReader.cs" />
-    <Compile Include="Response.cs" />
-    <Compile Include="ServerProcess.cs" />
-    <Compile Include="Handler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -63,7 +57,6 @@
       <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="..\Model\Model.projitems" Label="Shared" />
+  <Import Project="..\LanguaggServerProtocol\LanguaggServerProtocol.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
