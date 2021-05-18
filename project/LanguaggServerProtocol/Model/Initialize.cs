@@ -23,13 +23,14 @@ namespace LSP.Model
 	{                				
         int processId { get; set; }
         ClientInfo_ clientInfo { get; /*set;*/ }
-		/* @deprecated in favour of rootUri.
-		string rootPath { get; set; }*/
+		//
+		[Obsolete("@deprecated in favour of rootUri.")]
+		string rootPath { get; set; }
         DocumentUri rootUri { get; set; }
         object initializationOptions { get; set; }
         ClientCapabilities capabilities { get; set; }       
         string trace { get; set; } 
-        WorkspaceFolder workspaceFolders { get; set; }        
+        WorkspaceFolder[] workspaceFolders { get; set; }        
     }
 	class InitializeParams : IInitializeParams
 	{
@@ -50,8 +51,9 @@ namespace LSP.Model
 		public string trace { get; set; } = "off"; //"off" | "messages" | "verbose";
 		/*Memo: インスタンスを生成するとサーバがResponseを返さないため、nullで運用中。
 		 */
-		public WorkspaceFolder workspaceFolders { get; set; } = null; /*= new WorkspaceFolder();*/
+		public WorkspaceFolder[] workspaceFolders { get; set; } = null;
 		public string workDoneToken { get; set; } = null;
+		public string rootPath { get; set; }
 
 		ClientInfo_ m_clientInfo = null;
 	}

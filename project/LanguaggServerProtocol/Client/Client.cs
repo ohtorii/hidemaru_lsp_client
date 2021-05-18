@@ -123,12 +123,14 @@ namespace LSP.Client
 		{
 			if (arg == null)
 			{
+				Console.WriteLine("Completion==null");
 				return;
 			}
 			if(arg is JArray)
 			{
 				//CompletionItem[]
 				var items = arg.ToObject<CompletionItem[]>();
+				Console.WriteLine("Completion. num={0}",items.Length);
 				return;
 			}
 			var obj = arg.ToObject<JObject>();
@@ -136,9 +138,10 @@ namespace LSP.Client
 			{
 				//CompletionList
 				var list = obj.ToObject<CompletionList>();
+				Console.WriteLine("Completion. num={0}", list.items.Length);
 				return;
 			}
-			//Console.WriteLine("ResponseTextDocumentCompletion!!!!!!!!!!!!!!!!!!!!!!!");
+			Console.WriteLine("Completion. Not found.");
 		}
 		//
 		//低レイヤー

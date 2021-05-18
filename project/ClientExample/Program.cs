@@ -11,7 +11,7 @@ namespace ClientExample
     class Program
 	{
         //static RequestIdGenerator requestIdGenerator = new RequestIdGenerator();
-        static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\example\simple\");
+        static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\csharp\");
         static string solutionFileName = Path.Combine(rootPath, "simple.sln");
         static Uri rootUri = new Uri(rootPath);
         static Uri sourceUri= new Uri(rootUri, @"simple\Program.cs");
@@ -25,10 +25,10 @@ namespace ClientExample
             var FileName = @"d:\Temp\LSP-Server\omnisharp-win-x64-1.37.8\OmniSharp.exe";
             //var FileName = @"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\omnisharp-lsp\OmniSharp.exe";
 #if false
-            var Arguments = string.Format(@"-lsp -v -z  --hostPID {0} --encoding utf-8", System.Diagnostics.Process.GetCurrentProcess().Id);
+            var Arguments = string.Format(@"-lsp -v --hostPID {0} --encoding utf-8", System.Diagnostics.Process.GetCurrentProcess().Id);
 #else
             // --zero-based-indices
-            var Arguments = string.Format(@"-lsp -v -s ""{0}"" --hostPID {1} --encoding utf-8", solutionFileName, System.Diagnostics.Process.GetCurrentProcess().Id);
+            var Arguments = string.Format(@"-lsp -v --source ""{0}"" --hostPID {1} --encoding utf-8", solutionFileName, System.Diagnostics.Process.GetCurrentProcess().Id);
 #endif
             var client = new Client();
             client.StartLspProcess(FileName, Arguments);
@@ -69,23 +69,24 @@ namespace ClientExample
 #if true
             var param = new InitializeParams ();
             param.rootUri = rootUri.AbsoluteUri;
+            param.rootPath = rootUri.AbsolutePath;
             param.initializationOptions = null;
+            param.workspaceFolders = new[] { new WorkspaceFolder {uri=rootUri.AbsoluteUri,name="VisualStudio-Solution" } };
             param.processId = System.Diagnostics.Process.GetCurrentProcess().Id;
             param.capabilities = new ClientCapabilities();
             {
                 var clientInfo=param.clientInfo;
                 clientInfo.name = "hidemal-lsp";
-                clientInfo.version = "1.0";
+                clientInfo.version = "1.1.1";
             }
             param.trace = "verbose";//"off";
             {
-                //param.capabilities.workspace = new ClientCapabilities._workspace();
                 var workspace = param.capabilities.workspace;
-                workspace.configuration = true;
+                //workspace.configuration = true;
                 workspace.applyEdit = true;
+                //workspace.workspaceFolders = true;
             }
 			{
-                //param.capabilities.window = new ClientCapabilities._window();
                 var window = param.capabilities.window;
                 window.workDoneProgress = false;
 			}

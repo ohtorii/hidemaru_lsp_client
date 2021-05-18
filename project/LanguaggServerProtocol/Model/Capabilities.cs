@@ -19,30 +19,30 @@ namespace LSP.Model
 			 * to the workspace by supporting the request
 			 * 'workspace/applyEdit'
 			 */
-			public bool applyEdit;
-			public WorkspaceEditClientCapabilities workspaceEdit;
+			public bool applyEdit=false;
+			public WorkspaceEditClientCapabilities workspaceEdit=null;
 
-			public DidChangeConfigurationClientCapabilities didChangeConfiguration;
+			public DidChangeConfigurationClientCapabilities didChangeConfiguration = null;
 
-			public DidChangeWatchedFilesClientCapabilities didChangeWatchedFiles;
+			public DidChangeWatchedFilesClientCapabilities didChangeWatchedFiles = null;
 
-			public WorkspaceSymbolClientCapabilities symbol;
-			public ExecuteCommandClientCapabilities executeCommand;
-			public bool workspaceFolders;
-			public bool configuration;
-			public SemanticTokensWorkspaceClientCapabilities semanticTokens;
-			public CodeLensWorkspaceClientCapabilities codeLens;
+			public WorkspaceSymbolClientCapabilities symbol = null;
+			public ExecuteCommandClientCapabilities executeCommand = null;
+			public bool workspaceFolders=false;
+			public bool configuration=false;
+			public SemanticTokensWorkspaceClientCapabilities semanticTokens = null;
+			public CodeLensWorkspaceClientCapabilities codeLens = null;
 
 			public class _fileOperations {				
-				public bool dynamicRegistration;
-				public bool didCreate;
-				public bool willCreate;
-				public bool didRename;
-				public bool willRename;
-				public bool didDelete;
-				public bool willDelete;
+				public bool dynamicRegistration=false;
+				public bool didCreate = false;
+				public bool willCreate = false;
+				public bool didRename = false;
+				public bool willRename = false;
+				public bool didDelete = false;
+				public bool willDelete = false;
 			};
-			public _fileOperations fileOperations;
+			public _fileOperations fileOperations=null;
 		};
 
 		public _workspace workspace { 

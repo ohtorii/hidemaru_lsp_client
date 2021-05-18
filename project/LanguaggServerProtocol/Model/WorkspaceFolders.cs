@@ -33,7 +33,9 @@ namespace LSP.Model
 	}
 	class WorkspaceFolder : IWorkspaceFolder
 	{
-		string IWorkspaceFolder.uri { get; set; }
-		string IWorkspaceFolder.name { get; set; }
+		//public string IWorkspaceFolder.uri { get; set; }
+		//public string IWorkspaceFolder.name { get; set; }
+		public DocumentUri uri { get; set; }
+		public string name { get; set; }
 	}
 }
