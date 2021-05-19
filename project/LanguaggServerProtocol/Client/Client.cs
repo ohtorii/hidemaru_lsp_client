@@ -32,7 +32,7 @@ namespace LSP.Client
 		{
 			Status = Mode.Init;
 		}
-		public void StartLspProcess(string exeFileName, string Arguments)
+		public void StartLspProcess(string exeFileName, string Arguments, string logFilename)
 		{
 			Debug.Assert(Status==Mode.Init);
 
@@ -41,7 +41,7 @@ namespace LSP.Client
 									OnWindowLogMessage= this.OnWindowLogMessage, 
 									OnWindowShowMessage=this.OnWindowShowMessage,
 									OnResponseError=this.OnResponseError,
-									logFileName = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\Client\log\json.txt")
+									logFileName = logFilename
 							},
 							source.Token);
 

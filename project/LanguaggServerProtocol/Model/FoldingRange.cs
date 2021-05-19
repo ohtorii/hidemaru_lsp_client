@@ -101,5 +101,14 @@ namespace LSP.Model
 		 * enumeration of standardized kinds.
 		 */
 		string kind { get; set; }
-}
+	}
+
+
+
+	class FoldingRangeRegistrationOptions : IFoldingRangeRegistrationOptions
+	{
+		public DocumentFilter[] documentSelector { get; set; }
+		public bool workDoneProgress { get; set; }
+		public string id { get; set; }
+	}
 }

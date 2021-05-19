@@ -9,10 +9,14 @@
     <Import_RootNamespace>LSP.Model</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Converter\BooleanOrConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Converter\StringOrMarkupContentConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Converter\TextDocumentSyncConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Converter\TextEditOrInsertReplaceEditConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Model\BooleanOr.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Model\StringOrMarkupContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Model\TextEdit.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Server\Capabilities\TextDocumentSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\AsyncStreamReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\Client.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\Handler.cs" />
@@ -48,9 +52,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\Hover.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Initialize.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Initialized .cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\LinkedEditingRange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\MarkupContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Message.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\Monikers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\NotificationMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\PrepareCallHierarchy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\PublishDiagnostics.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\RegularExpressions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Rename.cs" />
@@ -68,8 +75,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceEdit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceFolders.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceSymbols.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Model\" />
   </ItemGroup>
 </Project>

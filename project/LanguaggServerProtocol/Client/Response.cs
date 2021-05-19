@@ -63,6 +63,12 @@ namespace LSP.Client
             {
                 return false;
             }
+            if (debugLogger != null)
+            {
+                var jsonDataUnicode = Encoding.UTF8.GetString(streamString);
+                debugLogger.Log(jsonDataUnicode);
+            }
+
             lock (bufferStreamUTF8)
             {
                 bufferStreamUTF8.AddRange(streamString);
@@ -103,7 +109,7 @@ namespace LSP.Client
                         mode = Mode.SkipSeparator;
                         break;
                     case Mode.SkipSeparator:
-                        if (OnSkipSeparator() == false)
+                        if (OnSkipContextHeader() == false)
                         {
                             Thread.Sleep(sleepTime);
                             break;
@@ -133,7 +139,7 @@ namespace LSP.Client
             {
                 /* "Content-Length: "を見付ける。
                  * (Ex)
-                 * bufferStream=Content-Length: 
+                 * bufferStreamUTF8=Content-Length: 
                  */
                 if (bufferStreamUTF8.Count < HeaderContentLengthLength_)
                 {
@@ -159,65 +165,72 @@ namespace LSP.Client
         {
             lock (bufferStreamUTF8)
             {
-                var tail = bufferStreamUTF8.IndexOf(Convert.ToByte('\r'), HeaderContentLengthLength_);
-                if (tail < 0)
+                /*bufferStreamUTF8=Content-Length: 52\r\nContent-Type: application/vscode-jsonrpc; charset=utf8\r\n\r\n{"method":"initialized",...
+                 *                                   ^
+                 *                                   |
+                 *                                   tail
+                */
+                var tail = ByteListUtil.StrStr(bufferStreamUTF8, "\r\n");
+                if (tail == -1)
                 {
-                    tail = bufferStreamUTF8.IndexOf(Convert.ToByte('\n'), HeaderContentLengthLength_);
-                    if (tail < 0)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
+
                 {
-                    /*(Ex)
-                    bufferStream=Content-Length: 52\n\n{"method":"initialized",...
-                                                   ^
-                                                   |
-                                               tail+
-                    contentLength=52;
-                    */
+                    
                     int numericalLen = tail - HeaderContentLengthLength_;
                     var byteArray = bufferStreamUTF8.GetRange(HeaderContentLengthLength_, numericalLen);
                     var unicodeLen = Encoding.UTF8.GetString(byteArray.ToArray());
                     var value = string.Join("", unicodeLen);
                     contentLength = int.Parse(value);
-                    //var len = bufferStreamUTF8.Substring(HeaderContentLengthLength_, numericalLen);
-                    //contentLength = int.Parse(len);
                 }
 
                 /*(Ex)
-                (Before) bufferStream=Content-Length: 52\n\n{"method":"initialized",...
-                (After)  bufferStream=\n\n{"method":"initialized",...
+                (Before) bufferStreamUTF8=Content-Length: 52\nContent-Type: application/vscode-jsonrpc; charset=utf8\r\n\r\n{"method":"initialized",...
+                (After)  bufferStreamUTF8=Content-Type: application/vscode-jsonrpc; charset=utf8\r\n\r\n{"method":"initialized",...
                 */
-                bufferStreamUTF8.RemoveRange(0, tail + 1);
+                bufferStreamUTF8.RemoveRange(0, tail + 2);//2="\r\n"
             }
             return true;
         }
 
-        bool OnSkipSeparator()
+        bool OnSkipContextHeader()
         {
             lock (bufferStreamUTF8)
             {
-                /*(Ex)
-                 * (Before) bufferStream=\n\n{"method":"initialized",...
+                /*
+                 * (Before) bufferStreamUTF8=Content-Type: application/vscode-jsonrpc; charset=utf8\r\n\r\n{"method":"initialized",...
+                 *              or
+                 *          bufferStreamUTF8=\r\n\r\n{"method":"initialized",...
                  */
-                if (bufferStreamUTF8.Count < 2)
-                {
-                    return false;
-                }
-                if ((bufferStreamUTF8[0] == '\n') || (bufferStreamUTF8[0] == '\r'))
-                {
-                    ByteListUtil.TrimStart(bufferStreamUTF8, Convert.ToByte('\n'), Convert.ToByte('\r'));
-                    //bufferStreamUTF8 = bufferStreamUTF8.TrimStart(new char[] { '\n', '\r' });
-                }
-                if (bufferStreamUTF8.Count == 0)
-                {
-                    return false;
-                }
-                System.Diagnostics.Debug.Assert((bufferStreamUTF8[0] != '\n') && (bufferStreamUTF8[0] != '\r'));
 
-                /*(Ex)
-                 * (After) bufferStream={"method":"initialized",...
+
+                /* bufferStreamUTF8=Content-Type: application/vscode-jsonrpc; charset=utf8\r\n\r\n{"method":"initialized",...
+                 *                                                                        ^       ^
+                 *                                                                        |       |
+                 *                                                                        |       separatorEndIndex;
+                 *                                                                        separatorFirstIndex;
+                 *              or
+                 *
+                 *bufferStreamUTF8=\r\n\r\n{"method":"initialized",...
+                 *                 ^       ^
+                 *                 |       |
+                 *                 |       separatorEndIndex;
+                 *                 separatorFirstIndex;
+                 */
+                var separatorFirstIndex = ByteListUtil.StrStr(bufferStreamUTF8, "\r\n");
+				if (separatorFirstIndex == -1)
+				{
+                    return false;
+				}
+                var separatorEndIndex =ByteListUtil.StrSpn(bufferStreamUTF8, separatorFirstIndex, "\r\n");
+				if (separatorEndIndex == -1)
+				{
+                    return false;
+				}                
+                bufferStreamUTF8.RemoveRange(0, separatorEndIndex);                
+                Debug.Assert(bufferStreamUTF8[0]== Convert.ToByte('{'));
+                /*(After) bufferStreamUTF8={"method":"initialized",...
                  */
             }
             return true;
@@ -248,12 +261,9 @@ namespace LSP.Client
             contentLength = pairKakkoIndex + 1;
 #endif                
                 var jsonDataUTF8 = bufferStreamUTF8.GetRange(0, contentLength);
-
                 var jsonDataUnicode = Encoding.UTF8.GetString(jsonDataUTF8.ToArray());
-
                 try
                 {
-                    debugLogger.Log(jsonDataUnicode);
                     receiver = (JObject)JsonConvert.DeserializeObject(jsonDataUnicode);
                 }
                 catch (JsonReaderException e)
@@ -263,8 +273,8 @@ namespace LSP.Client
                 }
 
                 /*
-                 * (Before) bufferStream={"method":"initialized",...}Content-Length: 128\n\n{
-                 * (After)  bufferStream=Content-Length: 128\n\n{
+                 * (Before) bufferStreamUTF8={"method":"initialized",...}Content-Length: 128\n\n{
+                 * (After)  bufferStreamUTF8=Content-Length: 128\n\n{
                  */
                 bufferStreamUTF8.RemoveRange(0, contentLength);
             }
@@ -348,7 +358,7 @@ namespace LSP.Client
         bool FindPairKakko(out int outPairKakkoIndex)
         {
             /*(Ex)
-             * bufferStream={"method":"initialized",...}Content-Length: 128\n\n{
+             * bufferStreamUTF8={"method":"initialized",...}Content-Length: 128\n\n{
              *                                         ^
              *                                         |
              *                     outPairKakkoIndex---+
@@ -451,7 +461,7 @@ namespace LSP.Client
                 }
                 buf.RemoveRange(0, count);
             }
-            public static bool IsSame(List<byte> buf, int bufStartIndex, byte[] str)
+            static bool IsSame(List<byte> buf, int bufStartIndex, byte[] str)
             {
                 var i = bufStartIndex;
                 foreach (var b in str)
@@ -464,23 +474,61 @@ namespace LSP.Client
                 }
                 return true;
             }
-            public static int StrStr(List<byte> buf, string str)
+            /// <summary>
+            /// 文字列で最初に見つかった検索文字列へのインデックスを返します。
+            /// </summary>
+            /// <param name="buf"></param>
+            /// <param name="Search"></param>
+            /// <returns></returns>
+            public static int StrStr(List<byte> buf, string Search)
             {
                 const int NotFound = -1;
 
-                if (buf.Count < str.Length)
+                if (buf.Count < Search.Length)
                 {
                     return NotFound;
                 }
 
-                var byteStr = Encoding.UTF8.GetBytes(str);
-                var bufCount = (buf.Count - str.Length) + 1;
+                var byteStr = Encoding.UTF8.GetBytes(Search);
+                var bufCount = (buf.Count - Search.Length) + 1;
                 for (int i = 0; i < bufCount; ++i)
                 {
                     if (IsSame(buf, i, byteStr))
                     {
                         return i;
                     }
+                }
+                return NotFound;
+            }
+            /// <summary>
+            /// 文字列の中で、文字セットに含まれない最初の文字へのインデックスを返します。
+            /// </summary>
+            /// <param name="buf"></param>
+            /// <param name="bufCharSet"></param>
+            /// <returns></returns>
+            public static int StrSpn(List<byte> buf, string bufCharSet)
+            {
+                return StrSpn(buf,0,bufCharSet);
+            }
+            /// <summary>
+            /// 文字列の中で、文字セットに含まれない最初の文字へのインデックスを返します。
+            /// </summary>
+            /// <param name="buf"></param>
+            /// <param name="startIndex"></param>
+            /// <param name="strCharSet"></param>
+            /// <returns></returns>
+            public static int StrSpn(List<byte> buf, int startIndex, string strCharSet)
+			{
+                const int NotFound = -1;
+                var byteCharSet = Encoding.UTF8.GetBytes(strCharSet);
+                var bufCount = (buf.Count - byteCharSet.Length) + 1;
+                for (int i = startIndex; i < bufCount; ++i)
+                {
+					if (byteCharSet.Contains(buf[i]))
+					{
+                        continue;
+					}
+                    return i;
                 }
                 return NotFound;
             }

@@ -9,22 +9,21 @@ namespace LSP.Model
 		/**
 		 * Whether document color supports dynamic registration.
 		 */
-		public bool dynamicRegistration;
+		public bool dynamicRegistration=false;
 	}
-#if false
-	export interface DocumentColorOptions extends WorkDoneProgressOptions {
+
+	interface IDocumentColorOptions : IWorkDoneProgressOptions {
 	}
-	export interface DocumentColorRegistrationOptions extends
-		TextDocumentRegistrationOptions, StaticRegistrationOptions,
-		DocumentColorOptions {
+	interface IDocumentColorRegistrationOptions :ITextDocumentRegistrationOptions, IStaticRegistrationOptions,IDocumentColorOptions {
 	}
-	interface DocumentColorParams extends WorkDoneProgressParams,
-		PartialResultParams {
+	interface DocumentColorParams : IWorkDoneProgressParams,IPartialResultParams {
 		/**
 		 * The text document.
 		 */
-		textDocument: TextDocumentIdentifier;
+		ITextDocumentIdentifier extDocument { get; set; }
 	}
+
+#if false
 	interface ColorInformation {
 		/**
 		 * The range in the document where this color appears.
@@ -63,4 +62,11 @@ namespace LSP.Model
 		readonly alpha: decimal;
 	}
 #endif
+
+	class DocumentColorRegistrationOptions : IDocumentColorRegistrationOptions
+	{
+		public DocumentFilter[] documentSelector { get; set; }
+		public string id { get; set; }
+		public bool workDoneProgress { get; set; }
+	}
 }

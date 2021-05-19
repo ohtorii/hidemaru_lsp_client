@@ -26,4 +26,21 @@ namespace LSP.Model
 	interface IDeclarationParams : ITextDocumentPositionParams,IWorkDoneProgressParams, IPartialResultParams {
 	}
 
+	class DeclarationOptions : IDeclarationOptions
+	{
+		public bool workDoneProgress { get; set; }
+	}
+	class DeclarationRegistrationOptions : IDeclarationRegistrationOptions
+	{
+		public bool workDoneProgress { get; set; }
+		public DocumentFilter[] documentSelector { get; set; }
+		public string id { get; set; }
+	}
+	class DeclarationParams : IDeclarationParams
+	{
+		public ITextDocumentIdentifier textDocument { get; set; }
+		public IPosition position { get; set; }
+		public string workDoneToken { get; set; }
+		public string partialResultToken { get; set; }
+	}
 }

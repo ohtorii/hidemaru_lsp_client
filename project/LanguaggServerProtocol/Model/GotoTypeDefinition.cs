@@ -28,4 +28,11 @@ namespace LSP.Model
 	}
 	interface ITypeDefinitionParams : ITextDocumentPositionParams,IWorkDoneProgressParams, IPartialResultParams {
 	}
+
+	class TypeDefinitionRegistrationOptions : ITypeDefinitionRegistrationOptions
+	{
+		public DocumentFilter[] documentSelector { get; set; }
+		public bool workDoneProgress { get; set; }
+		public string id { get; set; }
+	}
 }

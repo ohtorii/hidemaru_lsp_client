@@ -72,7 +72,7 @@ namespace LSP.Client
 		{
             standardOutput = new AsyncStreamReader();
             standardError = new AsyncStreamReader();
-
+            var exeDir=System.IO.Path.GetDirectoryName(filename);
             processStartInfo = new ProcessStartInfo
             {
                 FileName = filename,
@@ -85,7 +85,8 @@ namespace LSP.Client
 
                 RedirectStandardError = true,
                 StandardErrorEncoding = Encoding.UTF8,
-
+                
+                WorkingDirectory= exeDir,
                 UseShellExecute = false,
             };
         }

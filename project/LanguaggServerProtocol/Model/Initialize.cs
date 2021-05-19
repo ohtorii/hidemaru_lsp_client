@@ -91,63 +91,63 @@ namespace LSP.Model
 		 * or for backwards compatibility, the TextDocumentSyncKind number.
 		 * If omitted, it defaults to `TextDocumentSyncKind.None`.
 		 */
-		public TextDocumentSyncOptions /*| number*/ textDocumentSync;
+		public TextDocumentSync /*TextDocumentSyncOptions | TextDocumentSyncKind*/ textDocumentSync = null;
 
 		/**
 		 * The server provides completion support.
 		 */
-		public CompletionOptions completionProvider;
+		public CompletionOptions completionProvider = null;
 
 		/**
 		 * The server provides hover support.
 		 */
-		public /*boolean | */HoverOptions hoverProvider;
+		public BooleanOr<HoverOptions> /*boolean | HoverOptions*/ hoverProvider = null;
 
 		/**
 		 * The server provides signature help support.
 		 */
-		public SignatureHelpOptions signatureHelpProvider;
+		public SignatureHelpOptions signatureHelpProvider = null;
 
 		/**
 		 * The server provides go to declaration support.
 		 *
 		 * @since 3.14.0
 		 */
-		//Todo: 今のところサーバから送信されていない、public boolean | DeclarationOptions| DeclarationRegistrationOptions declarationProvider;
+		public BooleanOr<DeclarationRegistrationOptions> /*boolean | DeclarationOptions| DeclarationRegistrationOptions*/ declarationProvider = null;
 
 		/**
 		 * The server provides goto definition support.
 		 */
-		public /*boolean | DefinitionOptions| */ DefinitionRegistrationOptions definitionProvider;
+		public BooleanOr<DefinitionRegistrationOptions> /*boolean | DefinitionOptions| */ definitionProvider = null;
 
 		/**
 		 * The server provides goto type definition support.
 		 *
 		 * @since 3.6.0
 		 */
-		//Todo: 今のところサーバから送信されていない、typeDefinitionProvider?: boolean | TypeDefinitionOptions | TypeDefinitionRegistrationOptions;
+		public BooleanOr<TypeDefinitionRegistrationOptions> /*boolean | TypeDefinitionOptions | TypeDefinitionRegistrationOptions*/ typeDefinitionProvider = null;
 
 		/**
 		 * The server provides goto implementation support.
 		 *
 		 * @since 3.6.0
 		 */
-		public /*boolean | ImplementationOptions| */ImplementationRegistrationOptions implementationProvider;
+		public BooleanOr<ImplementationRegistrationOptions> /*boolean | ImplementationOptions| */  implementationProvider = null;
 
 		/**
 		 * The server provides find references support.
 		 */
-		public ReferenceOptions referencesProvider;
+		public BooleanOr<ReferenceOptions> /*boolean | ReferenceOptions*/referencesProvider = null;
 
 		/**
 		 * The server provides document highlight support.
 		 */
-		//Todo:今のところサーバから返信されていない	documentHighlightProvider?: boolean | DocumentHighlightOptions;
+		public BooleanOr<DocumentHighlightOptions> /*boolean | DocumentHighlightOptions;*/ documentHighlightProvider = null; 
 
 		/**
 		 * The server provides document symbol support.
 		 */
-		public DocumentSymbolOptions documentSymbolProvider;
+		public BooleanOr<DocumentSymbolOptions> /*boolean | DocumentSymbolOptions*/documentSymbolProvider=null;
 
 		/**
 		 * The server provides code actions.
@@ -155,70 +155,101 @@ namespace LSP.Model
 		 * code action literal support via the property
 		 * `textDocument.codeAction.codeActionLiteralSupport`.
 		 */
-		public CodeActionOptions codeActionProvider;
+		public BooleanOr<CodeActionOptions> /* boolean | CodeActionOptions*/codeActionProvider = null;
 
 		/**
 		 * The server provides CodeLens.
 		 */
-		public CodeLensOptions codeLensProvider;
+		public CodeLensOptions codeLensProvider = null;
 
 		/**
 		 * The server provides document link support.
 		 */
-		//Todo: 今のところサーバから返信されていない　documentLinkProvider?: DocumentLinkOptions;
+		DocumentLinkOptions documentLinkProvider=null;
 
 		/**
 		 * The server provides color provider support.
 		 *
 		 * @since 3.6.0
 		 */
-		//Todo: 今のところサーバから返信されていない　colorProvider?: boolean | DocumentColorOptions| DocumentColorRegistrationOptions;
+		public BooleanOr<DocumentColorRegistrationOptions>/*boolean | DocumentColorOptions| DocumentColorRegistrationOptions;*/colorProvider=null;
 
 		/**
 		 * The server provides document formatting.
 		 */
-		public DocumentFormattingOptions documentFormattingProvider;
+		public BooleanOr<DocumentFormattingOptions> /*boolean | DocumentFormattingOptions;*/documentFormattingProvider = null;
 
 		/**
 		 * The server provides document range formatting.
 		 */
-		public DocumentRangeFormattingOptions documentRangeFormattingProvider;
+		public BooleanOr<DocumentRangeFormattingOptions> /*boolean | DocumentRangeFormattingOptions*/ documentRangeFormattingProvider = null;
 
 		/**
 		 * The server provides document formatting on typing.
 		 */
-		public DocumentOnTypeFormattingOptions documentOnTypeFormattingProvider;
+		public DocumentOnTypeFormattingOptions documentOnTypeFormattingProvider = null;
 
 		/**
 		 * The server provides rename support. RenameOptions may only be
 		 * specified if the client states that it supports
 		 * `prepareSupport` in its initial `initialize` request.
 		 */
-		public RenameOptions renameProvider;
+		public BooleanOr<RenameOptions> /*boolean | RenameOptions*/renameProvider = null;
 
 		/**
 		 * The server provides folding provider support.
 		 *
 		 * @since 3.10.0
 		 */
-		//Todo: 今のところサーバから送信されていない　foldingRangeProvider?: boolean | FoldingRangeOptions| FoldingRangeRegistrationOptions;
+		public BooleanOr<FoldingRangeRegistrationOptions>/*boolean | FoldingRangeOptions| FoldingRangeRegistrationOptions*/foldingRangeProvider=null;
 
 		/**
 		 * The server provides execute command support.
 		 */
-		public ExecuteCommandOptions executeCommandProvider;
+		public ExecuteCommandOptions executeCommandProvider = null;
 
 		/**
 		 * The server provides selection range support.
 		 *
 		 * @since 3.15.0
 		 */
-		//Todo: 今のところサーバから送信されていない　selectionRangeProvider?: boolean | SelectionRangeOptions| SelectionRangeRegistrationOptions;
+		public BooleanOr<SelectionRangeRegistrationOptions> /*boolean | SelectionRangeOptions| SelectionRangeRegistrationOptions;*/ selectionRangeProvider=null;
+
+		/**
+		 * The server provides linked editing range support.
+		 *
+		 * @since 3.16.0
+		 */
+		public BooleanOr<LinkedEditingRangeRegistrationOptions>/*boolean | LinkedEditingRangeOptions| LinkedEditingRangeRegistrationOptions;*/ linkedEditingRangeProvider=null;
+
+		/**
+		 * The server provides call hierarchy support.
+		 *
+		 * @since 3.16.0
+		 */
+		public BooleanOr<CallHierarchyRegistrationOptions>/*boolean | CallHierarchyOptions| CallHierarchyRegistrationOptions;*/ callHierarchyProvider=null;
+
+		//ToDo:後で実装
+#if false
+		/**
+		 * The server provides semantic tokens support.
+		 *
+		 * @since 3.16.0
+		 */
+		public BooleanOr<SemanticTokensRegistrationOptions> /*SemanticTokensOptions| SemanticTokensRegistrationOptions;*/ semanticTokensProvider=null;
+#endif
+		/**
+		 * Whether server provides moniker support.
+		 *
+		 * @since 3.16.0
+		 */
+		public BooleanOr<MonikerRegistrationOptions>/*boolean | MonikerOptions | MonikerRegistrationOptions;*/	monikerProvider=null; 
+
 
 		/**
 		 * The server provides workspace symbol support.
 		 */
-		public WorkspaceSymbolOptions workspaceSymbolProvider;
+		public BooleanOr< WorkspaceSymbolOptions> /*boolean | WorkspaceSymbolOptions*/ workspaceSymbolProvider = null;
 
 		/**
 		 * Workspace specific server capabilities
@@ -229,7 +260,7 @@ namespace LSP.Model
 			 *
 			 * @since 3.6.0
 			 */
-			public WorkspaceFoldersServerCapabilities workspaceFolders;
+			public WorkspaceFoldersServerCapabilities workspaceFolders = null;
 
 			/**
 			 * The server is interested in file notifications/requests.
@@ -241,35 +272,35 @@ namespace LSP.Model
 				 * The server is interested in receiving didCreateFiles
 				 * notifications.
 				 */
-				public FileOperationRegistrationOptions didCreate;
+				public FileOperationRegistrationOptions didCreate = null;
 
 				/**
 				 * The server is interested in receiving willCreateFiles requests.
 				 */
-				public FileOperationRegistrationOptions willCreate;
+				public FileOperationRegistrationOptions willCreate = null;
 
 				/**
 				 * The server is interested in receiving didRenameFiles
 				 * notifications.
 				 */
-				public FileOperationRegistrationOptions didRename;
+				public FileOperationRegistrationOptions didRename = null;
 
 				/**
 				 * The server is interested in receiving willRenameFiles requests.
 				 */
-				public FileOperationRegistrationOptions willRename;
+				public FileOperationRegistrationOptions willRename = null;
 
 				/**
 				 * The server is interested in receiving didDeleteFiles file
 				 * notifications.
 				 */
-				public FileOperationRegistrationOptions didDelete;
+				public FileOperationRegistrationOptions didDelete = null;
 
 				/**
 				 * The server is interested in receiving willDeleteFiles file
 				 * requests.
 				 */
-				public FileOperationRegistrationOptions willDelete;
+				public FileOperationRegistrationOptions willDelete = null;
 			}
 			public _fileOperations fileOperations { 
 				get {

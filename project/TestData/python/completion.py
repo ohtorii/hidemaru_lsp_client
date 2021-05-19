@@ -1,0 +1,2 @@
+﻿import sys
+sys.stdin.

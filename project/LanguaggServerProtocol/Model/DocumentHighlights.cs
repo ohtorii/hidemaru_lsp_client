@@ -56,5 +56,11 @@ namespace LSP.Model
 		 * Write-access of a symbol, like writing to a variable.
 		 */
 		Write = 3,
-	}	
+	}
+
+
+	class DocumentHighlightOptions : IDocumentHighlightOptions
+	{
+		public bool workDoneProgress { get; set; }
+	}
 }

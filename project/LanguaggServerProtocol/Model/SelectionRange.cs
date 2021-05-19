@@ -44,4 +44,12 @@ namespace LSP.Model
 		 */
 		ISelectionRange parent { get; set; }
 	}
+
+
+	class SelectionRangeRegistrationOptions : ISelectionRangeRegistrationOptions
+	{
+		public bool workDoneProgress { get; set; }
+		public DocumentFilter[] documentSelector { get; set; }
+		public string id { get; set; }
+	}
 }

@@ -19,26 +19,28 @@ namespace LSP.Model
 		public bool tooltipSupport;
 	}
 
-#if false
-	export interface DocumentLinkOptions extends WorkDoneProgressOptions
+
+	interface IDocumentLinkOptions :IWorkDoneProgressOptions
 	{
 		/**
 		 * Document links have a resolve provider as well.
 		 */
-		resolveProvider?: boolean;
+		bool resolveProvider { get; set; }
 	}
-	export interface DocumentLinkRegistrationOptions extends
-		TextDocumentRegistrationOptions, DocumentLinkOptions {
+	interface IDocumentLinkRegistrationOptions :ITextDocumentRegistrationOptions, IDocumentLinkOptions 
+	{
 	}
 
-	interface DocumentLinkParams extends WorkDoneProgressParams,
-		PartialResultParams {
+	interface IDocumentLinkParams : IWorkDoneProgressParams,IPartialResultParams {
 		/**
 		 * The document to provide document links for.
 		 */
-		textDocument: TextDocumentIdentifier;
+		ITextDocumentIdentifier textDocument { get; set; }
 	}
 
+
+
+#if false
 /**
  * A document link is a range in a text document that links to an internal or
  * external resource, like another text document or a web site.
@@ -74,4 +76,11 @@ interface DocumentLink
 	data?: any;
 }
 #endif
+
+
+	class DocumentLinkOptions : IDocumentLinkOptions
+	{
+		public bool resolveProvider { get; set; }
+		public bool workDoneProgress { get; set; }
+	}
 }

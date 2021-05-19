@@ -55,18 +55,18 @@ namespace LSP.Model
 	}
 
 	export type TokenFormat = 'relative';
-
+#endif
 
 	interface ISemanticTokensLegend
 	{
-		string[]  tokenTypes;
+		string[] tokenTypes { get; set; }
 
 		/**
 		 * The token modifiers a server uses.
 		 */
-		string[]  tokenModifiers;
+		string[]  tokenModifiers { get; set; }
 	}
-
+#if false
 	interface ISemanticTokensClientCapabilities
 	{		
 		bool dynamicRegistration;
@@ -112,19 +112,18 @@ namespace LSP.Model
 		multilineTokenSupport ?: boolean;
 	}
 
-	export interface SemanticTokensOptions extends WorkDoneProgressOptions
+	interface ISemanticTokensOptions :IWorkDoneProgressOptions
 	{
 		/**
 		 * The legend used by the server
 		 */
-		legend: SemanticTokensLegend;
+		ISemanticTokensLegend legend { get; set; }
 
 		/**
 		 * Server supports providing semantic tokens for a specific range
 		 * of a document.
 		 */
-		range?: boolean | {
-		};
+		range?: boolean | {};
 
 		/**
 		 * Server supports providing semantic tokens for a full document.
@@ -136,9 +135,8 @@ namespace LSP.Model
 			delta ?: boolean;
 	};
 
-	export interface SemanticTokensRegistrationOptions extends
-		TextDocumentRegistrationOptions, SemanticTokensOptions,
-		StaticRegistrationOptions {
+	interface ISemanticTokensRegistrationOptions :ITextDocumentRegistrationOptions, ISemanticTokensOptions,IStaticRegistrationOptions 
+	{
 	}
 
 
