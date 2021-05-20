@@ -32,7 +32,7 @@ namespace LSP.Client
 		{
 			Status = Mode.Init;
 		}
-		public void StartLspProcess(string exeFileName, string Arguments, string logFilename)
+		public void StartLspProcess(string exeFileName, string Arguments, string WorkingDirectory, string logFilename)
 		{
 			Debug.Assert(Status==Mode.Init);
 
@@ -45,7 +45,7 @@ namespace LSP.Client
 							},
 							source.Token);
 
-			server = new ServerProcess(exeFileName, Arguments);			
+			server = new ServerProcess(exeFileName, Arguments, WorkingDirectory);			
 			server.StartProcess();
 			server.standardErrorReceived += Client_standardErrorReceived;
 			server.standardOutputReceived += Client_standardOutputReceived;
@@ -56,7 +56,11 @@ namespace LSP.Client
 		
 		void OnResponseError(ResponseMessage response)
 		{
-			Console.WriteLine(string.Format("[OnResponseError] error={0}", response.error));
+			Console.WriteLine(string.Format("[OnResponseError] id={0}/error={1}", response.id, response.error));
+			const string indent = "  ";
+			Console.WriteLine(indent + string.Format("code={0}",response.error.code));
+			Console.WriteLine(indent + string.Format("data={0}", response.error.@data));
+			Console.WriteLine(indent + string.Format("message={0}", response.error.message));
 		}
 		void OnWindowLogMessage(LogMessageParams param)
 		{
@@ -77,6 +81,7 @@ namespace LSP.Client
 		}
 		private void Server_Exited(object sender, EventArgs e)
 		{
+			Console.WriteLine("[Server_Exited]");
 			source.Cancel();
 		}
 		

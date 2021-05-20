@@ -325,16 +325,15 @@ namespace LSP.Client
 
             if (receiver.ContainsKey("method"))
             {
-                var notification = receiver.ToObject<NotificationMessage>();
-                var param = (JObject)notification.@params;
-
+                var notification = receiver.ToObject<NotificationMessage>();                
                 switch (notification.method)
                 {
                     case "window/logMessage":
                         if (this.param.OnWindowLogMessage != null)
                         {
-                            var jVal = (JValue)param["type"];
-                            var jMes = (JValue)param["message"];
+                            var _param = (JObject)notification.@params;
+                            var jVal = (JValue)_param["type"];
+                            var jMes = (JValue)_param["message"];
                             var val = (MessageType)Enum.ToObject(typeof(MessageType), jVal.Value);
                             var mes = (string)jMes.Value;
                             this.param.OnWindowLogMessage(new LogMessageParams { type = val, message = mes });
@@ -344,6 +343,7 @@ namespace LSP.Client
                         var showMessage = (ShowMessageParams)notification.@params;
                         break;
                     default:
+                        Console.WriteLine(String.Format("[{0}]{1}", notification.method, notification.@params));
                         //pass
                         break;
                 }

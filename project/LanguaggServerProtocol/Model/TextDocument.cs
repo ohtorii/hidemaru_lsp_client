@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Lsp.Model.Serialization.Converters;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using DocumentUri = System.String;
@@ -42,6 +44,7 @@ namespace LSP.Model
 	 * Defines how the host (editor) should sync document changes
 	 * to the language server.
 	 */
+	[JsonConverter(typeof(NumberEnumConverter))]
 	enum TextDocumentSyncKind
 	{
 		/**
@@ -77,7 +80,7 @@ namespace LSP.Model
 		 * and TextDocumentSyncKind.Incremental.
 		 * If omitted, it defaults to TextDocumentSyncKind.None.
 		 */
-		public int change;
+		public TextDocumentSyncKind change;
 		/**
 		 * If present will save notifications are sent to the server.
 		 * If omitted, the notification should not be sent.
@@ -92,8 +95,7 @@ namespace LSP.Model
 		 * If present save notifications are sent to the server.
 		 * If omitted, the notification should not be sent.
 		 */
-		/*boolean |*/
-		public SaveOptions save;
+		public BooleanOr<SaveOptions> /*boolean |SaveOptions*/ save;
 	}
 
 	class SaveOptions

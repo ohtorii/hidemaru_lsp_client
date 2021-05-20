@@ -28,7 +28,6 @@ namespace ClientExample
 
             Console.WriteLine("==== InitializedClient ====");
             InitializedClient(client);
-            //Thread.Sleep(1000);
 #if false
             Console.WriteLine("==== didChangeConfiguration ====");
             DidChangeConfiguration(client);
@@ -36,7 +35,7 @@ namespace ClientExample
 #endif
             Console.WriteLine("==== OpenTextDocument ====");
             DigOpen(client);
-            //Thread.Sleep(1000);
+
 #if false
             Console.WriteLine("==== DidChangen ====");
             DidChange(client);
@@ -44,7 +43,6 @@ namespace ClientExample
 #endif
             Console.WriteLine("==== Completion ====");
             Completion(client);
-            //Thread.Sleep(1000);
 
             Console.WriteLine("続行するには何かキーを押してください．．．");
             Console.ReadKey();
@@ -55,6 +53,9 @@ namespace ClientExample
             //var FileName = @"d:\Temp\LSP-Server\omnisharp-win-x64-1.37.5\OmniSharp.exe";//OmniSharp.exeが例外はいて動かない
             var FileName = @"d:\Temp\LSP-Server\omnisharp-win-x64-1.37.8\OmniSharp.exe";
             //var FileName = @"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\omnisharp-lsp\OmniSharp.exe";
+
+            var WorkingDirectory = @"";
+
 #if false
             var Arguments = string.Format(@"-lsp -v --hostPID {0} --encoding utf-8", System.Diagnostics.Process.GetCurrentProcess().Id);
 #else
@@ -62,7 +63,7 @@ namespace ClientExample
             var Arguments = string.Format(@"-lsp -v --source ""{0}"" --hostPID {1} --encoding utf-8", solutionFileName, System.Diagnostics.Process.GetCurrentProcess().Id);
 #endif
             var client = new Client();
-            client.StartLspProcess(FileName, Arguments, logFilename);
+            client.StartLspProcess(FileName, Arguments, WorkingDirectory, logFilename);
             return client;
         }
 
@@ -91,19 +92,11 @@ namespace ClientExample
             var param = new DidOpenTextDocumentParams();
             param.textDocument.uri = sourceUri.AbsoluteUri;
             param.textDocument.version = sourceVersion;
-            param.textDocument.text = FileLoad(sourceUri.AbsolutePath);
-            param.textDocument.languageId = "cs";
+            param.textDocument.text = File.ReadAllText(sourceUri.AbsolutePath, System.Text.Encoding.UTF8);
+            param.textDocument.languageId = "csharp";
             client.SendTextDocumentDigOpen(param);
         }
-        static string FileLoad(string filename)
-        {
-            var text = File.ReadAllText(filename, System.Text.Encoding.UTF8);
-#if true
-            return text;
-#else
-            return text.Replace("\r\n", "\n");
-#endif
-        }
+        
         static void DidChangeConfiguration(Client client)
         {
             var param = new DidChangeConfigurationParams();
@@ -112,7 +105,7 @@ namespace ClientExample
         }
         static void DidChange(Client client)
         {
-            var text = FileLoad(sourceUri.AbsolutePath);
+            var text = File.ReadAllText(sourceUri.AbsolutePath, System.Text.Encoding.UTF8);
             ++sourceVersion;//ソースを更新したので+1する
 
             var param = new DidChangeTextDocumentParams();

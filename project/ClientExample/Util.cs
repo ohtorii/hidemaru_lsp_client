@@ -22,9 +22,9 @@ namespace ClientExample
             }
             param.trace = "verbose";//"off";
             {
-                var workspace = param.capabilities.workspace;
+                //var workspace = param.capabilities.workspace;
                 //workspace.configuration = true;
-                workspace.applyEdit = true;
+                //workspace.applyEdit = true;
                 //workspace.workspaceFolders = true;
             }
             {
