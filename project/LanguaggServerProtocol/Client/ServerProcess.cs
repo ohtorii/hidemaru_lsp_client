@@ -134,15 +134,12 @@ namespace LSP.Client
 		{
             return process.WaitForExit(milliseconds);
         }
-        public void WriteStandardInput(string s)
+        public void WriteStandardInput(byte[] b)
 		{
-            process.StandardInput.Write(s);
-            process.StandardInput.Flush();
-        }
-        public void WriteLineStandardInput(string s)
-        {
-            process.StandardInput.WriteLine(s);
-            process.StandardInput.Flush();
+            process.StandardInput.BaseStream.Write(b,0,b.Length);
+            process.StandardInput.BaseStream.Flush();
+            //process.StandardInput.Write(str);
+            //process.StandardInput.Flush();
         }
         public void Kill()
 		{

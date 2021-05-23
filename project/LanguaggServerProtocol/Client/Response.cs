@@ -44,7 +44,7 @@ namespace LSP.Client
         CancellationToken cancelToken_;
         
         int contentLength = -1;
-        const string HeaderContentLength_ = "Content-Length: ";
+        const string HeaderContentLength_ = "Content-Length:";
         static int HeaderContentLengthLength_ = HeaderContentLength_.Length;
 
         Logger debugLogger;
@@ -135,11 +135,16 @@ namespace LSP.Client
         }
         bool OnFindContextLength()
         {
+            /*Memo
+             * 以下2通りの記述方法あり。
+             * "Content-Length:123"
+             * "Content-Length: 123"
+             */
             lock (bufferStreamUTF8)
             {
-                /* "Content-Length: "を見付ける。
-                 * (Ex)
-                 * bufferStreamUTF8=Content-Length: 
+                //var jsonDataUnicode = Encoding.UTF8.GetString(bufferStreamUTF8.ToArray());
+
+                /* "Content-Length:"を見付ける。
                  */
                 if (bufferStreamUTF8.Count < HeaderContentLengthLength_)
                 {
@@ -149,6 +154,7 @@ namespace LSP.Client
                 {
                     return true;
                 }
+#if false
                 /*Content-Length:以外が渡されたため、Content-Length:まで読み飛ばす。
                 */
                 var headerIndex = ByteListUtil.StrStr(bufferStreamUTF8, HeaderContentLength_);
@@ -158,8 +164,9 @@ namespace LSP.Client
                 }
                 bufferStreamUTF8.RemoveRange(0, headerIndex);
                 var uni = Encoding.UTF8.GetString(bufferStreamUTF8.ToArray());
+#endif
             }
-            return true;
+            return false;
         }
         bool OnParseContextLength()
         {
@@ -259,7 +266,7 @@ namespace LSP.Client
                 System.Diagnostics.Debug.Assert(false);
             }
             contentLength = pairKakkoIndex + 1;
-#endif                
+#endif
                 var jsonDataUTF8 = bufferStreamUTF8.GetRange(0, contentLength);
                 var jsonDataUnicode = Encoding.UTF8.GetString(jsonDataUTF8.ToArray());
                 try

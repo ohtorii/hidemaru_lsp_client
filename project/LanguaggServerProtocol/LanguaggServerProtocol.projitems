@@ -9,6 +9,7 @@
     <Import_RootNamespace>LSP.Model</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Microsoft.Python.LanguageServer\Classes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Converter\BooleanOrConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Converter\StringOrMarkupContentConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Converter\TextDocumentSyncConverter.cs" />

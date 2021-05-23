@@ -31,7 +31,6 @@ namespace ClientExample
 #if false
             Console.WriteLine("==== didChangeConfiguration ====");
             DidChangeConfiguration(client);
-            Thread.Sleep(1000);
 #endif
             Console.WriteLine("==== OpenTextDocument ====");
             DigOpen(client);
@@ -39,7 +38,6 @@ namespace ClientExample
 #if false
             Console.WriteLine("==== DidChangen ====");
             DidChange(client);
-            Thread.Sleep(1000);
 #endif
             Console.WriteLine("==== Completion ====");
             Completion(client);
@@ -50,18 +48,18 @@ namespace ClientExample
 
         public static Client StartCSharpClient()
         {
-            //var FileName = @"d:\Temp\LSP-Server\omnisharp-win-x64-1.37.5\OmniSharp.exe";//OmniSharp.exeが例外はいて動かない
-            var FileName = @"d:\Temp\LSP-Server\omnisharp-win-x64-1.37.8\OmniSharp.exe";
-            //var FileName = @"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\omnisharp-lsp\OmniSharp.exe";
-
-            var WorkingDirectory = @"";
-
 #if false
-            var Arguments = string.Format(@"-lsp -v --hostPID {0} --encoding utf-8", System.Diagnostics.Process.GetCurrentProcess().Id);
-#else
-            // --zero-based-indices
+            //OK
+            var FileName = @"d:\Temp\LSP-Server\omnisharp-win-x64-1.37.8\OmniSharp.exe";
             var Arguments = string.Format(@"-lsp -v --source ""{0}"" --hostPID {1} --encoding utf-8", solutionFileName, System.Diagnostics.Process.GetCurrentProcess().Id);
+            var WorkingDirectory = @"";
+#elif true
+            //OK
+            var FileName = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\omnisharp-lsp\OmniSharp.exe");
+            var Arguments = string.Format(@"-lsp -v --source ""{0}"" --hostPID {1} --encoding utf-8", solutionFileName, System.Diagnostics.Process.GetCurrentProcess().Id);
+            var WorkingDirectory = @"";
 #endif
+
             var client = new Client();
             client.StartLspProcess(FileName, Arguments, WorkingDirectory, logFilename);
             return client;

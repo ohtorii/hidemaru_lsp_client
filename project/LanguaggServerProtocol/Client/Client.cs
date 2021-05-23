@@ -77,7 +77,7 @@ namespace LSP.Client
 		private void Client_standardErrorReceived(object sender, byte[] e)
 		{
 			var unicodeString = Encoding.UTF8.GetString(e.ToArray());
-			Console.WriteLine(string.Format("[StandardError]", unicodeString));
+			Console.WriteLine(string.Format("[StandardError]{0}", unicodeString));
 		}
 		private void Server_Exited(object sender, EventArgs e)
 		{
@@ -157,6 +157,12 @@ namespace LSP.Client
 			handler.StoreCallback(id, callback);
 			SendRequest(param,method,id);
 		}
+		/// <summary>
+		/// リクエスト送信
+		/// </summary>
+		/// <param name="param"></param>
+		/// <param name="method"></param>
+		/// <param name="id"></param>
 		public void SendRequest(object param, string method, int id)
 		{
 			var request = new RequestMessage { id = id, method = method, @params = param };
@@ -165,11 +171,11 @@ namespace LSP.Client
 			server.WriteStandardInput(payload);
 		}
 		/// <summary>
-		/// 投げっぱなしのリクエスト
+		/// 通知の送信
 		/// </summary>
 		/// <param name="jsonRpc"></param>
 		public void SendNotification(object param, string method)
-		{			
+		{//memo: 通知なので返信は無い。
 			var notification = new NotificationMessage {method = method, @params = param };
 			var jsonRpc = JsonConvert.SerializeObject(notification, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = NullValueHandling.Ignore });
 			var payload = CreatePayLoad(jsonRpc);
@@ -188,9 +194,24 @@ namespace LSP.Client
 			var payload = CreatePayLoad(jsonRpc);
 			server.WriteStandardInput(payload);
 		}
-		static string CreatePayLoad(string jsonRpc)
+		static byte[] CreatePayLoad(string unicodeJson)
 		{
-			return string.Format("Content-Length: {0}\r\n\r\n{1}", jsonRpc.Length, jsonRpc);
+			byte[] utf8Header;
+			var utf8Json = Encoding.UTF8.GetBytes(unicodeJson);
+			{
+				var unicodeHeader = string.Format("Content-Length: {0}\r\n\r\n", utf8Json.Length);
+				utf8Header = Encoding.UTF8.GetBytes(unicodeHeader);
+			}
+			var payload = new byte[utf8Header.Length + utf8Json.Length];
+
+			/*(Memo) payload=Content-Length: 1234\r\n\r\n
+			 */
+			Array.Copy(utf8Header, 0, payload, 0,                 utf8Header.Length);
+
+			/*(Memo) payload=Content-Length: 1234\r\n\r\n{"id":1,"jsonrpc":"2.0" ...
+			 */
+			Array.Copy(utf8Json,   0, payload, utf8Header.Length, utf8Json.Length);
+			return payload;
 		}
 	}
 
