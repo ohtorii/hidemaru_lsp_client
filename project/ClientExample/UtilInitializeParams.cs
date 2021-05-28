@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ClientExample
 {
-	class Util
+	class UtilInitializeParams
 	{
         static public InitializeParams Initialzie()
 		{

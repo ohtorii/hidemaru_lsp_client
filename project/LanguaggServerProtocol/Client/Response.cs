@@ -302,8 +302,9 @@ namespace LSP.Client
                     catch (Exception)
                     {
                         //対応するid無し。無視する。
-                        //return true;
-                        throw;
+                        Console.WriteLine(string.Format("[対応するid無し]{0}", receiver));
+                        return true;
+                        //throw;
                     }
                 }
                 

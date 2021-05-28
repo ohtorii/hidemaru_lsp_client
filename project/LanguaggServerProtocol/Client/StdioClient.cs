@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace LSP.Client
 {
-	class Client
+	class StdioClient
 	{
 		ServerProcess server;
 		Handler handler;
@@ -28,7 +28,7 @@ namespace LSP.Client
 
 		public Mode Status {  get; private set; }
 
-		public Client()
+		public StdioClient()
 		{
 			Status = Mode.Init;
 		}

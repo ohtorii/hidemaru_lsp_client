@@ -1,5 +1,4 @@
 ﻿using LSP.Model;
-using LSP.Client;
 using System;
 using System.Threading;
 using System.IO;
@@ -53,12 +52,12 @@ namespace ClientExample
 			var WorkingDirectory = Path.GetDirectoryName(sourceUri.AbsolutePath);
 #endif
 
-			var client = new Client();
+			var client = new LSP.Client.StdioClient();
 			client.StartLspProcess(FileName, Arguments, WorkingDirectory, logFilename);
 
 			Console.WriteLine("==== InitializeServer ====");
 			InitializeServer(client);
-			while (client.Status != Client.Mode.ServerInitializeFinish)
+			while (client.Status != LSP.Client.StdioClient.Mode.ServerInitializeFinish)
 			{
 				Thread.Sleep(100);
 			}			
@@ -76,9 +75,9 @@ namespace ClientExample
 			Console.WriteLine("続行するには何かキーを押してください．．．");
 			Console.ReadKey();
 		}
-		static void InitializeServer(Client client)
+		static void InitializeServer(LSP.Client.StdioClient client)
 		{
-			var param = Util.Initialzie();
+			var param = UtilInitializeParams.Initialzie();
 			param.rootUri = rootUri.AbsoluteUri;
 			param.rootPath = rootUri.AbsolutePath;
 			param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "Test-Root" } };
@@ -104,12 +103,12 @@ namespace ClientExample
 			}
 			client.SendInitialize(param);
 		}
-		static void InitializedClient(Client client)
+		static void InitializedClient(LSP.Client.StdioClient client)
 		{
 			var param = new InitializedParams();
 			client.SendInitialized(param);
 		}
-		static void DigOpen(Client client)
+		static void DigOpen(LSP.Client.StdioClient client)
 		{
 			sourceVersion = 1;//Openしたのでとりあえず1にする。
 
@@ -120,7 +119,7 @@ namespace ClientExample
 			param.textDocument.languageId = "python";
 			client.SendTextDocumentDigOpen(param);
 		}
-		static void Completion(Client client)
+		static void Completion(LSP.Client.StdioClient client)
 		{
 			var param = new CompletionParams();
 #if false

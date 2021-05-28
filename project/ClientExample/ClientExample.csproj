@@ -47,13 +47,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CppClient.cs" />
-    <Compile Include="CSharpClient.cs" />
+    <Compile Include="Client\CppClient.cs" />
+    <Compile Include="Client\CSharpClient.cs" />
+    <Compile Include="Client\LuaClient.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PythonClient.cs" />
-    <Compile Include="Util.cs" />
-    <Compile Include="VimScriptClient.cs" />
+    <Compile Include="Client\PythonClient.cs" />
+    <Compile Include="UtilInitializeParams.cs" />
+    <Compile Include="Client\VimScriptClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -1,5 +1,4 @@
 ﻿using LSP.Model;
-using LSP.Client;
 using System;
 using System.Threading;
 using System.IO;
@@ -21,7 +20,7 @@ namespace ClientExample
 
             Console.WriteLine("==== InitializeServer ====");
             InitializeServer(client);
-            while (client.Status != Client.Mode.ServerInitializeFinish)
+            while (client.Status != LSP.Client.StdioClient.Mode.ServerInitializeFinish)
             {
                 Thread.Sleep(100);
             }
@@ -46,7 +45,7 @@ namespace ClientExample
             Console.ReadKey();
         }
 
-        public static Client StartCSharpClient()
+        static LSP.Client.StdioClient StartCSharpClient()
         {
 #if false
             //OK
@@ -60,15 +59,15 @@ namespace ClientExample
             var WorkingDirectory = @"";
 #endif
 
-            var client = new Client();
+            var client = new LSP.Client.StdioClient();
             client.StartLspProcess(FileName, Arguments, WorkingDirectory, logFilename);
             return client;
         }
 
-        static void InitializeServer(Client client)
+        static void InitializeServer(LSP.Client.StdioClient client)
         {
 #if true
-            var param = Util.Initialzie();
+            var param = UtilInitializeParams.Initialzie();
             param.rootUri = rootUri.AbsoluteUri;
             param.rootPath = rootUri.AbsolutePath;
             param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "VisualStudio-Solution" } };
@@ -78,12 +77,12 @@ namespace ClientExample
 			client.Send(json_string,1,client.ResponseInitialize);
 #endif
         }
-        static void InitializedClient(Client client)
+        static void InitializedClient(LSP.Client.StdioClient client)
         {
             var param = new InitializedParams();
             client.SendInitialized(param);
         }
-        static void DigOpen(Client client)
+        static void DigOpen(LSP.Client.StdioClient client)
         {
             sourceVersion = 1;//Openしたのでとりあえず1にする。
 
@@ -95,13 +94,13 @@ namespace ClientExample
             client.SendTextDocumentDigOpen(param);
         }
         
-        static void DidChangeConfiguration(Client client)
+        static void DidChangeConfiguration(LSP.Client.StdioClient client)
         {
             var param = new DidChangeConfigurationParams();
             param.settings = new object();
             client.SendWorkspaceDidChangeConfiguration(param);
         }
-        static void DidChange(Client client)
+        static void DidChange(LSP.Client.StdioClient client)
         {
             var text = File.ReadAllText(sourceUri.AbsolutePath, System.Text.Encoding.UTF8);
             ++sourceVersion;//ソースを更新したので+1する
@@ -112,7 +111,7 @@ namespace ClientExample
             param.textDocument.version = sourceVersion;
 
         }
-        static void Completion(Client client)
+        static void Completion(LSP.Client.StdioClient client)
         {
             var param = new CompletionParams();
 #if false

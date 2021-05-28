@@ -1,20 +1,15 @@
-﻿using LSP.Client;
-using LSP.Model;
+﻿using LSP.Model;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ClientExample
 {
 	class CppClient
 	{
-		static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\");
+		static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\cpp\");
 		static Uri rootUri = new Uri(rootPath);
-		static Uri sourceUri = new Uri(rootUri, @"project\TestData\cpp\ConsoleApplication\ConsoleApplication.cpp");
+		static Uri sourceUri = new Uri(rootUri, @"ConsoleApplication\ConsoleApplication.cpp");
 		static int sourceVersion = 0;
 		public static void Start()
 		{
@@ -24,13 +19,13 @@ namespace ClientExample
 			var FileName = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\clangd\clangd.exe");
 			var Arguments = @"";
 			var WorkingDirectory = @"";
-#elif false
+#elif true
 			//OK
 			string logFilename = @"D:\temp\LSP-Server\lsp_server_response_clangd.txt";
 			var FileName = @"C:\Program Files\LLVM\bin\clangd.exe";
 			var Arguments = @"";//@"--log=verbose";
 			var WorkingDirectory = System.IO.Path.GetDirectoryName(sourceUri.AbsolutePath);
-#elif true
+#elif false
 			//NG
 			/*
 			 * cpptools.exeの子プロセスとしてcpptools-srv.exe が起動していないためLSPとして動作しないようだ。
@@ -40,12 +35,12 @@ namespace ClientExample
 			var Arguments = @"";
 			var WorkingDirectory = rootPath;
 #endif
-			var client = new Client();
+			var client = new LSP.Client.StdioClient();
 			client.StartLspProcess(FileName, Arguments, WorkingDirectory, logFilename);
 
 			Console.WriteLine("==== InitializeServer ====");
 			InitializeServer(client);
-			while (client.Status != Client.Mode.ServerInitializeFinish)
+			while (client.Status != LSP.Client.StdioClient.Mode.ServerInitializeFinish)
 			{
 				Thread.Sleep(100);
 			}
@@ -63,20 +58,20 @@ namespace ClientExample
 			Console.WriteLine("続行するには何かキーを押してください．．．");
 			Console.ReadKey();
 		}
-		static void InitializeServer(Client client)
+		static void InitializeServer(LSP.Client.StdioClient client)
 		{
-			var param = Util.Initialzie();
+			var param = UtilInitializeParams.Initialzie();
 			param.rootUri = rootUri.AbsoluteUri;
 			param.rootPath = rootUri.AbsolutePath;
 			//param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "Test-Root" } };		
 			client.SendInitialize(param);
 		}
-		static void InitializedClient(Client client)
+		static void InitializedClient(LSP.Client.StdioClient client)
 		{
 			var param = new InitializedParams();
 			client.SendInitialized(param);
 		}
-		static void DigOpen(Client client)
+		static void DigOpen(LSP.Client.StdioClient client)
 		{
 			sourceVersion = 1;//Openしたのでとりあえず1にする。
 
@@ -87,7 +82,7 @@ namespace ClientExample
 			param.textDocument.languageId = "cpp";
 			client.SendTextDocumentDigOpen(param);
 		}
-		static void Completion(Client client)
+		static void Completion(LSP.Client.StdioClient client)
 		{
 			var param = new CompletionParams();
 #if false
