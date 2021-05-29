@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace LSP.Client
 {
-	class Handler
+	class Mediator
 	{
         Protocol protocol_;
         Task runner_;
 
-		public Handler(Protocol.InitializeParameter param, CancellationToken token)
+		public Mediator(Protocol.InitializeParameter param, CancellationToken token)
         {
             protocol_ = new Protocol(param,token);
         }               

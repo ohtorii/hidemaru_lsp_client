@@ -14,7 +14,7 @@ namespace LSP.Client
 	class StdioClient
 	{
 		ServerProcess server;
-		Handler handler;
+		Mediator handler;
 		CancellationTokenSource source=new CancellationTokenSource();
 		RequestIdGenerator requestIdGenerator=new RequestIdGenerator();
 
@@ -27,26 +27,51 @@ namespace LSP.Client
 		}
 
 		public Mode Status {  get; private set; }
-
+		public class LspParameter
+		{
+			/// <summary>
+			/// 実行ファイル名
+			/// </summary>
+			public string exeFileName;
+			/// <summary>
+			/// 実行ファイルの引数
+			/// </summary>
+			public string exeArguments;
+			/// <summary>
+			/// 実行ファイルのワーキングディレクトリ
+			/// </summary>
+			public string exeWorkingDirectory;
+			/// <summary>
+			/// ログのファイル名（絶対パス）
+			/// </summary>
+			/// Todo:専用のログクラスへ移行する（このメンバは削除予定です）
+			public string logFilename;
+			/// <summary>
+			/// サーバからの問い合わせ（method: ‘workspace/configuration’）に対する応答。
+			/// (memo)vim-lsp-settingのLspRegisterServer.workspace_configに対応する。
+			/// (See)https://github.com/mattn/vim-lsp-settings/blob/master/settings/sumneko-lua-language-server.vim
+			/// </summary>
+			public dynamic jsonWorkspaceConfiguration;
+		}
 		public StdioClient()
 		{
 			Status = Mode.Init;
 		}
-		public void StartLspProcess(string exeFileName, string Arguments, string WorkingDirectory, string logFilename)
+		public void StartLspProcess(LspParameter param)
 		{
 			Debug.Assert(Status==Mode.Init);
 
-			handler = new Handler(
-							new Protocol.InitializeParameter {
-									OnWindowLogMessage= this.OnWindowLogMessage, 
-									OnWindowShowMessage=this.OnWindowShowMessage,
-									OnResponseError=this.OnResponseError,
-									OnWorkspaceConfiguration=this.OnWorkspaceConfiguration,
-									logFileName = logFilename
-							},
-							source.Token);
+			handler = new Mediator(
+						new Protocol.InitializeParameter {
+							OnWindowLogMessage= this.OnWindowLogMessage, 
+							OnWindowShowMessage=this.OnWindowShowMessage,
+							OnResponseError=this.OnResponseError,
+							OnWorkspaceConfiguration=this.OnWorkspaceConfiguration,
+							logFileName = param.logFilename
+						},
+						source.Token);
 
-			server = new ServerProcess(exeFileName, Arguments, WorkingDirectory);			
+			server = new ServerProcess(param.exeFileName, param.exeArguments, param.exeWorkingDirectory);			
 			server.StartProcess();
 			server.standardErrorReceived += Client_standardErrorReceived;
 			server.standardOutputReceived += Client_standardOutputReceived;
@@ -94,6 +119,7 @@ namespace LSP.Client
 		}
 		#endregion
 
+		#region Send-Rpc
 		public void SendInitialize(IInitializeParams param)
 		{
 			Debug.Assert(Status == Mode.Init);
@@ -157,7 +183,7 @@ namespace LSP.Client
 			}
 			Console.WriteLine("Completion. Not found.");
 		}
-
+		#endregion
 
 		#region 低レイヤー
 		//
@@ -226,16 +252,5 @@ namespace LSP.Client
 			return payload;
 		}
 		#endregion
-	}
-
-	class RequestIdGenerator
-	{
-		int id = 1;
-		public int NextId()
-		{
-			var ret = id;
-			id++;
-			return ret;
-		}
-	}
+	}	
 }
