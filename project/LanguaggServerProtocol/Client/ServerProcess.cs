@@ -14,16 +14,16 @@ namespace LSP.Client
         public event EventHandler<byte[]> standardOutputReceived {
 			add
 			{
-                lock (this.standardOutput)
+                lock (this.standardOutput_)
                 {
-                    this.standardOutput.DataReceived += value;
+                    this.standardOutput_.DataReceived += value;
                 }
 			}
 			remove
 			{
-                lock (this.standardOutput)
+                lock (this.standardOutput_)
                 {
-                    this.standardOutput.DataReceived -= value;
+                    this.standardOutput_.DataReceived -= value;
                 }
             }
         }
@@ -31,16 +31,16 @@ namespace LSP.Client
         {
             add
             {
-                lock (this.standardError)
+                lock (this.standardError_)
                 {
-                    this.standardError.DataReceived += value;
+                    this.standardError_.DataReceived += value;
                 }
             }
             remove
             {
-                lock (this.standardError)
+                lock (this.standardError_)
                 {
-                    this.standardError.DataReceived -= value;
+                    this.standardError_.DataReceived -= value;
                 }
             }
         }
@@ -48,35 +48,35 @@ namespace LSP.Client
 		{
             add 
             {
-                lock (process)
+                lock (process_)
                 {
-                    process.Exited += value;
+                    process_.Exited += value;
                 }
             }
 			remove
 			{
-                lock (process)
+                lock (process_)
                 {
-                    process.Exited -= value;
+                    process_.Exited -= value;
                 }
             }
 		}
-        public bool HasExited { get { return process.HasExited; } }
+        public bool HasExited { get { return process_.HasExited; } }
         
-        private ProcessStartInfo processStartInfo = null;
-        private Process process = null;
-        private AsyncStreamReader standardOutput =null;
-        private AsyncStreamReader standardError = null;
+        private ProcessStartInfo processStartInfo_ = null;
+        private Process process_ = null;
+        private AsyncStreamReader standardOutput_ =null;
+        private AsyncStreamReader standardError_ = null;
 
         public ServerProcess(string filename, string arguments, string WorkingDirectory)
 		{
-            standardOutput = new AsyncStreamReader();
-            standardError = new AsyncStreamReader();
+            standardOutput_ = new AsyncStreamReader();
+            standardError_ = new AsyncStreamReader();
             if ((WorkingDirectory == null)||(WorkingDirectory.Length==0))
             {
                 WorkingDirectory = System.IO.Path.GetDirectoryName(filename);
             }
-            processStartInfo = new ProcessStartInfo
+            processStartInfo_ = new ProcessStartInfo
             {
                 FileName = filename,
                 Arguments = arguments,
@@ -95,55 +95,55 @@ namespace LSP.Client
         }
 		public void StartProcess()
 		{
-			if (process != null)
+			if (process_ != null)
 			{
                 return;
 			}
-            process = Process.Start(processStartInfo);
-            standardOutput.SetStreamReader(process.StandardOutput);
-            standardError.SetStreamReader(process.StandardError);            
+            process_ = Process.Start(processStartInfo_);
+            standardOutput_.SetStreamReader(process_.StandardOutput);
+            standardError_.SetStreamReader(process_.StandardError);            
         }
         public void StartRedirect()
         {
-            standardOutput.Start();
-            standardError.Start();
+            standardOutput_.Start();
+            standardError_.Start();
         }
         public void StartThreadLoop() 
         {
             Task.Run(() =>
             {
-                while (process.HasExited == false)
+                while (process_.HasExited == false)
                 {
                     Thread.Sleep(10);
-                    if (standardOutput.Active == false)
+                    if (standardOutput_.Active == false)
                     {
-                        standardOutput.Start();
+                        standardOutput_.Start();
                     }
-                    if (standardError.Active == false)
+                    if (standardError_.Active == false)
                     {
-                        standardError.Start();
+                        standardError_.Start();
                     }
                 }
             });
         }
         public void WaitForExit()
 		{
-            process.WaitForExit();
+            process_.WaitForExit();
 		}
         public bool WaitForExit(int milliseconds)
 		{
-            return process.WaitForExit(milliseconds);
+            return process_.WaitForExit(milliseconds);
         }
         public void WriteStandardInput(byte[] b)
 		{
-            process.StandardInput.BaseStream.Write(b,0,b.Length);
-            process.StandardInput.BaseStream.Flush();
+            process_.StandardInput.BaseStream.Write(b,0,b.Length);
+            process_.StandardInput.BaseStream.Flush();
             //process.StandardInput.Write(str);
             //process.StandardInput.Flush();
         }
         public void Kill()
 		{
-            process.Kill();
+            process_.Kill();
 		}
     }
 }

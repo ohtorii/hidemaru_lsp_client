@@ -19,19 +19,19 @@ namespace LSP.Client
             /// <summary>
             /// method: ‘window/logMessage’
             /// </summary>
-            public Action<LogMessageParams> OnWindowLogMessage = null;
+            public Action<LogMessageParams> OnWindowLogMessage { get; set; }
             /// <summary>
             /// method: ‘window/showMessage’
             /// </summary>
-            public Action<ShowMessageParams> OnWindowShowMessage = null;
-            public Action<ResponseMessage> OnResponseError = null;
+            public Action<ShowMessageParams> OnWindowShowMessage { get; set; }
+            public Action<ResponseMessage> OnResponseError { get; set; }
             /// <summary>
             /// method: 'workspace/configuration'
             /// </summary>
-            public Action<JObject> OnWorkspaceConfiguration = null;
-            public string logFileName;
+            public Action<JObject> OnWorkspaceConfiguration { get; set; }
+            public string logFileName { get; set; }
         }
-        InitializeParameter param = null;
+        InitializeParameter param_ = null;
 
 
         enum Mode
@@ -41,8 +41,8 @@ namespace LSP.Client
             SkipSeparator,
             ParseContext,
         }
-        Mode mode = Mode.FindContextLength;
-        Dictionary<int, Action<JToken>> responseCallback =new Dictionary<int, Action<JToken>>();
+        Mode mode_ = Mode.FindContextLength;
+        Dictionary<int, Action<JToken>> responseCallback_ =new Dictionary<int, Action<JToken>>();
 
         CancellationToken cancelToken_;
         
@@ -50,15 +50,15 @@ namespace LSP.Client
         const string HeaderContentLength_ = "Content-Length:";
         static int HeaderContentLengthLength_ = HeaderContentLength_.Length;
 
-        Logger debugLogger;
-        List<byte> bufferStreamUTF8 = new List<byte>();
+        Logger debugLogger_;
+        List<byte> bufferStreamUTF8_ = new List<byte>();
         
 
         public Protocol(InitializeParameter param, CancellationToken token)
 		{
-            this.param = param;
+            this.param_ = param;
             this.cancelToken_ = token;
-            this.debugLogger = new Logger(param.logFileName);
+            this.debugLogger_ = new Logger(param.logFileName);
         }
         public bool StoreBuffer(byte[] streamString)
 		{
@@ -66,24 +66,24 @@ namespace LSP.Client
             {
                 return false;
             }
-            if (debugLogger != null)
+            if (debugLogger_ != null)
             {
                 var jsonDataUnicode = Encoding.UTF8.GetString(streamString);
-                debugLogger.Log(jsonDataUnicode);
+                debugLogger_.Log(jsonDataUnicode);
             }
 
-            lock (bufferStreamUTF8)
+            lock (bufferStreamUTF8_)
             {
-                bufferStreamUTF8.AddRange(streamString);
+                bufferStreamUTF8_.AddRange(streamString);
                 return true;
             }
         }        
         public void StoreJob(int id, Action<JToken> callback)
 		{
-            lock (responseCallback)
+            lock (responseCallback_)
             {
-                Debug.Assert(responseCallback.ContainsKey(id) == false);
-                responseCallback.Add(id, callback);
+                Debug.Assert(responseCallback_.ContainsKey(id) == false);
+                responseCallback_.Add(id, callback);
             }
         }
         public void Parse()
@@ -93,7 +93,7 @@ namespace LSP.Client
             int sleepTime = 10;
             while (cancelToken_.IsCancellationRequested == false)
             {
-                switch (mode)
+                switch (mode_)
                 {
                     case Mode.FindContextLength:
                         if (OnFindContextLength() == false)
@@ -101,7 +101,7 @@ namespace LSP.Client
                             Thread.Sleep(sleepTime);
                             break;
                         }
-                        mode = Mode.ParseContextLength;
+                        mode_ = Mode.ParseContextLength;
                         break;
                     case Mode.ParseContextLength:
                         if (OnParseContextLength() == false)
@@ -109,7 +109,7 @@ namespace LSP.Client
                             Thread.Sleep(sleepTime);
                             break;
                         }
-                        mode = Mode.SkipSeparator;
+                        mode_ = Mode.SkipSeparator;
                         break;
                     case Mode.SkipSeparator:
                         if (OnSkipContextHeader() == false)
@@ -117,7 +117,7 @@ namespace LSP.Client
                             Thread.Sleep(sleepTime);
                             break;
                         }
-                        mode = Mode.ParseContext;
+                        mode_ = Mode.ParseContext;
                         break;
                     case Mode.ParseContext:
                         if (OnParseContext() == false)
@@ -125,7 +125,7 @@ namespace LSP.Client
                             Thread.Sleep(sleepTime);
                             break;
                         }
-                        mode = Mode.FindContextLength;
+                        mode_ = Mode.FindContextLength;
                         Restart();
                         break;
                 }
@@ -143,17 +143,17 @@ namespace LSP.Client
              * "Content-Length:123"
              * "Content-Length: 123"
              */
-            lock (bufferStreamUTF8)
+            lock (bufferStreamUTF8_)
             {
                 //var jsonDataUnicode = Encoding.UTF8.GetString(bufferStreamUTF8.ToArray());
 
                 /* "Content-Length:"を見付ける。
                  */
-                if (bufferStreamUTF8.Count < HeaderContentLengthLength_)
+                if (bufferStreamUTF8_.Count < HeaderContentLengthLength_)
                 {
                     return false;
                 }
-                if (ByteListUtil.StartsWith(bufferStreamUTF8, HeaderContentLength_))
+                if (ByteListUtil.StartsWith(bufferStreamUTF8_, HeaderContentLength_))
                 {
                     return true;
                 }
@@ -173,14 +173,14 @@ namespace LSP.Client
         }
         bool OnParseContextLength()
         {
-            lock (bufferStreamUTF8)
+            lock (bufferStreamUTF8_)
             {
                 /*bufferStreamUTF8=Content-Length: 52\r\nContent-Type: application/vscode-jsonrpc; charset=utf8\r\n\r\n{"method":"initialized",...
                  *                                   ^
                  *                                   |
                  *                                   tail
                 */
-                var tail = ByteListUtil.StrStr(bufferStreamUTF8, "\r\n");
+                var tail = ByteListUtil.StrStr(bufferStreamUTF8_, "\r\n");
                 if (tail == -1)
                 {
                     return false;
@@ -189,7 +189,7 @@ namespace LSP.Client
                 {
                     
                     int numericalLen = tail - HeaderContentLengthLength_;
-                    var byteArray = bufferStreamUTF8.GetRange(HeaderContentLengthLength_, numericalLen);
+                    var byteArray = bufferStreamUTF8_.GetRange(HeaderContentLengthLength_, numericalLen);
                     var unicodeLen = Encoding.UTF8.GetString(byteArray.ToArray());
                     var value = string.Join("", unicodeLen);
                     contentLength = int.Parse(value);
@@ -199,14 +199,14 @@ namespace LSP.Client
                 (Before) bufferStreamUTF8=Content-Length: 52\nContent-Type: application/vscode-jsonrpc; charset=utf8\r\n\r\n{"method":"initialized",...
                 (After)  bufferStreamUTF8=Content-Type: application/vscode-jsonrpc; charset=utf8\r\n\r\n{"method":"initialized",...
                 */
-                bufferStreamUTF8.RemoveRange(0, tail + 2);//2="\r\n"
+                bufferStreamUTF8_.RemoveRange(0, tail + 2);//2="\r\n"
             }
             return true;
         }
 
         bool OnSkipContextHeader()
         {
-            lock (bufferStreamUTF8)
+            lock (bufferStreamUTF8_)
             {
                 /*
                  * (Before) bufferStreamUTF8=Content-Type: application/vscode-jsonrpc; charset=utf8\r\n\r\n{"method":"initialized",...
@@ -228,18 +228,18 @@ namespace LSP.Client
                  *                 |       separatorEndIndex;
                  *                 separatorFirstIndex;
                  */
-                var separatorFirstIndex = ByteListUtil.StrStr(bufferStreamUTF8, "\r\n");
+                var separatorFirstIndex = ByteListUtil.StrStr(bufferStreamUTF8_, "\r\n");
 				if (separatorFirstIndex == -1)
 				{
                     return false;
 				}
-                var separatorEndIndex =ByteListUtil.StrSpn(bufferStreamUTF8, separatorFirstIndex, "\r\n");
+                var separatorEndIndex =ByteListUtil.StrSpn(bufferStreamUTF8_, separatorFirstIndex, "\r\n");
 				if (separatorEndIndex == -1)
 				{
                     return false;
 				}                
-                bufferStreamUTF8.RemoveRange(0, separatorEndIndex);                
-                Debug.Assert(bufferStreamUTF8[0]== Convert.ToByte('{'));
+                bufferStreamUTF8_.RemoveRange(0, separatorEndIndex);                
+                Debug.Assert(bufferStreamUTF8_[0]== Convert.ToByte('{'));
                 /*(After) bufferStreamUTF8={"method":"initialized",...
                  */
             }
@@ -249,10 +249,10 @@ namespace LSP.Client
         {
             JObject receiver = null;
 
-            lock (bufferStreamUTF8)
+            lock (bufferStreamUTF8_)
             {
                 System.Diagnostics.Debug.Assert(0 < contentLength);
-                if (bufferStreamUTF8.Count < contentLength)
+                if (bufferStreamUTF8_.Count < contentLength)
                 {
                     return false;
                 }
@@ -270,7 +270,7 @@ namespace LSP.Client
             }
             contentLength = pairKakkoIndex + 1;
 #endif
-                var jsonDataUTF8 = bufferStreamUTF8.GetRange(0, contentLength);
+                var jsonDataUTF8 = bufferStreamUTF8_.GetRange(0, contentLength);
                 var jsonDataUnicode = Encoding.UTF8.GetString(jsonDataUTF8.ToArray());
                 try
                 {
@@ -286,7 +286,7 @@ namespace LSP.Client
                  * (Before) bufferStreamUTF8={"method":"initialized",...}Content-Length: 128\n\n{
                  * (After)  bufferStreamUTF8=Content-Length: 128\n\n{
                  */
-                bufferStreamUTF8.RemoveRange(0, contentLength);
+                bufferStreamUTF8_.RemoveRange(0, contentLength);
             }
 
             var containMethod=receiver.ContainsKey("method");
@@ -332,7 +332,7 @@ namespace LSP.Client
             switch (request.method)
 			{
                 case "workspace/configuration":
-                    param.OnWorkspaceConfiguration(requestParams);
+                    param_.OnWorkspaceConfiguration(requestParams);
                     break;
                 default:
                     Console.WriteLine("[Error]Not impliment.");
@@ -346,14 +346,14 @@ namespace LSP.Client
             switch (notification.method)
             {
                 case "window/logMessage":
-                    if (this.param.OnWindowLogMessage != null)
+                    if (this.param_.OnWindowLogMessage != null)
                     {
                         var _param = (JObject)notification.@params;
                         var jVal = (JValue)_param["type"];
                         var jMes = (JValue)_param["message"];
                         var val = (MessageType)Enum.ToObject(typeof(MessageType), jVal.Value);
                         var mes = (string)jMes.Value;
-                        this.param.OnWindowLogMessage(new LogMessageParams { type = val, message = mes });
+                        this.param_.OnWindowLogMessage(new LogMessageParams { type = val, message = mes });
                     }
                     break;
 
@@ -374,10 +374,10 @@ namespace LSP.Client
                 var id = receiver["id"].ToObject<int>();
                 try
                 {
-                    lock (responseCallback)
+                    lock (responseCallback_)
                     {
-                        callback = responseCallback[id];
-                        responseCallback.Remove(id);
+                        callback = responseCallback_[id];
+                        responseCallback_.Remove(id);
                     }
                 }
                 catch (Exception)
@@ -396,7 +396,7 @@ namespace LSP.Client
             }
             else
             {
-                param.OnResponseError(response);
+                param_.OnResponseError(response);
             }
             /*if (((JObject)response.result).ContainsKey("capabilities"))
             {
@@ -419,12 +419,12 @@ namespace LSP.Client
              */
             outPairKakkoIndex = -1;
 
-            System.Diagnostics.Debug.Assert(bufferStreamUTF8[0] == Convert.ToByte('{'));
+            System.Diagnostics.Debug.Assert(bufferStreamUTF8_[0] == Convert.ToByte('{'));
 
             int index = 0;
             int counter = 0;
 
-            foreach (var c in bufferStreamUTF8)
+            foreach (var c in bufferStreamUTF8_)
             {
                 if (c == Convert.ToByte('{'))
                 {

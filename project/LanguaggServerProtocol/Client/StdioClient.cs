@@ -13,10 +13,10 @@ namespace LSP.Client
 {
 	class StdioClient
 	{
-		ServerProcess server;
-		Mediator handler;
-		CancellationTokenSource source=new CancellationTokenSource();
-		RequestIdGenerator requestIdGenerator=new RequestIdGenerator();
+		ServerProcess server_;
+		Mediator mediator_;
+		CancellationTokenSource source_=new CancellationTokenSource();
+		RequestIdGenerator requestIdGenerator_=new RequestIdGenerator();
 
 		public enum Mode
 		{
@@ -61,7 +61,7 @@ namespace LSP.Client
 		{
 			Debug.Assert(Status==Mode.Init);
 
-			handler = new Mediator(
+			mediator_ = new Mediator(
 						new Protocol.InitializeParameter {
 							OnWindowLogMessage= this.OnWindowLogMessage, 
 							OnWindowShowMessage=this.OnWindowShowMessage,
@@ -69,15 +69,15 @@ namespace LSP.Client
 							OnWorkspaceConfiguration=this.OnWorkspaceConfiguration,
 							logFileName = param.logFilename
 						},
-						source.Token);
+						source_.Token);
 
-			server = new ServerProcess(param.exeFileName, param.exeArguments, param.exeWorkingDirectory);			
-			server.StartProcess();
-			server.standardErrorReceived += Client_standardErrorReceived;
-			server.standardOutputReceived += Client_standardOutputReceived;
-			server.Exited += Server_Exited;
-			server.StartRedirect();
-			server.StartThreadLoop();
+			server_ = new ServerProcess(param.exeFileName, param.exeArguments, param.exeWorkingDirectory);			
+			server_.StartProcess();
+			server_.standardErrorReceived += Client_standardErrorReceived;
+			server_.standardOutputReceived += Client_standardOutputReceived;
+			server_.Exited += Server_Exited;
+			server_.StartRedirect();
+			server_.StartThreadLoop();
 		}
 		#region LSP_Event
 		void OnResponseError(ResponseMessage response)
@@ -104,7 +104,7 @@ namespace LSP.Client
 		#region Process_Event
 		private void Client_standardOutputReceived(object sender, byte[] e)
 		{
-			handler.StoreBuffer(e);
+			mediator_.StoreBuffer(e);
 		}
 
 		private void Client_standardErrorReceived(object sender, byte[] e)
@@ -115,7 +115,7 @@ namespace LSP.Client
 		private void Server_Exited(object sender, EventArgs e)
 		{
 			Console.WriteLine("[Server_Exited]");
-			source.Cancel();
+			source_.Cancel();
 		}
 		#endregion
 
@@ -191,8 +191,8 @@ namespace LSP.Client
 		//
 		public void SendRequest(object param, string method, Action<JToken> callback)
 		{
-			var id = requestIdGenerator.NextId();
-			handler.StoreResponse(id, callback);
+			var id = requestIdGenerator_.NextId();
+			mediator_.StoreResponse(id, callback);
 			SendRequest(param,method,id);
 		}
 		/// <summary>
@@ -206,7 +206,7 @@ namespace LSP.Client
 			var request = new RequestMessage { id = id, method = method, @params = param };
 			var jsonRpc = JsonConvert.SerializeObject(request, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = NullValueHandling.Ignore });
 			var payload = CreatePayLoad(jsonRpc);
-			server.WriteStandardInput(payload);
+			server_.WriteStandardInput(payload);
 		}
 		/// <summary>
 		/// 通知の送信
@@ -217,7 +217,7 @@ namespace LSP.Client
 			var notification = new NotificationMessage {method = method, @params = param };
 			var jsonRpc = JsonConvert.SerializeObject(notification, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = NullValueHandling.Ignore });
 			var payload = CreatePayLoad(jsonRpc);
-			server.WriteStandardInput(payload);
+			server_.WriteStandardInput(payload);
 		}
 		
 		/// <summary>
@@ -228,9 +228,9 @@ namespace LSP.Client
 		/// <param name="callback"></param>
 		public void SendRaw(string jsonRpc, int id, Action<JToken> callback)
 		{
-			handler.StoreResponse(id, callback);
+			mediator_.StoreResponse(id, callback);
 			var payload = CreatePayLoad(jsonRpc);
-			server.WriteStandardInput(payload);
+			server_.WriteStandardInput(payload);
 		}
 		static byte[] CreatePayLoad(string unicodeJson)
 		{

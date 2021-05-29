@@ -6,11 +6,11 @@ namespace LSP.Client
 {
 	class RequestIdGenerator
 	{
-		int id = 1;
+		int id_ = 1;
 		public int NextId()
 		{
-			var ret = id;
-			id++;
+			var ret = id_;
+			id_++;
 			return ret;
 		}
 	}
