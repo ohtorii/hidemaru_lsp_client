@@ -11,12 +11,12 @@ namespace LSP.Client
 {
 	class Handler
 	{
-        Response response;
+        Protocol response;
         Task Runner;
 
-		public Handler(Response.InitializeParameter param, CancellationToken token)
+		public Handler(Protocol.InitializeParameter param, CancellationToken token)
         {
-            response = new Response(param,token);
+            response = new Protocol(param,token);
         }               
 
         public void StoreBuffer(byte[] streamString)
@@ -30,7 +30,7 @@ namespace LSP.Client
                 Runner = Task.Run(() => response.Parse());
             }
         }
-        public void StoreCallback(int id, Action<JToken> callback)
+        public void StoreResponse(int id, Action<JToken> callback)
 		{
             response.StoreJob(id, callback);
 		}

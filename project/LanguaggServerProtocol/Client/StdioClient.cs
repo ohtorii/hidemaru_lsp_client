@@ -37,7 +37,7 @@ namespace LSP.Client
 			Debug.Assert(Status==Mode.Init);
 
 			handler = new Handler(
-							new Response.InitializeParameter {
+							new Protocol.InitializeParameter {
 									OnWindowLogMessage= this.OnWindowLogMessage, 
 									OnWindowShowMessage=this.OnWindowShowMessage,
 									OnResponseError=this.OnResponseError,
@@ -154,7 +154,7 @@ namespace LSP.Client
 		public void SendRequest(object param, string method, Action<JToken> callback)
 		{
 			var id = requestIdGenerator.NextId();
-			handler.StoreCallback(id, callback);
+			handler.StoreResponse(id, callback);
 			SendRequest(param,method,id);
 		}
 		/// <summary>
@@ -190,7 +190,7 @@ namespace LSP.Client
 		/// <param name="callback"></param>
 		public void SendRaw(string jsonRpc, int id, Action<JToken> callback)
 		{
-			handler.StoreCallback(id, callback);
+			handler.StoreResponse(id, callback);
 			var payload = CreatePayLoad(jsonRpc);
 			server.WriteStandardInput(payload);
 		}

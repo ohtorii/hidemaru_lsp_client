@@ -21,7 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Client\AsyncStreamReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\StdioClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\Handler.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Client\Response.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\Protocol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\ServerProcess.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Capabilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\CodeAction.cs" />

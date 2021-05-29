@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace LSP.Client
 {
-    class Response
+    class Protocol
     {
         public class InitializeParameter
         {
@@ -51,7 +51,7 @@ namespace LSP.Client
         List<byte> bufferStreamUTF8 = new List<byte>();
         
 
-        public Response(InitializeParameter param, CancellationToken token)
+        public Protocol(InitializeParameter param, CancellationToken token)
 		{
             this.param = param;
             this.cancelToken_ = token;
@@ -285,84 +285,116 @@ namespace LSP.Client
                  */
                 bufferStreamUTF8.RemoveRange(0, contentLength);
             }
-            
-            if (receiver.ContainsKey("id"))
-            {
-                Action<JToken> callback;
-                {
-                    var id = receiver["id"].ToObject<int>();
-                    try
-                    {
-                        lock (responseCallback)
-                        {
-                            callback = responseCallback[id];
-                            responseCallback.Remove(id);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        //対応するid無し。無視する。
-                        Console.WriteLine(string.Format("[対応するid無し]{0}", receiver));
-                        return true;
-                        //throw;
-                    }
+
+            var containMethod=receiver.ContainsKey("method");
+            var containId = receiver.ContainsKey("id");
+			if (containMethod)
+			{
+				if (containId)
+				{
+                    //サーバからの問い合わせ
+                    Request(receiver);
+                    return true;
                 }
-                
-                var response = receiver.ToObject<ResponseMessage>();
-                if (response.error == null)
-                {
-                    callback((JToken)response.result);
+				else
+				{
+                    //サーバからの通知
+                    Notification(receiver);
+                    return true;
+                }
+			}
+			else
+			{
+                if (containId)
+				{
+                    //サーバからの返答
+                    Response(receiver);
+                    return true;
 				}
 				else
 				{
-                    param.OnResponseError(response);
-				}
-                /*if (((JObject)response.result).ContainsKey("capabilities"))
-                {
-                    var result = ((JObject)response.result).ToObject<InitializeResult>();
-                    var method= items.Item1;
-                    items.Item2(result);
+                    Debug.Assert(false);
+                    Console.WriteLine("[Error]Unknown receiver.");
+                    return false;
                 }
-                else
-                {
-                    throw new NotImplementedException();
-                }*/
-
-                return true;
             }
 
-            if (receiver.ContainsKey("method"))
+            Debug.Assert(false);
+            return false;
+        }
+        void Request(JObject receiver)
+		{
+            Console.WriteLine("[Error]Not impliment.(Request methid)");
+		}
+        void Notification(JObject receiver)
+		{
+            var notification = receiver.ToObject<NotificationMessage>();
+            switch (notification.method)
             {
-                var notification = receiver.ToObject<NotificationMessage>();                
-                switch (notification.method)
+                case "window/logMessage":
+                    if (this.param.OnWindowLogMessage != null)
+                    {
+                        var _param = (JObject)notification.@params;
+                        var jVal = (JValue)_param["type"];
+                        var jMes = (JValue)_param["message"];
+                        var val = (MessageType)Enum.ToObject(typeof(MessageType), jVal.Value);
+                        var mes = (string)jMes.Value;
+                        this.param.OnWindowLogMessage(new LogMessageParams { type = val, message = mes });
+                    }
+                    break;
+
+                case "window/showMessage":
+                    var showMessage = (ShowMessageParams)notification.@params;
+                    break;
+
+                default:
+                    Console.WriteLine(String.Format("[{0}]{1}", notification.method, notification.@params));
+                    //pass
+                    break;
+            }
+        }
+        void Response(JObject receiver)
+		{            
+            Action<JToken> callback;
+            {
+                var id = receiver["id"].ToObject<int>();
+                try
                 {
-                    case "window/logMessage":
-                        if (this.param.OnWindowLogMessage != null)
-                        {
-                            var _param = (JObject)notification.@params;
-                            var jVal = (JValue)_param["type"];
-                            var jMes = (JValue)_param["message"];
-                            var val = (MessageType)Enum.ToObject(typeof(MessageType), jVal.Value);
-                            var mes = (string)jMes.Value;
-                            this.param.OnWindowLogMessage(new LogMessageParams { type = val, message = mes });
-                        }
-                        break;
-                    case "window/showMessage":
-                        var showMessage = (ShowMessageParams)notification.@params;
-                        break;
-                    default:
-                        Console.WriteLine(String.Format("[{0}]{1}", notification.method, notification.@params));
-                        //pass
-                        break;
+                    lock (responseCallback)
+                    {
+                        callback = responseCallback[id];
+                        responseCallback.Remove(id);
+                    }
                 }
+                catch (Exception)
+                {
+                    //対応するid無し。無視する。
+                    Console.WriteLine(string.Format("[対応するid無し]{0}", receiver));
+                    return ;
+                    //throw;
+                }
+            }
+
+            var response = receiver.ToObject<ResponseMessage>();
+            if (response.error == null)
+            {
+                callback((JToken)response.result);
             }
             else
             {
-                var oops = 0;
+                param.OnResponseError(response);
             }
-            return true;
+            /*if (((JObject)response.result).ContainsKey("capabilities"))
+            {
+                var result = ((JObject)response.result).ToObject<InitializeResult>();
+                var method= items.Item1;
+                items.Item2(result);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }*/            
         }
-
         bool FindPairKakko(out int outPairKakkoIndex)
         {
             /*(Ex)
