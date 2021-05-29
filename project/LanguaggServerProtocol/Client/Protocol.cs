@@ -25,7 +25,10 @@ namespace LSP.Client
             /// </summary>
             public Action<ShowMessageParams> OnWindowShowMessage = null;
             public Action<ResponseMessage> OnResponseError = null;
-
+            /// <summary>
+            /// method: 'workspace/configuration'
+            /// </summary>
+            public Action<JObject> OnWorkspaceConfiguration = null;
             public string logFileName;
         }
         InitializeParameter param = null;
@@ -324,7 +327,18 @@ namespace LSP.Client
         }
         void Request(JObject receiver)
 		{
-            Console.WriteLine("[Error]Not impliment.(Request methid)");
+            var request = receiver.ToObject<RequestMessage>();
+            var requestParams= (JObject)request.@params;
+            switch (request.method)
+			{
+                case "workspace/configuration":
+                    param.OnWorkspaceConfiguration(requestParams);
+                    break;
+                default:
+                    Console.WriteLine("[Error]Not impliment.");
+                    break;
+            }
+            
 		}
         void Notification(JObject receiver)
 		{

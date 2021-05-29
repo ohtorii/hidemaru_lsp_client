@@ -41,6 +41,7 @@ namespace LSP.Client
 									OnWindowLogMessage= this.OnWindowLogMessage, 
 									OnWindowShowMessage=this.OnWindowShowMessage,
 									OnResponseError=this.OnResponseError,
+									OnWorkspaceConfiguration=this.OnWorkspaceConfiguration,
 									logFileName = logFilename
 							},
 							source.Token);
@@ -53,7 +54,7 @@ namespace LSP.Client
 			server.StartRedirect();
 			server.StartThreadLoop();
 		}
-		
+		#region LSP_Event
 		void OnResponseError(ResponseMessage response)
 		{
 			Console.WriteLine(string.Format("[OnResponseError] id={0}/error={1}", response.id, response.error));
@@ -69,6 +70,13 @@ namespace LSP.Client
 		void OnWindowShowMessage(ShowMessageParams param) {
 			Console.WriteLine(String.Format("[OnWindowShowMessage]{0}",param.message));
 		}
+		void OnWorkspaceConfiguration(JObject receiver)
+		{
+
+		}
+		#endregion
+
+		#region Process_Event
 		private void Client_standardOutputReceived(object sender, byte[] e)
 		{
 			handler.StoreBuffer(e);
@@ -84,7 +92,8 @@ namespace LSP.Client
 			Console.WriteLine("[Server_Exited]");
 			source.Cancel();
 		}
-		
+		#endregion
+
 		public void SendInitialize(IInitializeParams param)
 		{
 			Debug.Assert(Status == Mode.Init);
@@ -92,7 +101,7 @@ namespace LSP.Client
 			Status = Mode.ServerInitializeStart;
 		}		
 		//Memo: デバッグ用にpublicとしている
-		public void ResponseInitialize(JToken arg)
+		void ResponseInitialize(JToken arg)
 		{
 			var result = arg.ToObject<InitializeResult>();
 			Status = Mode.ServerInitializeFinish;
@@ -148,6 +157,9 @@ namespace LSP.Client
 			}
 			Console.WriteLine("Completion. Not found.");
 		}
+
+
+		#region 低レイヤー
 		//
 		//低レイヤー
 		//
@@ -213,6 +225,7 @@ namespace LSP.Client
 			Array.Copy(utf8Json,   0, payload, utf8Header.Length, utf8Json.Length);
 			return payload;
 		}
+		#endregion
 	}
 
 	class RequestIdGenerator

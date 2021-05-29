@@ -15,8 +15,8 @@ namespace ClientExample
 			//CSharpClient.Start();
 			//PythonClient.Start();
 			//CppClient.Start();
-			VimScriptClient.Start();
-			//LuaClient.Start();
+			//VimScriptClient.Start();
+			LuaClient.Start();
 		}
 
     }    
