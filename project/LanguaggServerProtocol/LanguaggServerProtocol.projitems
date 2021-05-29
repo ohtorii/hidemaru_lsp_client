@@ -31,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\Command.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Completion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Converter\NumberEnumConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\Configuration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Diagnostic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DidChangeConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DidChangeTextDocument.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceEdit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceFolders.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceSymbols.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ExtensionMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\LICENSE" />

@@ -8,9 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LSP.Utils;
 
 namespace LSP.Client
 {
+	
 	class StdioClient
 	{
 		ServerProcess server_;
@@ -27,6 +29,8 @@ namespace LSP.Client
 		}
 
 		public Mode Status {  get; private set; }
+		
+		[Serializable]
 		public class LspParameter
 		{
 			/// <summary>
@@ -51,8 +55,9 @@ namespace LSP.Client
 			/// (memo)vim-lsp-settingのLspRegisterServer.workspace_configに対応する。
 			/// (See)https://github.com/mattn/vim-lsp-settings/blob/master/settings/sumneko-lua-language-server.vim
 			/// </summary>
-			public dynamic jsonWorkspaceConfiguration;
+			public string jsonWorkspaceConfiguration;
 		}
+		LspParameter param_;
 		public StdioClient()
 		{
 			Status = Mode.Init;
@@ -61,6 +66,7 @@ namespace LSP.Client
 		{
 			Debug.Assert(Status==Mode.Init);
 
+			param_ = param.DeepClone();
 			mediator_ = new Mediator(
 						new Protocol.InitializeParameter {
 							OnWindowLogMessage= this.OnWindowLogMessage, 
@@ -95,9 +101,10 @@ namespace LSP.Client
 		void OnWindowShowMessage(ShowMessageParams param) {
 			Console.WriteLine(String.Format("[OnWindowShowMessage]{0}",param.message));
 		}
-		void OnWorkspaceConfiguration(JObject receiver)
+		void OnWorkspaceConfiguration(ConfigurationParams items)
 		{
-
+			//receiver.
+			//param_.jsonWorkspaceConfiguration;
 		}
 		#endregion
 

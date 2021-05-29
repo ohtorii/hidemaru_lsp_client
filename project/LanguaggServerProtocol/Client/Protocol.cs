@@ -28,7 +28,7 @@ namespace LSP.Client
             /// <summary>
             /// method: 'workspace/configuration'
             /// </summary>
-            public Action<JObject> OnWorkspaceConfiguration { get; set; }
+            public Action<ConfigurationParams> OnWorkspaceConfiguration { get; set; }
             public string logFileName { get; set; }
         }
         InitializeParameter param_ = null;
@@ -332,13 +332,12 @@ namespace LSP.Client
             switch (request.method)
 			{
                 case "workspace/configuration":
-                    param_.OnWorkspaceConfiguration(requestParams);
+                    param_.OnWorkspaceConfiguration(requestParams.ToObject<ConfigurationParams>());
                     break;
                 default:
                     Console.WriteLine("[Error]Not impliment.");
                     break;
             }
-            
 		}
         void Notification(JObject receiver)
 		{
