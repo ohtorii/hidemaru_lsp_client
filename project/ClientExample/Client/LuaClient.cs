@@ -1,4 +1,6 @@
 ﻿using LSP.Model;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -17,6 +19,102 @@ namespace ClientExample
 		static Uri rootUri = new Uri(rootPath);
 		static Uri sourceUri = new Uri(rootUri, @"test1.lua");
 		static int sourceVersion = 0;
+		static JObject workspaceConfig = (JObject)JsonConvert.DeserializeObject(
+@" {
+    ""Lua"": {
+        ""color"": {
+            ""mode"": ""Semantic""
+        },
+        ""completion"": {
+            ""callSnippet"": ""Disable"",
+            ""enable"": true,
+            ""keywordSnippet"": ""Replace""
+        },
+        ""develop"": {
+            ""debuggerPort"": 11412,
+            ""debuggerWait"": false,
+            ""enable"": false
+        },
+        ""diagnostics"": {
+            ""enable"": true,
+            ""globals"": """",
+            ""severity"": {}
+        },
+        ""hover"": {
+            ""enable"": true,
+            ""viewNumber"": true,
+            ""viewString"": true,
+            ""viewStringMax"": 1000
+        },
+        ""runtime"": {
+            ""path"": [""?.lua"", ""?/init.lua"", ""?/?.lua""],
+            ""version"": ""Lua 5.3""
+        },
+        ""signatureHelp"": {
+            ""enable"": true
+        },
+        ""workspace"": {
+            ""ignoreDir"": [],
+            ""maxPreload"": 1000,
+            ""preloadFileSize"": 100,
+            ""useGitIgnore"": true
+        }
+    }
+}");
+
+
+		/*
+		static dynamic workspaceConfig=new {
+				Lua = new
+				{
+					color = new {
+						mode = "Semantic"
+					},
+					completion = new {
+						callSnippet = "Disable",
+						enable = true,
+						keywordSnippet = "Replace"
+					},
+					develop = new
+					{
+						debuggerPort = 11412,
+						debuggerWait = false,
+						enable = false
+					},
+					diagnostics = new
+					{
+						enable = true,
+						globals = "",
+						severity = new
+						{
+						}
+					},
+					hover = new
+					{
+						enable = true,
+						viewNumber = true,
+						viewString = true,
+						viewStringMax = 1000
+					},
+					runtime = new
+					{
+						path = new[] { "?.lua", "?/init.lua", "?/?.lua" },
+						version = "Lua 5.3",
+					},
+					signatureHelp = new
+					{
+						enable = true
+					},
+					workspace = new
+					{
+						ignoreDir = new string[] { },
+						maxPreload = 1000,
+						preloadFileSize = 100,
+						useGitIgnore = true
+					}
+				}
+			};
+		*/
 		public static void Start()
 		{
 #if true
@@ -29,7 +127,14 @@ namespace ClientExample
 #endif
 
 			var client = new LSP.Client.StdioClient();
-			client.StartLspProcess(new LSP.Client.StdioClient.LspParameter { exeFileName = FileName, exeArguments = Arguments, exeWorkingDirectory = WorkingDirectory, logFilename = logFilename });
+			client.StartLspProcess(new LSP.Client.StdioClient.LspParameter 
+			{ 
+				exeFileName = FileName, 
+				exeArguments = Arguments, 
+				exeWorkingDirectory = WorkingDirectory, 
+				logFilename = logFilename ,
+				jsonWorkspaceConfiguration=workspaceConfig
+			});
 
 			Console.WriteLine("==== InitializeServer ====");
 			InitializeServer(client);
@@ -41,13 +146,14 @@ namespace ClientExample
 			Console.WriteLine("==== InitializedClient ====");
 			InitializedClient(client);
 
-			Console.WriteLine("==== DidChangeConfiguration ====");
-			DidChangeConfiguration(client);
+			//Console.WriteLine("==== DidChangeConfiguration ====");
+			//DidChangeConfiguration(client);
 
 			Console.WriteLine("==== OpenTextDocument ====");
 			DigOpen(client);
 
-			//Thread.Sleep(6000);
+			//少し待つ必要がある
+			Thread.Sleep(2000);
 			Console.WriteLine("==== Completion ====");
 			Completion(client);
 
@@ -73,50 +179,7 @@ namespace ClientExample
 			 * vim-lsp-settings\settings\sumneko-lua-language-server.vim
 			 * 
 			 */
-			param.settings = new {
-				Lua = new
-				{
-					color = new {
-						mode = "Semantic"
-					},
-					completion = new {
-						callSnippet = "Disable",
-						enable = true,
-						keywordSnippet = "Replace"
-					},
-					develop = new {
-						debuggerPort = 11412,
-						debuggerWait = false,
-						enable = false
-					},
-					diagnostics = new {
-						enable= true,
-						globals= "",
-						severity= new { 
-						}
-					},
-					hover=new {
-						enable= true,
-						viewNumber= true,
-						viewString= true,
-						viewStringMax= 1000
-					},
-					runtime=new {
-						path= new[] {"?.lua", "?/init.lua", "?/?.lua" },
-						version= "Lua 5.3",
-					},
-					signatureHelp=new {
-						enable= true
-					},
-					workspace=new {
-						ignoreDir = new string[] { },
-						maxPreload= 1000,
-						preloadFileSize= 100,
-						useGitIgnore=true
-					}
-				}
-			};
-
+			param.settings = workspaceConfig;
 			client.SendWorkspaceDidChangeConfiguration(param);
 		}
 

@@ -62,6 +62,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\NotificationMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\PrepareCallHierarchy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\PublishDiagnostics.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\RegisterCapability.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\RegularExpressions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Rename.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\RequestMessage.cs" />

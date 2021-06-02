@@ -9,9 +9,9 @@ namespace LSP.Model
 	class ResponseMessage: IMessage
 	{
 		public string jsonrpc { get; set; } = "2.0";
-		public int id;		
-		public object result;
-		public ResponseError error;		
+		public int id=0;
+		public object result=null;
+		public ResponseError error=null;		
 	}
 
 	class ResponseError

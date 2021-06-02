@@ -28,7 +28,11 @@ namespace LSP.Client
             /// <summary>
             /// method: 'workspace/configuration'
             /// </summary>
-            public Action<ConfigurationParams> OnWorkspaceConfiguration { get; set; }
+            public Action<int,ConfigurationParams> OnWorkspaceConfiguration { get; set; }
+            /// <summary>
+            /// method: 'client/registerCapability'
+            /// </summary>
+            internal Action<int, RegistrationParams> OnClientRegisterCapability { get; set; }
             public string logFileName { get; set; }
         }
         InitializeParameter param_ = null;
@@ -288,7 +292,6 @@ namespace LSP.Client
                  */
                 bufferStreamUTF8_.RemoveRange(0, contentLength);
             }
-
             var containMethod=receiver.ContainsKey("method");
             var containId = receiver.ContainsKey("id");
 			if (containMethod)
@@ -322,8 +325,7 @@ namespace LSP.Client
                 }
             }
 
-            Debug.Assert(false);
-            return false;
+            
         }
         void Request(JObject receiver)
 		{
@@ -332,10 +334,13 @@ namespace LSP.Client
             switch (request.method)
 			{
                 case "workspace/configuration":
-                    param_.OnWorkspaceConfiguration(requestParams.ToObject<ConfigurationParams>());
+                    param_.OnWorkspaceConfiguration(request.id,requestParams.ToObject<ConfigurationParams>());
+                    break;
+                case "client/registerCapability":
+                    param_.OnClientRegisterCapability(request.id, requestParams.ToObject<RegistrationParams>());
                     break;
                 default:
-                    Console.WriteLine("[Error]Not impliment.");
+                    Console.WriteLine(string.Format("[Error]Not impliment. method={0}/params={1}",request.method, request.@params));
                     break;
             }
 		}
@@ -368,7 +373,7 @@ namespace LSP.Client
         }
         void Response(JObject receiver)
 		{            
-            Action<JToken> callback;
+            Action<JToken> callback=null;
             {
                 var id = receiver["id"].ToObject<int>();
                 try
@@ -381,33 +386,29 @@ namespace LSP.Client
                 }
                 catch (Exception)
                 {
-                    //対応するid無し。無視する。
-                    Console.WriteLine(string.Format("[対応するid無し]{0}", receiver));
-                    return ;
-                    //throw;
+                    //pass
                 }
             }
 
             var response = receiver.ToObject<ResponseMessage>();
             if (response.error == null)
             {
-                callback((JToken)response.result);
+                if (callback == null)
+                {
+                    //対応するid無し。無視する。
+                    Console.WriteLine(string.Format("[対応するid無し]{0}", receiver));
+                }
+                else
+                {
+                    callback((JToken)response.result);
+                }
             }
             else
             {
                 param_.OnResponseError(response);
-            }
-            /*if (((JObject)response.result).ContainsKey("capabilities"))
-            {
-                var result = ((JObject)response.result).ToObject<InitializeResult>();
-                var method= items.Item1;
-                items.Item2(result);
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }*/            
+            }            
         }
+
         bool FindPairKakko(out int outPairKakkoIndex)
         {
             /*(Ex)

@@ -55,7 +55,7 @@ namespace LSP.Client
 			/// (memo)vim-lsp-settingのLspRegisterServer.workspace_configに対応する。
 			/// (See)https://github.com/mattn/vim-lsp-settings/blob/master/settings/sumneko-lua-language-server.vim
 			/// </summary>
-			public string jsonWorkspaceConfiguration;
+			public JObject jsonWorkspaceConfiguration;
 		}
 		LspParameter param_;
 		public StdioClient()
@@ -65,14 +65,18 @@ namespace LSP.Client
 		public void StartLspProcess(LspParameter param)
 		{
 			Debug.Assert(Status==Mode.Init);
-
+#if true
+			param_ = param;
+#else
 			param_ = param.DeepClone();
+#endif
 			mediator_ = new Mediator(
 						new Protocol.InitializeParameter {
 							OnWindowLogMessage= this.OnWindowLogMessage, 
 							OnWindowShowMessage=this.OnWindowShowMessage,
 							OnResponseError=this.OnResponseError,
 							OnWorkspaceConfiguration=this.OnWorkspaceConfiguration,
+							OnClientRegisterCapability=this.OnClientRegisterCapability,
 							logFileName = param.logFilename
 						},
 						source_.Token);
@@ -85,7 +89,7 @@ namespace LSP.Client
 			server_.StartRedirect();
 			server_.StartThreadLoop();
 		}
-		#region LSP_Event
+#region LSP_Event
 		void OnResponseError(ResponseMessage response)
 		{
 			Console.WriteLine(string.Format("[OnResponseError] id={0}/error={1}", response.id, response.error));
@@ -101,12 +105,29 @@ namespace LSP.Client
 		void OnWindowShowMessage(ShowMessageParams param) {
 			Console.WriteLine(String.Format("[OnWindowShowMessage]{0}",param.message));
 		}
-		void OnWorkspaceConfiguration(ConfigurationParams items)
+		void OnWorkspaceConfiguration(int request_id, ConfigurationParams param)
 		{
-			//receiver.
-			//param_.jsonWorkspaceConfiguration;
+			var any = new JArray();
+			foreach (var item in param.items)
+			{
+				try
+				{
+					var jsonValue = param_.jsonWorkspaceConfiguration[item.section];
+					any.Add(jsonValue);
+				}
+				catch (Exception)
+				{
+					any.Add(null);
+				}
+			}
+			
+			ResponseWorkspaceConfiguration(request_id,any);
 		}
-		#endregion
+		void OnClientRegisterCapability(int id, RegistrationParams param)
+		{
+			Console.WriteLine("client/registerCapabilityは未実装です");
+		}
+#endregion
 
 		#region Process_Event
 		private void Client_standardOutputReceived(object sender, byte[] e)
@@ -124,17 +145,17 @@ namespace LSP.Client
 			Console.WriteLine("[Server_Exited]");
 			source_.Cancel();
 		}
-		#endregion
+#endregion
 
-		#region Send-Rpc
+#region Send-Rpc
 		public void SendInitialize(IInitializeParams param)
 		{
 			Debug.Assert(Status == Mode.Init);
-			SendRequest(param, "initialize", ResponseInitialize);			
+			SendRequest(param, "initialize", ActionInitialize);			
 			Status = Mode.ServerInitializeStart;
 		}		
 		//Memo: デバッグ用にpublicとしている
-		void ResponseInitialize(JToken arg)
+		void ActionInitialize(JToken arg)
 		{
 			var result = arg.ToObject<InitializeResult>();
 			Status = Mode.ServerInitializeFinish;
@@ -151,11 +172,6 @@ namespace LSP.Client
 			Debug.Assert(Status == Mode.ClientInitializeFinish);
 			SendNotification(param, "textDocument/didOpen");
 		}
-		public void SendWorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)
-		{
-			Debug.Assert(Status == Mode.ClientInitializeFinish);
-			SendNotification(param, "workspace/didChangeConfiguration");
-		}
 		public void SendTextDocumentDidChange(IDidChangeTextDocumentParams param)
 		{
 			Debug.Assert(Status == Mode.ClientInitializeFinish);
@@ -164,9 +180,9 @@ namespace LSP.Client
 		public void SendTextDocumentCompletion(ICompletionParams param)
 		{
 			Debug.Assert(Status == Mode.ClientInitializeFinish);
-			SendRequest(param, "textDocument/completion", ResponseTextDocumentCompletion);
-		}
-		public void ResponseTextDocumentCompletion(JToken arg)
+			SendRequest(param, "textDocument/completion", ActionTextDocumentCompletion);
+		}		
+		public void ActionTextDocumentCompletion(JToken arg)
 		{
 			if (arg == null)
 			{
@@ -190,9 +206,26 @@ namespace LSP.Client
 			}
 			Console.WriteLine("Completion. Not found.");
 		}
-		#endregion
 
-		#region 低レイヤー
+		public void SendWorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)
+		{
+			Debug.Assert(Status == Mode.ClientInitializeFinish);
+			SendNotification(param, "workspace/didChangeConfiguration");
+		}
+		/// <summary>
+		/// "workspace/configuration" に対する返信。
+		/// </summary>
+		/// <param name="request_id"></param>
+		/// <param name="any"></param>
+		void ResponseWorkspaceConfiguration(int request_id, JArray any)
+		{
+			Debug.Assert(Status == Mode.ClientInitializeFinish);
+			SendResponse(any, request_id, NullValueHandling.Include);
+		}
+
+#endregion
+
+#region 低レイヤー
 		//
 		//低レイヤー
 		//
@@ -208,10 +241,10 @@ namespace LSP.Client
 		/// <param name="param"></param>
 		/// <param name="method"></param>
 		/// <param name="id"></param>
-		public void SendRequest(object param, string method, int id)
+		public void SendRequest(object param, string method, int id, NullValueHandling nullValueHandling = NullValueHandling.Ignore)
 		{
 			var request = new RequestMessage { id = id, method = method, @params = param };
-			var jsonRpc = JsonConvert.SerializeObject(request, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = NullValueHandling.Ignore });
+			var jsonRpc = JsonConvert.SerializeObject(request, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = nullValueHandling });
 			var payload = CreatePayLoad(jsonRpc);
 			server_.WriteStandardInput(payload);
 		}
@@ -219,10 +252,17 @@ namespace LSP.Client
 		/// 通知の送信
 		/// </summary>
 		/// <param name="jsonRpc"></param>
-		public void SendNotification(object param, string method)
+		public void SendNotification(object param, string method, NullValueHandling nullValueHandling = NullValueHandling.Ignore)
 		{//memo: 通知なので返信は無い。
 			var notification = new NotificationMessage {method = method, @params = param };
-			var jsonRpc = JsonConvert.SerializeObject(notification, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = NullValueHandling.Ignore });
+			var jsonRpc = JsonConvert.SerializeObject(notification, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = nullValueHandling });
+			var payload = CreatePayLoad(jsonRpc);
+			server_.WriteStandardInput(payload);
+		}
+		public void SendResponse(object param, int id, NullValueHandling nullValueHandling = NullValueHandling.Ignore)
+		{
+			var response = new ResponseMessage { id=id, result=param};
+			var jsonRpc = JsonConvert.SerializeObject(response, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = nullValueHandling });
 			var payload = CreatePayLoad(jsonRpc);
 			server_.WriteStandardInput(payload);
 		}
@@ -258,6 +298,6 @@ namespace LSP.Client
 			Array.Copy(utf8Json,   0, payload, utf8Header.Length, utf8Json.Length);
 			return payload;
 		}
-		#endregion
+#endregion
 	}	
 }
