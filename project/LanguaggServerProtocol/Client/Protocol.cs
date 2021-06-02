@@ -33,7 +33,7 @@ namespace LSP.Client
             /// method: 'client/registerCapability'
             /// </summary>
             internal Action<int, RegistrationParams> OnClientRegisterCapability { get; set; }
-            public string logFileName { get; set; }
+            public ILogger  logger;
         }
         InitializeParameter param_ = null;
 
@@ -53,8 +53,7 @@ namespace LSP.Client
         int contentLength = -1;
         const string HeaderContentLength_ = "Content-Length:";
         static int HeaderContentLengthLength_ = HeaderContentLength_.Length;
-
-        Logger debugLogger_;
+        
         List<byte> bufferStreamUTF8_ = new List<byte>();
         
 
@@ -62,18 +61,16 @@ namespace LSP.Client
 		{
             this.param_ = param;
             this.cancelToken_ = token;
-            this.debugLogger_ = new Logger(param.logFileName);
         }
         public bool StoreBuffer(byte[] streamString)
 		{
             if (streamString.Length == 0)
             {
                 return false;
-            }
-            if (debugLogger_ != null)
+            }            
             {
                 var jsonDataUnicode = Encoding.UTF8.GetString(streamString);
-                debugLogger_.Log(jsonDataUnicode);
+                param_.logger.Info(jsonDataUnicode);
             }
 
             lock (bufferStreamUTF8_)

@@ -23,7 +23,7 @@ namespace LSP.Client
     {
         public event EventHandler<byte[]> DataReceived;
 
-        protected readonly byte[] buffer = new byte[128];
+        protected readonly byte[] buffer = new byte[4096];
         private StreamReader reader;
 
         public AsyncStreamReader()

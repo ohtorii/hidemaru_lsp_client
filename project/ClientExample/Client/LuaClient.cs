@@ -131,9 +131,9 @@ namespace ClientExample
 			{ 
 				exeFileName = FileName, 
 				exeArguments = Arguments, 
-				exeWorkingDirectory = WorkingDirectory, 
-				logFilename = logFilename ,
-				jsonWorkspaceConfiguration=workspaceConfig
+				exeWorkingDirectory = WorkingDirectory,
+				logger = new Logger(logFilename),
+				jsonWorkspaceConfiguration =workspaceConfig
 			});
 
 			Console.WriteLine("==== InitializeServer ====");

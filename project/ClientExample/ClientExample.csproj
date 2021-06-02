@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="Client\CppClient.cs" />
     <Compile Include="Client\CSharpClient.cs" />
+    <Compile Include="Client\Logger.cs" />
     <Compile Include="Client\LuaClient.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -62,6 +63,9 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="NLog">
+      <Version>4.7.10</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\LanguaggServerProtocol\LanguaggServerProtocol.projitems" Label="Shared" />

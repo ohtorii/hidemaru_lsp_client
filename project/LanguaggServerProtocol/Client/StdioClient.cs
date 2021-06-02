@@ -33,6 +33,7 @@ namespace LSP.Client
 		[Serializable]
 		public class LspParameter
 		{
+			public ILogger logger;
 			/// <summary>
 			/// 実行ファイル名
 			/// </summary>
@@ -45,11 +46,6 @@ namespace LSP.Client
 			/// 実行ファイルのワーキングディレクトリ
 			/// </summary>
 			public string exeWorkingDirectory;
-			/// <summary>
-			/// ログのファイル名（絶対パス）
-			/// </summary>
-			/// Todo:専用のログクラスへ移行する（このメンバは削除予定です）
-			public string logFilename;
 			/// <summary>
 			/// サーバからの問い合わせ（method: ‘workspace/configuration’）に対する応答。
 			/// (memo)vim-lsp-settingのLspRegisterServer.workspace_configに対応する。
@@ -65,6 +61,10 @@ namespace LSP.Client
 		public void StartLspProcess(LspParameter param)
 		{
 			Debug.Assert(Status==Mode.Init);
+			if (param.logger == null)
+			{
+				param.logger = new NullLogger();
+			}
 #if true
 			param_ = param;
 #else
@@ -77,7 +77,7 @@ namespace LSP.Client
 							OnResponseError=this.OnResponseError,
 							OnWorkspaceConfiguration=this.OnWorkspaceConfiguration,
 							OnClientRegisterCapability=this.OnClientRegisterCapability,
-							logFileName = param.logFilename
+							logger = param.logger
 						},
 						source_.Token);
 

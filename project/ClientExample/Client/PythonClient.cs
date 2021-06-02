@@ -53,7 +53,14 @@ namespace ClientExample
 #endif
 
 			var client = new LSP.Client.StdioClient();
-			client.StartLspProcess(new LSP.Client.StdioClient.LspParameter { exeFileName = FileName, exeArguments = Arguments, exeWorkingDirectory = WorkingDirectory, logFilename = logFilename });
+			client.StartLspProcess(
+				new LSP.Client.StdioClient.LspParameter { 
+					exeFileName = FileName, 
+					exeArguments = Arguments, 
+					exeWorkingDirectory = WorkingDirectory, 
+					logger = new Logger(logFilename)
+				}
+			);
 
 			Console.WriteLine("==== InitializeServer ====");
 			InitializeServer(client);
