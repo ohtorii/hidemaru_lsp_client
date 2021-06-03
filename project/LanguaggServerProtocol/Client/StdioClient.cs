@@ -76,8 +76,7 @@ namespace LSP.Client
 							OnWindowShowMessage=this.OnWindowShowMessage,
 							OnResponseError=this.OnResponseError,
 							OnWorkspaceConfiguration=this.OnWorkspaceConfiguration,
-							OnClientRegisterCapability=this.OnClientRegisterCapability,
-							logger = param.logger
+							OnClientRegisterCapability=this.OnClientRegisterCapability
 						},
 						source_.Token);
 
@@ -125,13 +124,22 @@ namespace LSP.Client
 		}
 		void OnClientRegisterCapability(int id, RegistrationParams param)
 		{
-			Console.WriteLine("client/registerCapabilityは未実装です");
+			//Todo: client/registerCapability
+			Console.WriteLine("Todo: client/registerCapabilityを実装する");
 		}
 #endregion
 
 		#region Process_Event
 		private void Client_standardOutputReceived(object sender, byte[] e)
 		{
+			if(e.Length==0)
+			{
+				return;
+			}
+			{
+				var jsonDataUnicode = Encoding.UTF8.GetString(e);
+				param_.logger.Info("<--- " + jsonDataUnicode);
+			}
 			mediator_.StoreBuffer(e);
 		}
 
@@ -246,7 +254,7 @@ namespace LSP.Client
 			var request = new RequestMessage { id = id, method = method, @params = param };
 			var jsonRpc = JsonConvert.SerializeObject(request, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = nullValueHandling });
 			var payload = CreatePayLoad(jsonRpc);
-			server_.WriteStandardInput(payload);
+			WriteStandardInput(payload);
 		}
 		/// <summary>
 		/// 通知の送信
@@ -257,14 +265,14 @@ namespace LSP.Client
 			var notification = new NotificationMessage {method = method, @params = param };
 			var jsonRpc = JsonConvert.SerializeObject(notification, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = nullValueHandling });
 			var payload = CreatePayLoad(jsonRpc);
-			server_.WriteStandardInput(payload);
+			WriteStandardInput(payload);
 		}
 		public void SendResponse(object param, int id, NullValueHandling nullValueHandling = NullValueHandling.Ignore)
 		{
 			var response = new ResponseMessage { id=id, result=param};
 			var jsonRpc = JsonConvert.SerializeObject(response, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = nullValueHandling });
 			var payload = CreatePayLoad(jsonRpc);
-			server_.WriteStandardInput(payload);
+			WriteStandardInput(payload);
 		}
 		
 		/// <summary>
@@ -277,7 +285,7 @@ namespace LSP.Client
 		{
 			mediator_.StoreResponse(id, callback);
 			var payload = CreatePayLoad(jsonRpc);
-			server_.WriteStandardInput(payload);
+			WriteStandardInput(payload);
 		}
 		static byte[] CreatePayLoad(string unicodeJson)
 		{
@@ -297,6 +305,16 @@ namespace LSP.Client
 			 */
 			Array.Copy(utf8Json,   0, payload, utf8Header.Length, utf8Json.Length);
 			return payload;
+		}
+		void WriteStandardInput(byte[] payload)
+		{
+
+			{
+				var jsonDataUnicode = Encoding.UTF8.GetString(payload);
+				param_.logger.Info("---> " + jsonDataUnicode);
+			}
+
+			server_.WriteStandardInput(payload);
 		}
 #endregion
 	}	

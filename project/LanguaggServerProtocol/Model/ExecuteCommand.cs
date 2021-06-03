@@ -37,7 +37,6 @@ namespace LSP.Model
 		 * Arguments that the command should be invoked with.
 		 */
 		public object arguments;
-
-		public string workDoneToken { get; set; } = null;
+		ProgressToken IWorkDoneProgressParams.workDoneToken { get; set; }
 	}
 }

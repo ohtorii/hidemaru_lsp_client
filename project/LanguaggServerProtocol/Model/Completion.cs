@@ -268,8 +268,9 @@ namespace LSP.Model
 			} 
 		}
 		
-		public string workDoneToken { get; set; } = null;
-		public string partialResultToken { get; set; } = null;
+		ProgressToken IWorkDoneProgressParams.workDoneToken { get; set; }
+		ProgressToken IPartialResultParams.partialResultToken { get; set; }
+
 		[JsonIgnore]	CompletionContext m_context = null;
 		[JsonIgnore]	TextDocumentIdentifier m_textDocument = null;
 		[JsonIgnore]	Position m_position = null;

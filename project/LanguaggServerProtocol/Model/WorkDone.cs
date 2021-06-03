@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 
 namespace LSP.Model
 {
-    //type ProgressToken = integer | string;
-    using ProgressToken = System.String;
-
     interface IWorkDoneProgressOptions
 	{
         bool workDoneProgress { get; set; }

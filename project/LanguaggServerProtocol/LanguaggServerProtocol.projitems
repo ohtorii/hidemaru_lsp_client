@@ -10,14 +10,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Microsoft.Python.LanguageServer\Classes.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Converter\BooleanOrConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Converter\StringOrMarkupContentConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Converter\TextDocumentSyncConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Converter\TextEditOrInsertReplaceEditConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Model\BooleanOr.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Model\StringOrMarkupContent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Model\TextEdit.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Server\Capabilities\TextDocumentSync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Dap.Protocol\Models\ProgressToken.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Dap.Protocol\Serialization\ProgressTokenConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Serialization\Converter\BooleanOrConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Serialization\Converter\StringOrMarkupContentConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Serialization\Converter\TextDocumentSyncConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Serialization\Converter\TextEditOrInsertReplaceEditConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Model\BooleanOr.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Model\StringOrMarkupContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Model\TextEdit.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Server\Capabilities\TextDocumentSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\AsyncStreamReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\Logger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\RequestIdGenerator.cs" />
@@ -31,8 +33,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\CodeLensRefresh.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Command.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Completion.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Converter\NumberEnumConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Serialization\Converter\NumberEnumConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Configuration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\CreatingWorkDoneProgress.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Diagnostic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DidChangeConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DidChangeTextDocument.cs" />
@@ -48,7 +51,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\ExecuteCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\FindReferences.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\FoldingRange.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Generation\StringEnumAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\JsonRpc\Generation\StringEnumAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\GotoDeclaration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\GoToDefinition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\GoToImplementation.cs" />
@@ -62,6 +65,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\Monikers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\NotificationMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\PrepareCallHierarchy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\ProgressSupport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\PublishDiagnostics.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\RegisterCapability.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\RegularExpressions.cs" />
@@ -84,5 +88,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\LICENSE" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Serialization\" />
+    <Folder Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\JsonRpc\" />
   </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using DocumentUri = System.String;
-using ProgressToken = System.String; //integer | string;
+
 
 
 namespace LSP.Model

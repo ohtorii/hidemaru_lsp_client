@@ -40,7 +40,7 @@ namespace LSP.Model
 	{
 		public ITextDocumentIdentifier textDocument { get; set; }
 		public IPosition position { get; set; }
-		public string workDoneToken { get; set; }
-		public string partialResultToken { get; set; }
+		ProgressToken IWorkDoneProgressParams.workDoneToken { get; set; }
+		ProgressToken IPartialResultParams.partialResultToken { get; set; }
 	}
 }

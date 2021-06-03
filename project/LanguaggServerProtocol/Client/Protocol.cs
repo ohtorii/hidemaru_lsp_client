@@ -24,6 +24,7 @@ namespace LSP.Client
             /// method: ‘window/showMessage’
             /// </summary>
             public Action<ShowMessageParams> OnWindowShowMessage { get; set; }
+
             public Action<ResponseMessage> OnResponseError { get; set; }
             /// <summary>
             /// method: 'workspace/configuration'
@@ -32,8 +33,8 @@ namespace LSP.Client
             /// <summary>
             /// method: 'client/registerCapability'
             /// </summary>
-            internal Action<int, RegistrationParams> OnClientRegisterCapability { get; set; }
-            public ILogger  logger;
+            public Action<int, RegistrationParams> OnClientRegisterCapability { get; set; }
+            public Action<WorkDoneProgressCreateParams> OnWindowWorkDoneProgressCreate { get; set; }
         }
         InitializeParameter param_ = null;
 
@@ -67,11 +68,7 @@ namespace LSP.Client
             if (streamString.Length == 0)
             {
                 return false;
-            }            
-            {
-                var jsonDataUnicode = Encoding.UTF8.GetString(streamString);
-                param_.logger.Info(jsonDataUnicode);
-            }
+            }                        
 
             lock (bufferStreamUTF8_)
             {
@@ -336,6 +333,9 @@ namespace LSP.Client
                 case "client/registerCapability":
                     param_.OnClientRegisterCapability(request.id, requestParams.ToObject<RegistrationParams>());
                     break;
+                case "window/workDoneProgress/create":
+
+                    break;
                 default:
                     Console.WriteLine(string.Format("[Error]Not impliment. method={0}/params={1}",request.method, request.@params));
                     break;
@@ -357,14 +357,12 @@ namespace LSP.Client
                         this.param_.OnWindowLogMessage(new LogMessageParams { type = val, message = mes });
                     }
                     break;
-
                 case "window/showMessage":
                     var showMessage = (ShowMessageParams)notification.@params;
+                    this.param_.OnWindowShowMessage(showMessage);
                     break;
-
                 default:
-                    Console.WriteLine(String.Format("[{0}]{1}", notification.method, notification.@params));
-                    //pass
+                    Console.WriteLine(String.Format("[Error]Not impliment. [{0}]{1}", notification.method, notification.@params));
                     break;
             }
         }

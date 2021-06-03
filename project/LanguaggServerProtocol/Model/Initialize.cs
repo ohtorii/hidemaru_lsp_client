@@ -52,8 +52,8 @@ namespace LSP.Model
 		/*Memo: インスタンスを生成するとサーバがResponseを返さないため、nullで運用中。
 		 */
 		public WorkspaceFolder[] workspaceFolders { get; set; } = null;
-		public string workDoneToken { get; set; } = null;
 		public string rootPath { get; set; }
+		ProgressToken IWorkDoneProgressParams.workDoneToken { get; set; }
 
 		ClientInfo_ m_clientInfo = null;
 	}
