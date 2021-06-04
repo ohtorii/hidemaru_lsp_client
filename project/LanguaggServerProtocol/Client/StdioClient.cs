@@ -77,7 +77,8 @@ namespace LSP.Client
 							OnResponseError=this.OnResponseError,
 							OnWorkspaceConfiguration=this.OnWorkspaceConfiguration,
 							OnClientRegisterCapability=this.OnClientRegisterCapability,
-							OnWindowWorkDoneProgressCreate=this.OnWindowWorkDoneProgressCreate
+							OnWindowWorkDoneProgressCreate=this.OnWindowWorkDoneProgressCreate,
+							OnProgress=this.OnProgress
 						},
 						source_.Token);
 
@@ -132,6 +133,11 @@ namespace LSP.Client
 		{
 			//Todo: window/workDoneProgress/create
 			Console.WriteLine("Todo: window/workDoneProgress/createを実装する");
+		}
+		void OnProgress(ProgressParams param)
+		{
+			//Todo: $/progress
+			Console.WriteLine("Todo: $/progressを実装する");
 		}
 		#endregion
 
