@@ -35,6 +35,10 @@ namespace LSP.Client
             /// </summary>
             public Action<int, RegistrationParams> OnClientRegisterCapability { get; set; }
             public Action<int, WorkDoneProgressCreateParams> OnWindowWorkDoneProgressCreate { get; set; }
+            /// <summary>
+            /// method: ‘$/progress
+            /// </summary>
+            public Action<ProgressParams> OnProgress { get; set; }
         }
         InitializeParameter param_ = null;
 
@@ -292,13 +296,11 @@ namespace LSP.Client
 			{
 				if (containId)
 				{
-                    //サーバからの問い合わせ
                     Request(receiver);
                     return true;
                 }
 				else
 				{
-                    //サーバからの通知
                     Notification(receiver);
                     return true;
                 }
@@ -307,7 +309,6 @@ namespace LSP.Client
 			{
                 if (containId)
 				{
-                    //サーバからの返答
                     Response(receiver);
                     return true;
 				}
@@ -329,41 +330,40 @@ namespace LSP.Client
 			{
                 case "workspace/configuration":
                     param_.OnWorkspaceConfiguration(request.id,requestParams.ToObject<ConfigurationParams>());
-                    break;
+                    return;
                 case "client/registerCapability":
                     param_.OnClientRegisterCapability(request.id, requestParams.ToObject<RegistrationParams>());
-                    break;
+                    return;
                 case "window/workDoneProgress/create":
                     param_.OnWindowWorkDoneProgressCreate(request.id, requestParams.ToObject<WorkDoneProgressCreateParams>());
-                    break;
+                    return;
                 default:
                     Console.WriteLine(string.Format("[Error]Not impliment. method={0}/params={1}",request.method, request.@params));
-                    break;
+                    return;
             }
 		}
         void Notification(JObject receiver)
 		{
             var notification = receiver.ToObject<NotificationMessage>();
+            var notificationParams = (JObject)notification.@params;
             switch (notification.method)
             {
                 case "window/logMessage":
-                    if (this.param_.OnWindowLogMessage != null)
-                    {
-                        var _param = (JObject)notification.@params;
-                        var jVal = (JValue)_param["type"];
-                        var jMes = (JValue)_param["message"];
-                        var val = (MessageType)Enum.ToObject(typeof(MessageType), jVal.Value);
-                        var mes = (string)jMes.Value;
-                        this.param_.OnWindowLogMessage(new LogMessageParams { type = val, message = mes });
-                    }
-                    break;
+                    var jVal = (JValue)notificationParams["type"];
+                    var jMes = (JValue)notificationParams["message"];
+                    var val = (MessageType)Enum.ToObject(typeof(MessageType), jVal.Value);
+                    var mes = (string)jMes.Value;
+                    this.param_.OnWindowLogMessage(new LogMessageParams { type = val, message = mes });
+                    return;
                 case "window/showMessage":
-                    var showMessage = (ShowMessageParams)notification.@params;
-                    this.param_.OnWindowShowMessage(showMessage);
-                    break;
+                    this.param_.OnWindowShowMessage(notificationParams.ToObject<ShowMessageParams>());
+                    return;
+                case "$/progress":
+                    this.param_.OnProgress(notificationParams.ToObject<ProgressParams>());
+                    return;
                 default:
                     Console.WriteLine(String.Format("[Error]Not impliment. [{0}]{1}", notification.method, notification.@params));
-                    break;
+                    return;
             }
         }
         void Response(JObject receiver)
