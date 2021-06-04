@@ -1,22 +1,26 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace LSP.Model
 {	
 
-#if false
-	interface ProgressParams<T>
+	interface IProgressParams
 	{
 		/**
 		 * The progress token provided by the client or server.
 		 */
-		token: ProgressToken;
+		ProgressToken token { get; set; }
 
 		/**
 		 * The progress data.
 		 */
-		value: T;
+		WorkDoneProgressBase value { get; set; }
 	}
-#endif
+	class ProgressParams : IProgressParams
+	{
+		public ProgressToken token { get; set; }
+		public WorkDoneProgressBase value { get; set; }
+	}
 }

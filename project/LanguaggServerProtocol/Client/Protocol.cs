@@ -34,7 +34,7 @@ namespace LSP.Client
             /// method: 'client/registerCapability'
             /// </summary>
             public Action<int, RegistrationParams> OnClientRegisterCapability { get; set; }
-            public Action<WorkDoneProgressCreateParams> OnWindowWorkDoneProgressCreate { get; set; }
+            public Action<int, WorkDoneProgressCreateParams> OnWindowWorkDoneProgressCreate { get; set; }
         }
         InitializeParameter param_ = null;
 
@@ -334,7 +334,7 @@ namespace LSP.Client
                     param_.OnClientRegisterCapability(request.id, requestParams.ToObject<RegistrationParams>());
                     break;
                 case "window/workDoneProgress/create":
-
+                    param_.OnWindowWorkDoneProgressCreate(request.id, requestParams.ToObject<WorkDoneProgressCreateParams>());
                     break;
                 default:
                     Console.WriteLine(string.Format("[Error]Not impliment. method={0}/params={1}",request.method, request.@params));
@@ -441,42 +441,6 @@ namespace LSP.Client
 
             return false;
         }
-
-        class Logger
-        {
-            string logFileName_;
-            bool firstWrite_;
-            public Logger(string logFilename)
-			{
-                this.logFileName_ = logFilename;
-                this.firstWrite_ = true;
-            }
-            public void Log(string str)
-            {
-                if ((logFileName_ == null) || (logFileName_.Length == 0))
-                {
-                    return;
-                }
-                if (firstWrite_)
-                {
-                    CreateDirectory();
-                    File.WriteAllText(logFileName_, str);
-                    firstWrite_ = false;
-                }
-                else
-                {
-                    File.AppendAllText(logFileName_, str);
-                }
-            }
-            void CreateDirectory()
-			{
-                var dirName = System.IO.Path.GetDirectoryName(logFileName_);
-                Directory.CreateDirectory(dirName);
-            }
-        }
-
-
-
         class ByteListUtil
         {
             public static bool StartsWith(List<byte> buf, string str)

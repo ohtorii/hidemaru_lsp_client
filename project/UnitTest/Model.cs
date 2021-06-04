@@ -10,7 +10,7 @@ namespace UnitTest
 	public class Model
 	{
 		[TestMethod]
-		public void TestMethod1()
+		public void TestServerCapabilities_1()
 		{
 			//現時点では例外を出力しなければ良い
 			var json_string = @"{""implementationProvider"":{""workDoneProgress"":true,""documentSelector"":null}}";
@@ -18,7 +18,51 @@ namespace UnitTest
 			var response = receiver.ToObject<ServerCapabilities>();
 		}
 		[TestMethod]
-		public void TestMethod2()
+		public void TestServerCapabilities_2()
+		{
+			var json_py =
+			@"{	""textDocumentSync"": {
+					""openClose"": true, 
+					""change"": 2, 
+					""willSave"": false, 
+					""willSaveWaitUntil"": false, 
+					""save"": true
+				}, 
+				""completionProvider"": {
+					""triggerCharacters"": [""."", ""'"", ""\""""], 
+					""resolveProvider"": true
+				}, 
+				""hoverProvider"": true, 
+				""signatureHelpProvider"": {
+					""triggerCharacters"": [""("", "",""]
+				}, 
+				""definitionProvider"": true, 
+				""referencesProvider"": true, 
+				""documentHighlightProvider"": true, 
+				""documentSymbolProvider"": true, 
+				""codeActionProvider"": {
+					""codeActionKinds"": [""refactor.inline"", ""refactor.extract""]
+				}, 
+				""renameProvider"": true, 
+				""executeCommandProvider"": {
+					""commands"": []
+				}, 
+				""workspaceSymbolProvider"": true, 
+				""workspace"": {
+					""workspaceFolders"": {
+						""supported"": true, 
+						""changeNotifications"": true
+					}
+				}
+			}";
+			var response = ((JObject)JsonConvert.DeserializeObject(json_py)).ToObject<ServerCapabilities>();
+			var textDocumentSync = response.textDocumentSync;
+			Assert.AreEqual(textDocumentSync.HasKind, false);
+			Assert.AreEqual(textDocumentSync.HasOptions, true);
+			Assert.AreEqual(textDocumentSync.Options.change, TextDocumentSyncKind.Incremental);
+		}
+		[TestMethod]
+		public void TestInitializeResult()
 		{
 			//現時点では例外を出力しなければ良い
 			var json_string = 
@@ -110,50 +154,66 @@ namespace UnitTest
 			}
 
 		}
-
 		[TestMethod]
-		public void TestMethod4()
+		public void TestWorkDoneProgressBegin()
 		{
-			var json_py = 
-@"{	""textDocumentSync"": {
-		""openClose"": true, 
-		""change"": 2, 
-		""willSave"": false, 
-		""willSaveWaitUntil"": false, 
-		""save"": true
-	}, 
-	""completionProvider"": {
-		""triggerCharacters"": [""."", ""'"", ""\""""], 
-		""resolveProvider"": true
-	}, 
-	""hoverProvider"": true, 
-	""signatureHelpProvider"": {
-		""triggerCharacters"": [""("", "",""]
-	}, 
-	""definitionProvider"": true, 
-	""referencesProvider"": true, 
-	""documentHighlightProvider"": true, 
-	""documentSymbolProvider"": true, 
-	""codeActionProvider"": {
-		""codeActionKinds"": [""refactor.inline"", ""refactor.extract""]
-	}, 
-	""renameProvider"": true, 
-	""executeCommandProvider"": {
-		""commands"": []
-	}, 
-	""workspaceSymbolProvider"": true, 
-	""workspace"": {
-		""workspaceFolders"": {
-			""supported"": true, 
-			""changeNotifications"": true
+			var json = 
+				@"{	""token"":1,
+					""value"":{
+						""cancellable"":true,
+						""kind"":""begin"",
+						""percentage"":12,
+						""title"":""Loading workspace""
+					}
+				}";
+			var response = ((JObject)JsonConvert.DeserializeObject(json)).ToObject<ProgressParams>();
+			Assert.AreEqual(response.token.IsLong, true);
+			Assert.AreEqual(response.token.Long, 1);
+			var value = (WorkDoneProgressBegin)response.value;
+			Assert.AreEqual(value.kind , "begin");
+			Assert.AreEqual(value.cancellable, true);
+			Assert.AreEqual(value.percentage,(uint)12);
+			Assert.AreEqual(value.message,"");
+			Assert.AreEqual(value.title, "Loading workspace");
+		}
+		[TestMethod]
+		public void TestWorkDoneProgressReport()
+		{
+			var json =
+				@"{	""token"":""1d-22-ddd-3"",
+					""value"":{
+						""cancellable"":true,
+						""kind"":""report"",
+						""percentage"":12,
+						""message"":""FOO""
+					}
+				}";
+			var response = ((JObject)JsonConvert.DeserializeObject(json)).ToObject<ProgressParams>();
+			Assert.AreEqual(response.token.IsString, true);
+			Assert.AreEqual(response.token.String, "1d-22-ddd-3");
+			var value = (WorkDoneProgressReport)response.value;
+			Assert.AreEqual(value.kind, "report");
+			Assert.AreEqual(value.cancellable, true);
+			Assert.AreEqual(value.percentage, (uint)12);
+			Assert.AreEqual(value.message, "FOO");
+		}
+		[TestMethod]
+		public void TestWorkDoneProgressEnd()
+		{
+			var json =
+				@"{	""token"":""1d-22-ddd-3"",
+					""value"":{
+						""kind"":""end"",
+						""message"":""BAR""
+					}
+				}";
+			var response = ((JObject)JsonConvert.DeserializeObject(json)).ToObject<ProgressParams>();
+			Assert.AreEqual(response.token.IsString, true);
+			Assert.AreEqual(response.token.String, "1d-22-ddd-3");
+			var value = (WorkDoneProgressEnd)response.value;
+			Assert.AreEqual(value.kind, "end");
+			Assert.AreEqual(value.message, "BAR");
 		}
 	}
-}";
-			var response = ((JObject)JsonConvert.DeserializeObject(json_py)).ToObject<ServerCapabilities>();
-			var textDocumentSync = response.textDocumentSync;
-			Assert.AreEqual(textDocumentSync.HasKind,false);
-			Assert.AreEqual(textDocumentSync.HasOptions, true);
-			Assert.AreEqual(textDocumentSync.Options.change, TextDocumentSyncKind.Incremental);
-		}
-	}
+	
 }

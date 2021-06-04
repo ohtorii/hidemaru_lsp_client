@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
 
 namespace LSP.Model //OmniSharp.Extensions.DebugAdapter.Protocol.Models
 {
-	//[DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
+    [JsonConverter(typeof(ProgressTokenConverter))]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
 	public class ProgressToken : IEquatable<long>, IEquatable<string>
     {
         private long? _long;

@@ -76,7 +76,8 @@ namespace LSP.Client
 							OnWindowShowMessage=this.OnWindowShowMessage,
 							OnResponseError=this.OnResponseError,
 							OnWorkspaceConfiguration=this.OnWorkspaceConfiguration,
-							OnClientRegisterCapability=this.OnClientRegisterCapability
+							OnClientRegisterCapability=this.OnClientRegisterCapability,
+							OnWindowWorkDoneProgressCreate=this.OnWindowWorkDoneProgressCreate
 						},
 						source_.Token);
 
@@ -127,7 +128,12 @@ namespace LSP.Client
 			//Todo: client/registerCapability
 			Console.WriteLine("Todo: client/registerCapabilityを実装する");
 		}
-#endregion
+		void OnWindowWorkDoneProgressCreate(int id, WorkDoneProgressCreateParams param)
+		{
+			//Todo: window/workDoneProgress/create
+			Console.WriteLine("Todo: window/workDoneProgress/createを実装する");
+		}
+		#endregion
 
 		#region Process_Event
 		private void Client_standardOutputReceived(object sender, byte[] e)

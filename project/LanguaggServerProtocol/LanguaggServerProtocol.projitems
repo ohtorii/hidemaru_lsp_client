@@ -6,7 +6,7 @@
     <SharedGUID>59d513f0-4fd2-49ad-a79a-848752ea8750</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>LSP.Model</Import_RootNamespace>
+    <Import_RootNamespace>LSP</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\Microsoft.Python.LanguageServer\Classes.cs" />
@@ -80,10 +80,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\TextDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\TextEdit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\WillCreateFiles.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\WorkDone.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\WorkDoneProgress.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceEdit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceFolders.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceSymbols.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Converter\WorkDoneProgressBaseConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ExtensionMethods.cs" />
   </ItemGroup>
   <ItemGroup>
