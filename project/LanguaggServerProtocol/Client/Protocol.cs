@@ -12,37 +12,49 @@ using System.Threading;
 
 namespace LSP.Client
 {
+    
+
     class Protocol
     {
-        public class InitializeParameter
-        {
-            /// <summary>
-            /// method: ‘window/logMessage’
-            /// </summary>
-            public Action<LogMessageParams> OnWindowLogMessage { get; set; }
-            /// <summary>
-            /// method: ‘window/showMessage’
-            /// </summary>
-            public Action<ShowMessageParams> OnWindowShowMessage { get; set; }
-
-            public Action<ResponseMessage> OnResponseError { get; set; }
-            /// <summary>
-            /// method: 'workspace/configuration'
-            /// </summary>
-            public Action<int,ConfigurationParams> OnWorkspaceConfiguration { get; set; }
-            /// <summary>
-            /// method: 'client/registerCapability'
-            /// </summary>
-            public Action<int, RegistrationParams> OnClientRegisterCapability { get; set; }
-            public Action<int, WorkDoneProgressCreateParams> OnWindowWorkDoneProgressCreate { get; set; }
-            /// <summary>
-            /// method: ‘$/progress
-            /// </summary>
-            public Action<ProgressParams> OnProgress { get; set; }
-        }
-        InitializeParameter param_ = null;
-
-
+        public delegate void WindowLogMessageHandler(LogMessageParams param);
+        public delegate void WindowShowMessageHandler(ShowMessageParams param);
+        public delegate void ResponseErrorHandler(ResponseMessage param);
+        public delegate void WorkspaceConfigurationHandler(int id, ConfigurationParams param);
+        public delegate void WorkspaceSemanticTokensRefreshHandler();
+        public delegate void ClientRegisterCapabilityHandler(int id, RegistrationParams param);
+        public delegate void WindowWorkDoneProgressCreateHandler(int id, WorkDoneProgressCreateParams param);
+        public delegate void ProgressHandler(ProgressParams param);
+        public delegate void TextDocumentPublishDiagnosticsHandler(PublishDiagnosticsParams param);
+        /// <summary>
+        /// method: ‘window/logMessage’
+        /// </summary>
+        public event WindowLogMessageHandler    OnWindowLogMessage;
+        /// <summary>
+        /// method: ‘window/showMessage’
+        /// </summary>
+        public event WindowShowMessageHandler   OnWindowShowMessage;
+        public event ResponseErrorHandler       OnResponseError;
+        /// <summary>
+        /// method: 'workspace/configuration'
+        /// </summary>
+        public event WorkspaceConfigurationHandler          OnWorkspaceConfiguration;
+        /// <summary>
+        /// method: 'workspace/semanticTokens/refresh'
+        /// </summary>
+        public event WorkspaceSemanticTokensRefreshHandler  OnWorkspaceSemanticTokensRefresh;
+        /// <summary>
+        /// method: 'client/registerCapability'
+        /// </summary>
+        public event ClientRegisterCapabilityHandler        OnClientRegisterCapability;
+        public event WindowWorkDoneProgressCreateHandler    OnWindowWorkDoneProgressCreate;
+        /// <summary>
+        /// method: ‘$/progress
+        /// </summary>
+        public event ProgressHandler                        OnProgress;
+        /// <summary>
+        /// method: ‘textDocument/publishDiagnostics'
+        /// </summary>
+        public event TextDocumentPublishDiagnosticsHandler  OnTextDocumentPublishDiagnostics;
         enum Mode
         {
             FindContextLength,
@@ -62,9 +74,8 @@ namespace LSP.Client
         List<byte> bufferStreamUTF8_ = new List<byte>();
         
 
-        public Protocol(InitializeParameter param, CancellationToken token)
+        public Protocol(CancellationToken token)
 		{
-            this.param_ = param;
             this.cancelToken_ = token;
         }
         public bool StoreBuffer(byte[] streamString)
@@ -329,13 +340,13 @@ namespace LSP.Client
             switch (request.method)
 			{
                 case "workspace/configuration":
-                    param_.OnWorkspaceConfiguration(request.id,requestParams.ToObject<ConfigurationParams>());
+                    this.OnWorkspaceConfiguration(request.id,requestParams.ToObject<ConfigurationParams>());
                     return;
                 case "client/registerCapability":
-                    param_.OnClientRegisterCapability(request.id, requestParams.ToObject<RegistrationParams>());
+                    this.OnClientRegisterCapability(request.id, requestParams.ToObject<RegistrationParams>());
                     return;
                 case "window/workDoneProgress/create":
-                    param_.OnWindowWorkDoneProgressCreate(request.id, requestParams.ToObject<WorkDoneProgressCreateParams>());
+                    this.OnWindowWorkDoneProgressCreate(request.id, requestParams.ToObject<WorkDoneProgressCreateParams>());
                     return;
                 default:
                     Console.WriteLine(string.Format("[Error]Not impliment. method={0}/params={1}",request.method, request.@params));
@@ -348,18 +359,24 @@ namespace LSP.Client
             var notificationParams = (JObject)notification.@params;
             switch (notification.method)
             {
+                case "textDocument/publishDiagnostics":
+                    this.OnTextDocumentPublishDiagnostics(notificationParams.ToObject<PublishDiagnosticsParams>());
+                    return;
+                case "workspace/semanticTokens/refresh":
+                    this.OnWorkspaceSemanticTokensRefresh();
+                    return;
                 case "window/logMessage":
                     var jVal = (JValue)notificationParams["type"];
                     var jMes = (JValue)notificationParams["message"];
                     var val = (MessageType)Enum.ToObject(typeof(MessageType), jVal.Value);
                     var mes = (string)jMes.Value;
-                    this.param_.OnWindowLogMessage(new LogMessageParams { type = val, message = mes });
+                    this.OnWindowLogMessage(new LogMessageParams { type = val, message = mes });
                     return;
                 case "window/showMessage":
-                    this.param_.OnWindowShowMessage(notificationParams.ToObject<ShowMessageParams>());
+                    this.OnWindowShowMessage(notificationParams.ToObject<ShowMessageParams>());
                     return;
                 case "$/progress":
-                    this.param_.OnProgress(notificationParams.ToObject<ProgressParams>());
+                    this.OnProgress(notificationParams.ToObject<ProgressParams>());
                     return;
                 default:
                     Console.WriteLine(String.Format("[Error]Not impliment. [{0}]{1}", notification.method, notification.@params));
@@ -400,7 +417,7 @@ namespace LSP.Client
             }
             else
             {
-                param_.OnResponseError(response);
+                this.OnResponseError(response);
             }            
         }
 

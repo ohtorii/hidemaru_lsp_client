@@ -11,12 +11,18 @@ namespace LSP.Client
 {
 	class Mediator
 	{
+		public Protocol Protocol
+		{
+			get {
+                return protocol_;
+            } 
+        }
         Protocol protocol_;
         Task runner_;
 
-		public Mediator(Protocol.InitializeParameter param, CancellationToken token)
+		public Mediator(CancellationToken token)
         {
-            protocol_ = new Protocol(param,token);
+            protocol_ = new Protocol(token);
         }               
 
         public void StoreBuffer(byte[] streamString)

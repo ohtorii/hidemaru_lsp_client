@@ -70,18 +70,19 @@ namespace LSP.Client
 #else
 			param_ = param.DeepClone();
 #endif
-			mediator_ = new Mediator(
-						new Protocol.InitializeParameter {
-							OnWindowLogMessage= this.OnWindowLogMessage, 
-							OnWindowShowMessage=this.OnWindowShowMessage,
-							OnResponseError=this.OnResponseError,
-							OnWorkspaceConfiguration=this.OnWorkspaceConfiguration,
-							OnClientRegisterCapability=this.OnClientRegisterCapability,
-							OnWindowWorkDoneProgressCreate=this.OnWindowWorkDoneProgressCreate,
-							OnProgress=this.OnProgress
-						},
-						source_.Token);
-
+			mediator_ = new Mediator(	source_.Token);
+			{
+                var Protocol = mediator_.Protocol;
+				Protocol.OnResponseError				+= this.OnResponseError;
+				Protocol.OnWindowLogMessage				+= this.OnWindowLogMessage;
+				Protocol.OnWindowShowMessage            += this.OnWindowShowMessage;
+                Protocol.OnWorkspaceConfiguration       += this.OnWorkspaceConfiguration;
+				Protocol.OnWorkspaceSemanticTokensRefresh += this.OnWorkspaceSemanticTokensRefresh;
+				Protocol.OnClientRegisterCapability     += this.OnClientRegisterCapability;
+                Protocol.OnWindowWorkDoneProgressCreate += this.OnWindowWorkDoneProgressCreate;
+                Protocol.OnProgress                     += this.OnProgress;
+				Protocol.OnTextDocumentPublishDiagnostics += this.OnTextDocumentPublishDiagnostics;
+			}
 			server_ = new ServerProcess(param.exeFileName, param.exeArguments, param.exeWorkingDirectory);			
 			server_.StartProcess();
 			server_.standardErrorReceived += Client_standardErrorReceived;
@@ -124,20 +125,30 @@ namespace LSP.Client
 			
 			ResponseWorkspaceConfiguration(request_id,any);
 		}
+		void OnWorkspaceSemanticTokensRefresh()
+        {
+			//Todo: workspace/semanticTokens/refresh
+			Console.WriteLine("Todo:workspace/semanticTokens/refresh");
+		}
 		void OnClientRegisterCapability(int id, RegistrationParams param)
 		{
 			//Todo: client/registerCapability
-			Console.WriteLine("Todo: client/registerCapabilityを実装する");
+			Console.WriteLine("Todo: client/registerCapability");
 		}
 		void OnWindowWorkDoneProgressCreate(int id, WorkDoneProgressCreateParams param)
 		{
 			//Todo: window/workDoneProgress/create
-			Console.WriteLine("Todo: window/workDoneProgress/createを実装する");
+			Console.WriteLine("Todo: window/workDoneProgress/create");
 		}
 		void OnProgress(ProgressParams param)
 		{
 			//Todo: $/progress
-			Console.WriteLine("Todo: $/progressを実装する");
+			Console.WriteLine("Todo: $/progress");
+		}
+		void OnTextDocumentPublishDiagnostics(PublishDiagnosticsParams param)
+		{
+			//Todo: ‘textDocument/publishDiagnostics'
+			Console.WriteLine("Todo: textDocument/publishDiagnostics");
 		}
 		#endregion
 
