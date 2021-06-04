@@ -152,7 +152,7 @@ namespace ClientExample
 			Console.WriteLine("==== OpenTextDocument ====");
 			DigOpen(client);
 
-			//少し待つ必要がある
+			//少し待つ(本来ならば　$/progress　を待つ）
 			Thread.Sleep(2000);
 			Console.WriteLine("==== Completion ====");
 			Completion(client);
