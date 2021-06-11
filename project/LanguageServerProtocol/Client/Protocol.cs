@@ -335,6 +335,7 @@ namespace LSP.Client
         }
         void Request(JObject receiver)
 		{
+            //Todo: switchをやめて動的登録にする
             var request = receiver.ToObject<RequestMessage>();
             var requestParams= (JObject)request.@params;
             switch (request.method)
@@ -355,6 +356,7 @@ namespace LSP.Client
 		}
         void Notification(JObject receiver)
 		{
+            //Todo: switchをやめて動的登録にする
             var notification = receiver.ToObject<NotificationMessage>();
             var notificationParams = (JObject)notification.@params;
             switch (notification.method)

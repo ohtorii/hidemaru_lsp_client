@@ -1,0 +1,59 @@
+﻿if(version<891){
+	message
+	"秀丸エディタのバージョンが古いためマクロを実行できません。\n"	+
+	"本マクロのドキュメントに記載されたバージョン以降の秀丸エディタをお使いください。";
+	endmacro "0";
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//    グローバル変数
+/////////////////////////////////////////////////////////////////////////////
+$rootFolder=currentmacrodirectory+"\\..";
+$iniServerConfig=$rootFolder+"\\server_config.ini";
+call GetAbsolutePathName $iniServerConfig;
+$iniServerConfig=$$return;
+
+
+/////////////////////////////////////////////////////////////////////////////
+//    メイン処理
+/////////////////////////////////////////////////////////////////////////////
+call main;
+endmacro str(##return);
+
+main:
+    call FindServerConfigFile filetype;
+    $$absConfigFileName=$$return;
+    if($$absConfigFileName==""){
+        message "言語サーバの設定がIniファイル中で見つかりません";
+        return false;
+    }
+    if(! existfile($$absConfigFileName)){
+        message "ファイルが見つからない。"+$$absConfigFileName;
+        return false;
+    }
+
+    #dllHidemaruLspClient=loaddll(currentmacrodirectory+"\\bin\\HidemaruLspClient.dll");
+	if(#dllHidemaruLspClient==0){
+        message "HidemaruLspClient.dllのロードに失敗しました";
+        return false;
+    }
+    ##n=dllfuncw(#dllHidemaruLspClient, "StartServer",$$absConfigFileName);
+
+    return true;
+
+
+FindServerConfigFile:
+    $$extension = $$1;
+    message "$iniServerConfig="+$iniServerConfig+"\n$$extension="+$$extension;
+    $$configFilename=getinistrw($iniServerConfig, "ServerConfig", $$extension);
+    if($$configFilename==""){
+        return "";
+    }
+    $$absConfigFileName=$rootFolder+"\\"+$$configFilename;
+    return $$absConfigFileName;
+
+GetAbsolutePathName:
+	##fso=createobject("Scripting.FileSystemObject");
+	$$abs_filename = member(##fso,"GetAbsolutePathName",$$1);
+	releaseobject ##fso;
+    return $$abs_filename;

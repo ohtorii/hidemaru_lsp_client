@@ -37,6 +37,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <NoWarn>CS0649</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -61,7 +62,7 @@
       <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
-  <Import Project="..\LanguaggServerProtocol\LanguaggServerProtocol.projitems" Label="Shared" />
+  <Import Project="..\LanguageServerProtocol\LanguageServerProtocol.projitems" Label="Shared" />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

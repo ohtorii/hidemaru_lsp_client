@@ -34,6 +34,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <NoWarn>CS0649</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -68,6 +69,6 @@
       <Version>4.7.10</Version>
     </PackageReference>
   </ItemGroup>
-  <Import Project="..\LanguaggServerProtocol\LanguaggServerProtocol.projitems" Label="Shared" />
+  <Import Project="..\LanguageServerProtocol\LanguageServerProtocol.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

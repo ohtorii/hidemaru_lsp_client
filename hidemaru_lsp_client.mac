@@ -1,0 +1,2 @@
+﻿execmacro currentmacrodirectory+"\\internal\\main.mac";
+endmacro getresultex(-1);

@@ -3,19 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31129.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LanguaggServerProtocol", "LanguaggServerProtocol\LanguaggServerProtocol.shproj", "{59D513F0-4FD2-49AD-A79A-848752EA8750}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LanguageServerProtocol", "LanguageServerProtocol\LanguageServerProtocol.shproj", "{59D513F0-4FD2-49AD-A79A-848752EA8750}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{C7A9DDB7-73DC-4FB5-8624-CC9CAA0401F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientExample", "ClientExample\ClientExample.csproj", "{C433A9A6-1EFC-4229-A670-8458D3F7D95A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hidemaru_lsp_client", "hidemaru_lsp_client\hidemaru_lsp_client.csproj", "{85F6B299-48F9-489E-B3ED-10DF9C3E1842}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HidemaruLspClient", "HidemaruLspClient\HidemaruLspClient.csproj", "{85F6B299-48F9-489E-B3ED-10DF9C3E1842}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		LanguaggServerProtocol\LanguaggServerProtocol.projitems*{59d513f0-4fd2-49ad-a79a-848752ea8750}*SharedItemsImports = 13
-		LanguaggServerProtocol\LanguaggServerProtocol.projitems*{c433a9a6-1efc-4229-a670-8458d3f7d95a}*SharedItemsImports = 4
-		LanguaggServerProtocol\LanguaggServerProtocol.projitems*{c7a9ddb7-73dc-4fb5-8624-cc9caa0401f3}*SharedItemsImports = 4
+		LanguageServerProtocol\LanguageServerProtocol.projitems*{59d513f0-4fd2-49ad-a79a-848752ea8750}*SharedItemsImports = 13
+		LanguageServerProtocol\LanguageServerProtocol.projitems*{85f6b299-48f9-489e-b3ed-10df9c3e1842}*SharedItemsImports = 4
+		LanguageServerProtocol\LanguageServerProtocol.projitems*{c433a9a6-1efc-4229-a670-8458d3f7d95a}*SharedItemsImports = 4
+		LanguageServerProtocol\LanguageServerProtocol.projitems*{c7a9ddb7-73dc-4fb5-8624-cc9caa0401f3}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
