@@ -33,7 +33,6 @@ namespace LSP.Client
         /// method: ‘window/showMessage’
         /// </summary>
         public event WindowShowMessageHandler   OnWindowShowMessage;
-        public event ResponseErrorHandler       OnResponseError;
         /// <summary>
         /// method: 'workspace/configuration'
         /// </summary>
@@ -63,7 +62,7 @@ namespace LSP.Client
             ParseContext,
         }
         Mode mode_ = Mode.FindContextLength;
-        Dictionary<int, Action<JToken>> responseCallback_ =new Dictionary<int, Action<JToken>>();
+        Dictionary<RequestId, Action<ResponseMessage>> responseCallback_ =new Dictionary<RequestId, Action<ResponseMessage>>();
 
         CancellationToken cancelToken_;
         
@@ -91,8 +90,9 @@ namespace LSP.Client
                 return true;
             }
         }        
-        public void StoreJob(int id, Action<JToken> callback)
+        public void StoreJob(RequestId id, Action<ResponseMessage> callback)
 		{
+            //var id_ = id.id;
             lock (responseCallback_)
             {
                 Debug.Assert(responseCallback_.ContainsKey(id) == false);
@@ -291,6 +291,7 @@ namespace LSP.Client
                 }
                 catch (JsonReaderException e)
                 {
+                    //Todo: ログ出力する
                     //Console.WriteLine(e);
                     throw;
                 }
@@ -387,9 +388,9 @@ namespace LSP.Client
         }
         void Response(JObject receiver)
 		{            
-            Action<JToken> callback=null;
+            Action<ResponseMessage> callback=null;
             {
-                var id = receiver["id"].ToObject<int>();
+                var id = new RequestId(receiver["id"].ToObject<int>());
                 try
                 {
                     lock (responseCallback_)
@@ -405,21 +406,14 @@ namespace LSP.Client
             }
 
             var response = receiver.ToObject<ResponseMessage>();
-            if (response.error == null)
+            if (callback == null)
             {
-                if (callback == null)
-                {
-                    //対応するid無し。無視する。
-                    Console.WriteLine(string.Format("[対応するid無し]{0}", receiver));
-                }
-                else
-                {
-                    callback((JToken)response.result);
-                }
+                //対応するid無し。無視する。
+                Console.WriteLine(string.Format("[対応するid無し]{0}", receiver));
             }
             else
             {
-                this.OnResponseError(response);
+                callback(response);
             }            
         }
 

@@ -9,20 +9,46 @@ namespace HidemaruLspClient
 {
     public class DllInterface
     {
+        static readonly IntPtr True  = (IntPtr)1;   //1==True
+		static readonly IntPtr False = (IntPtr)0;   //0==False
+
 		[DllExport]
-		public static void StartServer(IntPtr serverConfigFilename)
+		public static IntPtr StartServer(IntPtr serverConfigFilename)
         {
-			Holder.StartServer(Marshal.PtrToStringAuto(serverConfigFilename));
+            if (Holder.StartServer(Marshal.PtrToStringAuto(serverConfigFilename)))
+            {
+                return True;
+            }
+			return False;
 		}
 		[DllExport]
-		public static void FileOpen(IntPtr absFilename)
+		public static IntPtr DigOpen(IntPtr absFilename)
         {
-
+            if (Holder.DigOpen(Marshal.PtrToStringAuto(absFilename)))
+            {
+                return True;
+            }
+            return False;
         }
 		[DllExport]
-		public static IntPtr Completion(IntPtr column, IntPtr line)
+		public static IntPtr Completion(IntPtr absFilename, IntPtr line, IntPtr column)
 		{
-			return new IntPtr(1);
+            var intLine = line.ToInt32();
+            var intColumn = column.ToInt32();
+            if (intLine < 0)
+            {
+                return False;
+            }
+            if (intColumn < 0)
+            {
+                return False;
+            }
+            Holder.Completion(Marshal.PtrToStringAuto(absFilename), (uint)intLine,(uint)intColumn);
+            /*if ()
+            {
+                return True;
+            }*/
+            return False;
 		}
 	}
 }

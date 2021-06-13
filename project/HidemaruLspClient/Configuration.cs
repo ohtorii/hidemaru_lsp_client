@@ -18,6 +18,17 @@ namespace HidemaruLspClient
             public string WorkspaceConfig { get; set; }
         }
 
+        class Method
+        {
+            public string name { get; set; }
+            public Action<Option, object> action { get; set; }
+        }
+        static readonly Method[] Methods = new Method[]{
+            new Method { name="GetExcutable",       action=(Option dst,object src)=>dst.Excutable       =src.ToString()  },
+            new Method { name="GetArguments",       action=(Option dst,object src)=>dst.Arguments       =src.ToString()  },
+            new Method { name="GetRootUri",         action=(Option dst,object src)=>dst.RootUri         =src.ToString()  },
+            new Method { name="GetWorkspaceConfig", action=(Option dst,object src)=>dst.WorkspaceConfig =src.ToString()  },
+        }; 
         static readonly string[] ReferencedAssemblies = new[]
         {
             "mscorlib.dll",
@@ -34,51 +45,39 @@ namespace HidemaruLspClient
         /// 構成ファイルを評価する
         /// </summary>
         /// <param name="filename"></param>
-        public bool Eval(string filename)
+        public static Option Eval(string filename)
         {
-            Initialize();
-
-            return true;
-
-            {//環境変数を
-                /*
-                    %VISUAL_STUDIO_SOLUTION_FILENAME%
-                    %HOST_PROCESS_ID%
-                    %ROOT_URI%
-                 */
-            }
-            var codeDom = CodeDomProvider.CreateProvider("CSharp" /*, new Dictionary<string, string>() { { "TargetFrameworkVersion", "v4.8" } }*/);
-            var compileParameters = new CompilerParameters();
-            compileParameters.CompilerOptions = "/target:library";
-            compileParameters.GenerateInMemory = true;
-            compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);
-            var code = File.ReadAllText(filename);
-            var cr = codeDom.CompileAssemblyFromSource(compileParameters, code);
-            if (cr.Errors.Count > 0)
+            var result = new Option();
             {
-                errorLog_ = cr.Errors[0].ToString();
-                //Console.WriteLine("ERROR: " + cr.Errors[0] + "\nError evaluating cs code");
-                return false;
+                var codeDom = CodeDomProvider.CreateProvider("CSharp" /*, new Dictionary<string, string>() { { "TargetFrameworkVersion", "v4.8" } }*/);
+                var compileParameters = new CompilerParameters
+                {
+                    CompilerOptions = "/target:library",
+                    GenerateInMemory = true,
+                };
+                compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);
+
+                var code = File.ReadAllText(filename);
+                var cr = codeDom.CompileAssemblyFromSource(compileParameters, code);
+                if (cr.Errors.Count > 0)
+                {
+                    //Todo: ログを用意する
+                    Console.WriteLine("ERROR: " + cr.Errors[0] + "\nError evaluating cs code");
+                    return null;
+                }
+                var a = cr.CompiledAssembly;
+                var instance = a.CreateInstance("HidemaruLsp.ServerConfiguration");
+                var t = instance.GetType();
+                foreach (var method in Methods)
+                {
+                    var mi = t.GetMethod(method.name);
+                    var s = mi.Invoke(instance, null);
+                    method.action(result, s);
+                }
             }
-            System.Reflection.Assembly a = cr.CompiledAssembly;
-            var instance = a.CreateInstance("HidemaruLsp.ServerConfiguration");
-            var t = instance.GetType();
-            var mi = t.GetMethod("GetExcutable");
-            var s = mi.Invoke(instance, null);
-            
-        }
-
-        bool success_;
-        string errorLog_;
-        Option Options_;
-
-        void Initialize()
-        {
-            success_ = false;
-            Options_ = null;
-            errorLog_ = "";
-        }
-        public bool Success { get { return success_; } }        
-        public Option Options { get { return Options_; } }
+            return result;
+        }        
+        
+        
     }
 }

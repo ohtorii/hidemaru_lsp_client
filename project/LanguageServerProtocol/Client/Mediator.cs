@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using LSP.Model;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,7 +37,7 @@ namespace LSP.Client
                 runner_ = Task.Run(() => protocol_.Parse());
             }
         }
-        public void StoreResponse(int id, Action<JToken> callback)
+        public void StoreResponse(RequestId id, Action<ResponseMessage> callback)
 		{
             protocol_.StoreJob(id, callback);
 		}

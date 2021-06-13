@@ -38,7 +38,9 @@ main:
         return false;
     }
     ##n=dllfuncw(#dllHidemaruLspClient, "StartServer",$$absConfigFileName);
-
+    if(##n==false){
+        return false;
+    }
     return true;
 
 

@@ -20,6 +20,12 @@ namespace LSP.Client
 		CancellationTokenSource source_=new CancellationTokenSource();
 		RequestIdGenerator requestIdGenerator_=new RequestIdGenerator();
 
+		class Response{
+			public object Item { get; set; } = null;
+			public bool Exist { get; set; } = false;
+        }
+		Dictionary<RequestId, Response> response_ = new Dictionary<RequestId, Response>();
+
 		public enum Mode
 		{
 			Init,
@@ -73,7 +79,6 @@ namespace LSP.Client
 			mediator_ = new Mediator(	source_.Token);
 			{
                 var Protocol = mediator_.Protocol;
-				Protocol.OnResponseError				+= this.OnResponseError;
 				Protocol.OnWindowLogMessage				+= this.OnWindowLogMessage;
 				Protocol.OnWindowShowMessage            += this.OnWindowShowMessage;
                 Protocol.OnWorkspaceConfiguration       += this.OnWorkspaceConfiguration;
@@ -92,14 +97,14 @@ namespace LSP.Client
 			server_.StartThreadLoop();
 		}
 #region LSP_Event
-		void OnResponseError(ResponseMessage response)
+		/*void OnResponseError(ResponseMessage response)
 		{
 			Console.WriteLine(string.Format("[OnResponseError] id={0}/error={1}", response.id, response.error));
 			const string indent = "  ";
 			Console.WriteLine(indent + string.Format("code={0}",response.error.code));
 			Console.WriteLine(indent + string.Format("data={0}", response.error.@data));
 			Console.WriteLine(indent + string.Format("message={0}", response.error.message));
-		}
+		}*/
 		void OnWindowLogMessage(LogMessageParams param)
 		{
 			Console.WriteLine(String.Format("[OnWindowLogMessage]{0}",param.message));
@@ -186,8 +191,9 @@ namespace LSP.Client
 			Status = Mode.ServerInitializeStart;
 		}		
 		//Memo: デバッグ用にpublicとしている
-		void ActionInitialize(JToken arg)
+		void ActionInitialize(ResponseMessage response)
 		{
+			var arg = (JToken)response.result;
 			var result = arg.ToObject<InitializeResult>();
 			Status = Mode.ServerInitializeFinish;
 		}
@@ -208,34 +214,55 @@ namespace LSP.Client
 			Debug.Assert(Status == Mode.ClientInitializeFinish);
 			SendNotification(param, "textDocument/didChange");
 		}
-		public void SendTextDocumentCompletion(ICompletionParams param)
+		public RequestId SendTextDocumentCompletion(ICompletionParams param)
 		{
 			Debug.Assert(Status == Mode.ClientInitializeFinish);
-			SendRequest(param, "textDocument/completion", ActionTextDocumentCompletion);
+			return SendRequest(param, "textDocument/completion", ActionTextDocumentCompletion);
 		}		
-		public void ActionTextDocumentCompletion(JToken arg)
+		public void ActionTextDocumentCompletion(ResponseMessage response)
 		{
-			if (arg == null)
-			{
-				Console.WriteLine("Completion==null");
+            if (response.error != null)
+            {
+				//エラーあり
 				return;
+            }
+
+			CompletionList f(JToken arg) {
+				if (arg == null)
+				{
+					Console.WriteLine("Completion==null");
+					return null;
+				}
+				if (arg is JArray)
+				{
+					//CompletionItem[]
+					var items = arg.ToObject<CompletionItem[]>();
+					Console.WriteLine("Completion. num={0}", items.Length);
+					return new CompletionList { items=items};
+				}
+				var obj = arg.ToObject<JObject>();
+				if (obj.ContainsKey("isIncomplete"))
+				{
+					//CompletionList
+					var list = obj.ToObject<CompletionList>();
+					Console.WriteLine("Completion. num={0}", list.items.Length);
+					return list;
+				}
+				Console.WriteLine("Completion. Not found.");
+				return null;
 			}
-			if(arg is JArray)
-			{
-				//CompletionItem[]
-				var items = arg.ToObject<CompletionItem[]>();
-				Console.WriteLine("Completion. num={0}",items.Length);
-				return;
+			
+			var id = new RequestId(response.id);
+			var value = new Response { 
+								Item = f((JToken)response.result), 
+								Exist = true 
+							};
+            lock (response_)
+            {
+				動作確認する
+				Debug.Assert(response_.ContainsKey(id));
+				response_[id] = value;
 			}
-			var obj = arg.ToObject<JObject>();
-			if(obj.ContainsKey("isIncomplete"))
-			{
-				//CompletionList
-				var list = obj.ToObject<CompletionList>();
-				Console.WriteLine("Completion. num={0}", list.items.Length);
-				return;
-			}
-			Console.WriteLine("Completion. Not found.");
 		}
 
 		public void SendWorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)
@@ -254,17 +281,67 @@ namespace LSP.Client
 			SendResponse(any, request_id, NullValueHandling.Include);
 		}
 
-#endregion
+		#endregion
 
-#region 低レイヤー
+		#region  リクエストの返信
+		/// <summary>
+		/// リクエストの返信を取得する
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="timeout"></param>
+		/// <returns></returns>
+		public object QueryResponse(RequestId id, int millisecondsTimeout = -1)
+        {
+			//Todo: ポーリングをやめる(System.Collections.ObjectModel.KeyedCollection<TKey,TItem> クラスを利用できると思う)
+			var sw = new Stopwatch();
+			sw.Start();
+			while (true) {
+				try
+				{
+					lock (response_)
+					{
+						var item = response_[id];
+						if ((item != null) && item.Exist)
+						{
+							response_.Remove(id);
+							return item.Item;
+						}
+					}
+				}
+				catch (KeyNotFoundException)
+				{
+					//pass
+				}
+
+				if(millisecondsTimeout == -1)
+                {
+                    //pass
+                }
+                else
+                {
+					int t = Math.Max(0, millisecondsTimeout);
+                    if (t < sw.ElapsedMilliseconds)
+                    {
+						break;
+                    }
+				}
+
+				Thread.Sleep(1);
+			}
+			return null;
+        }
+		#endregion
+
+		#region 低レイヤー
 		//
 		//低レイヤー
 		//
-		public void SendRequest(object param, string method, Action<JToken> callback)
+		public RequestId SendRequest(object param, string method, Action<ResponseMessage> callback)
 		{
 			var id = requestIdGenerator_.NextId();
 			mediator_.StoreResponse(id, callback);
 			SendRequest(param,method,id);
+			return id;
 		}
 		/// <summary>
 		/// リクエスト送信
@@ -272,12 +349,31 @@ namespace LSP.Client
 		/// <param name="param"></param>
 		/// <param name="method"></param>
 		/// <param name="id"></param>
-		public void SendRequest(object param, string method, int id, NullValueHandling nullValueHandling = NullValueHandling.Ignore)
+		/// <param name="nullValueHandling"></param>
+		/// <returns></returns>
+		public RequestId SendRequest(object param, string method, RequestId id, NullValueHandling nullValueHandling = NullValueHandling.Ignore)
 		{
-			var request = new RequestMessage { id = id, method = method, @params = param };
-			var jsonRpc = JsonConvert.SerializeObject(request, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = nullValueHandling });
-			var payload = CreatePayLoad(jsonRpc);
+			byte[] payload;
+			{
+				var request = new RequestMessage
+				{
+					id      = id.intId,
+					method  = method,
+					@params = param
+				};
+				var jsonRpc = JsonConvert.SerializeObject(
+									request,
+									new JsonSerializerSettings
+									{
+										Formatting			= Formatting.None,
+										NullValueHandling	= nullValueHandling
+									}
+								);
+				payload = CreatePayLoad(jsonRpc);
+			}
+			PrepareToReceiveResponse(id);
 			WriteStandardInput(payload);
+			return id;
 		}
 		/// <summary>
 		/// 通知の送信
@@ -304,7 +400,7 @@ namespace LSP.Client
 		/// <param name="jsonRpc"></param>
 		/// <param name="id"></param>
 		/// <param name="callback"></param>
-		public void SendRaw(string jsonRpc, int id, Action<JToken> callback)
+		public void SendRaw(string jsonRpc, RequestId id, Action<ResponseMessage> callback)
 		{
 			mediator_.StoreResponse(id, callback);
 			var payload = CreatePayLoad(jsonRpc);
@@ -338,6 +434,18 @@ namespace LSP.Client
 			}
 
 			server_.WriteStandardInput(payload);
+		}
+		/// <summary>
+		/// レスポンスを受け取る用意をする
+		/// </summary>
+		/// <param name="id"></param>
+		void PrepareToReceiveResponse(RequestId id)
+        {
+			lock (response_)
+			{
+				Debug.Assert(response_.ContainsKey(id)==false);
+				response_[id] = new Response();
+			}
 		}
 #endregion
 	}	
