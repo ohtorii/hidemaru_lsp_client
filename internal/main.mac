@@ -8,7 +8,13 @@
 /////////////////////////////////////////////////////////////////////////////
 //    グローバル変数
 /////////////////////////////////////////////////////////////////////////////
-$rootFolder=currentmacrodirectory+"\\..";
+$hidemaruLspClientDllPath=@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient\bin\Debug\x64\HidemaruLspClient.dll";
+execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $hidemaruLspClientDllPath;
+$hidemaruLspClientDllPath=getresultex(-1);
+
+#dllHidemaruLspClient=0;
+
+$rootFolder=currentmacrodirectory+@"\..";
 $iniServerConfig=$rootFolder+"\\server_config.ini";
 call GetAbsolutePathName $iniServerConfig;
 $iniServerConfig=$$return;
@@ -18,6 +24,10 @@ $iniServerConfig=$$return;
 //    メイン処理
 /////////////////////////////////////////////////////////////////////////////
 call main;
+if(#dllHidemaruLspClient!=0){
+    freedll(#dllHidemaruLspClient);
+    #dllHidemaruLspClient=0;
+}
 endmacro str(##return);
 
 main:
@@ -32,21 +42,30 @@ main:
         return false;
     }
 
-    #dllHidemaruLspClient=loaddll(currentmacrodirectory+"\\bin\\HidemaruLspClient.dll");
+    debuginfo 1;
+    debuginfo "$hidemaruLspClientDllPath="+$hidemaruLspClientDllPath;
+    #dllHidemaruLspClient=loaddll($hidemaruLspClientDllPath);
 	if(#dllHidemaruLspClient==0){
         message "HidemaruLspClient.dllのロードに失敗しました";
         return false;
     }
-    ##n=dllfuncw(#dllHidemaruLspClient, "StartServer",$$absConfigFileName);
+    ##n=dllfuncw(#dllHidemaruLspClient, "Start",$$absConfigFileName,directory2);
     if(##n==false){
+        message "Start に失敗";
         return false;
     }
+    //Memo: -1して0始まりにする
+    ##n=dllfuncw(#dllHidemaruLspClient, "Completion",filename2,lineno-1,column);
+    if(##n==false){
+        message "Completion に失敗";
+        return false;
+    }
+    message "成功";
     return true;
 
 
 FindServerConfigFile:
     $$extension = $$1;
-    message "$iniServerConfig="+$iniServerConfig+"\n$$extension="+$$extension;
     $$configFilename=getinistrw($iniServerConfig, "ServerConfig", $$extension);
     if($$configFilename==""){
         return "";

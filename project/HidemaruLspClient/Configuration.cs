@@ -1,8 +1,10 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,9 +12,11 @@ namespace HidemaruLspClient
 {
     class Configuration
     {
+        static Logger logger = null;
+
         public class Option
         {
-            public string Excutable { get; set; }
+            public string ExcutablePath { get; set; }
             public string Arguments { get; set; }
             public string RootUri { get; set; }
             public string WorkspaceConfig { get; set; }
@@ -24,7 +28,7 @@ namespace HidemaruLspClient
             public Action<Option, object> action { get; set; }
         }
         static readonly Method[] Methods = new Method[]{
-            new Method { name="GetExcutable",       action=(Option dst,object src)=>dst.Excutable       =src.ToString()  },
+            new Method { name="GetExcutablePath",   action=(Option dst,object src)=>dst.ExcutablePath   =src.ToString()  },
             new Method { name="GetArguments",       action=(Option dst,object src)=>dst.Arguments       =src.ToString()  },
             new Method { name="GetRootUri",         action=(Option dst,object src)=>dst.RootUri         =src.ToString()  },
             new Method { name="GetWorkspaceConfig", action=(Option dst,object src)=>dst.WorkspaceConfig =src.ToString()  },
@@ -44,40 +48,65 @@ namespace HidemaruLspClient
         /// <summary>
         /// 構成ファイルを評価する
         /// </summary>
-        /// <param name="filename"></param>
-        public static Option Eval(string filename)
+        /// <param name="serverConfigFilename"></param>
+        public static Option Eval(string serverConfigFilename, string currentSourceCodeDirectory)
         {
-            var result = new Option();
+            if (logger == null)
             {
-                var codeDom = CodeDomProvider.CreateProvider("CSharp" /*, new Dictionary<string, string>() { { "TargetFrameworkVersion", "v4.8" } }*/);
-                var compileParameters = new CompilerParameters
-                {
-                    CompilerOptions = "/target:library",
-                    GenerateInMemory = true,
-                };
-                compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);
-
-                var code = File.ReadAllText(filename);
-                var cr = codeDom.CompileAssemblyFromSource(compileParameters, code);
-                if (cr.Errors.Count > 0)
-                {
-                    //Todo: ログを用意する
-                    Console.WriteLine("ERROR: " + cr.Errors[0] + "\nError evaluating cs code");
-                    return null;
-                }
-                var a = cr.CompiledAssembly;
-                var instance = a.CreateInstance("HidemaruLsp.ServerConfiguration");
-                var t = instance.GetType();
-                foreach (var method in Methods)
-                {
-                    var mi = t.GetMethod(method.name);
-                    var s = mi.Invoke(instance, null);
-                    method.action(result, s);
-                }
+                logger = LogManager.GetCurrentClassLogger();
             }
-            return result;
-        }        
-        
-        
+            LanguageServerProcess.Environment.Initialize(currentSourceCodeDirectory);
+            
+            var temp = new EnterLeaveLogger("Eval",logger);
+            {
+                var result = new Option();
+                {
+                    var codeDom = CodeDomProvider.CreateProvider("CSharp" /*, new Dictionary<string, string>() { { "TargetFrameworkVersion", "v4.8" }}*/);
+                    var compileParameters = new CompilerParameters
+                    {
+                        CompilerOptions  = MakeCompilerOptions(),
+                        GenerateInMemory = true,
+                    };
+                    logger.Debug("CompilerOptions={0}", compileParameters.CompilerOptions);
+                    compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);
+                    logger.Debug("compileParameters.ReferencedAssemblies[]={ReferencedAssemblies}", ReferencedAssemblies.ToList());
+
+                    logger.Info("filename={0}", serverConfigFilename);
+                    var code = File.ReadAllText(serverConfigFilename);
+                    var cr = codeDom.CompileAssemblyFromSource(compileParameters, code);
+                    if (0 < cr.Errors.Count)
+                    {
+                        foreach (var err in cr.Errors){
+                            logger.Error(err);
+                        }
+                        return null;
+                    }
+                    var a = cr.CompiledAssembly;
+                    var instance = a.CreateInstance("LanguageServerProcess.ServerConfiguration");
+                    var t = instance.GetType();
+                    foreach (var method in Methods)
+                    {
+                        var mi = t.GetMethod(method.name);
+                        var s = mi.Invoke(instance, null);
+                        method.action(result, s);
+                        logger.Info("{0}={1}",method.name,s.ToString());
+                    }
+                }
+                return result;
+            }            
+        }    
+        static string MakeCompilerOptions()
+        {
+            var sb = new StringBuilder();
+            sb.Append("/target:library");
+            sb.AppendFormat(" /reference:{0}", DllPath("LanguageServerProcess.dll"));
+            return sb.ToString();
+        }
+        static string DllPath(string dllName)
+        {
+            var self_full_path  = Assembly.GetExecutingAssembly().Location;
+            var self_dir        = Path.GetDirectoryName(self_full_path);
+            return Path.Combine(self_dir, dllName);
+        }
     }
 }

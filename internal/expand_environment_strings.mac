@@ -1,0 +1,11 @@
+﻿/*環境変数を展開する
+
+引数	文字列
+返値	引数を展開した文字列
+*/
+#objShell = createobject("WScript.Shell");
+if(#objShell==0){
+	endmacro "";
+}
+$expand_strings=callmethod_returnstr(#objShell, "ExpandEnvironmentStrings", getarg(0));
+endmacro $expand_strings;

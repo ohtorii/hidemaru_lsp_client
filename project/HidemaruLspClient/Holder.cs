@@ -1,5 +1,6 @@
 ﻿using LSP.Client;
 using LSP.Model;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,60 +13,80 @@ namespace HidemaruLspClient
 {
     class Holder
     {
-        static LSP.Client.StdioClient client_ = null;
-		static Configuration.Option options_=null;
-		static HashSet<string> openedFiles = new HashSet<string>();
-		public static bool StartServer(string serverConfigFilename)
+        static LSP.Client.StdioClient	client_		= null;
+        static LspClientLogger			lspLogger_		= null;
+		static Logger					logger;
+		static Configuration.Option		options_	=null;
+		static HashSet<string>			openedFiles = new HashSet<string>();
+					
+		public static void Initialized(LspClientLogger l)
+        {
+			lspLogger_ = l;
+			logger= LogManager.GetCurrentClassLogger();
+		}
+		public static bool Start(string serverConfigFilename, string currentSourceCodeDirectory)
 		{
-            if (! StartClient(serverConfigFilename))
-            {
-				return false;
-            }
-			InitializeServer();
-			while (client_.Status != LSP.Client.StdioClient.Mode.ServerInitializeFinish)
+			var temp = new EnterLeaveLogger("Start",logger);
 			{
-				Thread.Sleep(10);
+				if (client_ != null)
+				{//起動済み
+					return true;
+				}
+				if (!InitializeClient(serverConfigFilename, currentSourceCodeDirectory))
+				{
+					return false;
+				}
+				InitializeServer();
+				while (client_.Status != LSP.Client.StdioClient.Mode.ServerInitializeFinish)
+				{
+					Thread.Sleep(0);
+				}
+				InitializedClient();
 			}
-			InitializedClient();
-
 			return true;
 		}
-
-		static bool StartClient(string serverConfigFilename)
+		
+		static bool InitializeClient(string serverConfigFilename, string currentSourceCodeDirectory)
         {
-			if (client_ != null)
+			var temp = new EnterLeaveLogger("InitializeClient", logger);
 			{
-				return true;
-			}
-			options_ = Configuration.Eval(serverConfigFilename);
-			if (options_ == null)
-			{
-				return false;
-			}
-			client_ = new LSP.Client.StdioClient();
-			client_.StartLspProcess(
-				new LSP.Client.StdioClient.LspParameter
+				options_ = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
+				if (options_ == null)
 				{
-					exeFileName = options_.Excutable,
-					exeArguments = options_.Arguments
+					return false;
 				}
-			);
+				client_ = new LSP.Client.StdioClient();
+				client_.StartLspProcess(
+					new LSP.Client.StdioClient.LspParameter
+					{
+						logger = lspLogger_,
+						exeFileName = options_.ExcutablePath,
+						exeArguments = options_.Arguments
+					}
+				);
+			}
 			return true;
 		}
 		static void InitializeServer()
 		{
-			var param = UtilInitializeParams.Initialzie();
-			var rootUri = new Uri(options_.RootUri);
-			param.rootUri = rootUri.AbsoluteUri;
-			param.rootPath = rootUri.AbsolutePath;
-			param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "VisualStudio-Solution" } };
-			client_.SendInitialize(param);
+			var temp = new EnterLeaveLogger("InitializeServer", logger);
+			{
+				var param = UtilInitializeParams.Initialzie();
+				var rootUri = new Uri(options_.RootUri);
+				param.rootUri = rootUri.AbsoluteUri;
+				param.rootPath = rootUri.AbsolutePath;
+				param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "VisualStudio-Solution" } };
+				client_.SendInitialize(param);
+			}
 		}
 
 		static void InitializedClient()
 		{
-			var param = new InitializedParams();
-			client_.SendInitialized(param);
+			var temp = new EnterLeaveLogger("InitializedClient", logger);
+			{
+				var param = new InitializedParams();
+				client_.SendInitialized(param);
+			}
 		}
         public static bool DigOpen(string filename)
 		{
@@ -88,6 +109,11 @@ namespace HidemaruLspClient
 		}
 		static public void Completion(string filename, uint line , uint column)
 		{
+            if (!DigOpen(filename))
+            {
+				return;
+            }
+
 			RequestId id;
 			{
 				var param = new CompletionParams();
@@ -101,6 +127,16 @@ namespace HidemaruLspClient
 			}
 			var millisecondsTimeout = 1000;
 			var result = client_.QueryResponse(id,millisecondsTimeout);
+            if (result == null)
+            {
+				lspLogger_.Error("Completion");
+				return;
+            }
+			var completionList = (CompletionList)result;
+			foreach(var item in completionList.items)
+            {
+				System.Diagnostics.Debug.WriteLine(item.detail);
+			}
 		}
 
 		static string FileNameToLanguageId(string filename)

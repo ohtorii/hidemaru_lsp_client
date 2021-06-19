@@ -259,7 +259,6 @@ namespace LSP.Client
 							};
             lock (response_)
             {
-				動作確認する
 				Debug.Assert(response_.ContainsKey(id));
 				response_[id] = value;
 			}
@@ -326,7 +325,7 @@ namespace LSP.Client
                     }
 				}
 
-				Thread.Sleep(1);
+				Thread.Sleep(0);
 			}
 			return null;
         }
