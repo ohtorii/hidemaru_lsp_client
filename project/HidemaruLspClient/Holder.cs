@@ -2,6 +2,7 @@
 using LSP.Model;
 using NLog;
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,11 +19,19 @@ namespace HidemaruLspClient
 		static Logger					logger;
 		static Configuration.Option		options_	=null;
 		static HashSet<string>			openedFiles = new HashSet<string>();
-					
+		static TempFileCollection				tmpFiles;
+		static int tempNumber = 0;
+
 		public static void Initialized(LspClientLogger l)
         {
 			lspLogger_ = l;
 			logger= LogManager.GetCurrentClassLogger();
+
+			if(tmpFiles==null)
+			{
+				Directory.CreateDirectory(Config.tempDirectoryName);
+				tmpFiles=new TempFileCollection(Config.tempDirectoryName, false);
+			}
 		}
 		public static bool Start(string serverConfigFilename, string currentSourceCodeDirectory)
 		{
@@ -107,36 +116,60 @@ namespace HidemaruLspClient
 			openedFiles.Add(filename);
 			return true;
 		}
-		static public void Completion(string filename, uint line , uint column)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="filename"></param>
+		/// <param name="line"></param>
+		/// <param name="column"></param>
+		/// <returns>辞書の一時ファイル名(絶対パス)</returns>
+		static public string Completion(string filename, uint line, uint column)
 		{
-            if (!DigOpen(filename))
-            {
-				return;
-            }
-
-			RequestId id;
+			if (!DigOpen(filename))
 			{
-				var param = new CompletionParams();
-				var sourceUri = new Uri(filename);
-				param.context.triggerKind = CompletionTriggerKind.TriggerCharacter;
-				param.context.triggerCharacter = ".";
-				param.textDocument.uri = sourceUri.AbsoluteUri;
-				param.position.line = line;
-				param.position.character = column;
-				id = client_.SendTextDocumentCompletion(param);
+				return "";
 			}
-			var millisecondsTimeout = 1000;
-			var result = client_.QueryResponse(id,millisecondsTimeout);
-            if (result == null)
-            {
-				lspLogger_.Error("Completion");
-				return;
-            }
+			object result;
+			{
+				RequestId id;
+				{
+					var param = new CompletionParams();
+					var sourceUri = new Uri(filename);
+					param.context.triggerKind = CompletionTriggerKind.Invoked;
+					//param.context.triggerCharacter = ".";
+					param.textDocument.uri = sourceUri.AbsoluteUri;
+					param.position.line = line;
+					param.position.character = column;
+					id = client_.SendTextDocumentCompletion(param);
+				}
+
+				var millisecondsTimeout = 2000;
+				result = client_.QueryResponse(id, millisecondsTimeout);
+				if (result == null)
+				{
+					logger.Error("Completion timeout. millisecondsTimeout={0}", millisecondsTimeout);
+					return "";
+				}
+			}
+
 			var completionList = (CompletionList)result;
-			foreach(var item in completionList.items)
-            {
-				System.Diagnostics.Debug.WriteLine(item.detail);
+			if (completionList.items.Length == 0)
+			{
+				return "";
 			}
+			string tempFilename;
+			{
+				tempFilename = tmpFiles.AddExtension(String.Format("dict{0}", tempNumber));
+				tempNumber++;
+			}
+            using (var file = File.CreateText(tempFilename))
+            {
+                foreach (var item in completionList.items)
+				{
+					file.WriteLine(item.label);
+				}
+			}
+			return tempFilename;
 		}
 
 		static string FileNameToLanguageId(string filename)

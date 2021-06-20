@@ -166,7 +166,7 @@ namespace LSP.Client
 			}
 			{
 				var jsonDataUnicode = Encoding.UTF8.GetString(e);
-				param_.logger.Info("<--- " + jsonDataUnicode);
+				param_.logger.Debug("<--- " + jsonDataUnicode.Replace("\n", "\\n").Replace("\r", "\\r"));
 			}
 			mediator_.StoreBuffer(e);
 		}
@@ -429,7 +429,7 @@ namespace LSP.Client
 
 			{
 				var jsonDataUnicode = Encoding.UTF8.GetString(payload);
-				param_.logger.Info("---> " + jsonDataUnicode);
+				param_.logger.Debug("---> " + jsonDataUnicode.Replace("\n", "\\n").Replace("\r","\\r"));
 			}
 
 			server_.WriteStandardInput(payload);

@@ -69,7 +69,10 @@ namespace HidemaruLspClient
                     };
                     logger.Debug("CompilerOptions={0}", compileParameters.CompilerOptions);
                     compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);
-                    logger.Debug("compileParameters.ReferencedAssemblies[]={ReferencedAssemblies}", ReferencedAssemblies.ToList());
+                    if (logger.IsDebugEnabled)
+                    {
+                        logger.Debug("compileParameters.ReferencedAssemblies[]={ReferencedAssemblies}", ReferencedAssemblies.ToList());
+                    }
 
                     logger.Info("filename={0}", serverConfigFilename);
                     var code = File.ReadAllText(serverConfigFilename);
@@ -89,7 +92,7 @@ namespace HidemaruLspClient
                         var mi = t.GetMethod(method.name);
                         var s = mi.Invoke(instance, null);
                         method.action(result, s);
-                        logger.Info("{0}={1}",method.name,s.ToString());
+                        logger.Info("{0}={1}",method.name,s);
                     }
                 }
                 return result;

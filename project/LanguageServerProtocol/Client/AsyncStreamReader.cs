@@ -22,8 +22,8 @@ namespace LSP.Client
     class AsyncStreamReader
     {
         public event EventHandler<byte[]> DataReceived;
-
-        protected readonly byte[] buffer = new byte[4096];
+        //Memo: 多めに確保しておくとログが見切れにくくなる。
+        protected readonly byte[] buffer = new byte[16*1024];
         private StreamReader reader;
 
         public AsyncStreamReader()

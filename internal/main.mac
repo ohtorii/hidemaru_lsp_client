@@ -55,12 +55,17 @@ main:
         return false;
     }
     //Memo: -1して0始まりにする
-    ##n=dllfuncw(#dllHidemaruLspClient, "Completion",filename2,lineno-1,column);
-    if(##n==false){
+    $$dictionalyFileName=dllfuncstrw(#dllHidemaruLspClient, "Completion",filename2,lineno-1,column);
+    if($$dictionalyFileName==""){
         message "Completion に失敗";
         return false;
     }
-    message "成功";
+
+    //Memo: マクロは中断される
+    autocomplete 0, 0x00000002|0x00000004,0x00008020,$$dictionalyFileName;
+    //Memo: マクロはこの行に到達しない
+
+    //deletefile $$dictionalyFileName;
     return true;
 
 

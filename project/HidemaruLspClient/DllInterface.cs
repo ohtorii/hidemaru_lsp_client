@@ -12,6 +12,7 @@ namespace HidemaruLspClient
     {
         static readonly IntPtr True  = (IntPtr)1;   //1==True
 		static readonly IntPtr False = (IntPtr)0;   //0==False
+        static readonly IntPtr EmptyString = Marshal.StringToHGlobalUni("");
         static DllAssemblyResolver  dasmr            = new DllAssemblyResolver();
         static LspClientLogger      lspClientLogger  = new LspClientLogger(Config.logFileName);
 
@@ -69,30 +70,34 @@ namespace HidemaruLspClient
         [DllExport]
 		public static IntPtr Completion(IntPtr absFilename, IntPtr line, IntPtr column)
 		{
+            var logger = LogManager.GetCurrentClassLogger();
+            logger.Trace("Completion");
             try
             {
                 var intLine = line.ToInt32();
                 var intColumn = column.ToInt32();
                 if (intLine < 0)
                 {
-                    return False;
+                    return EmptyString;
                 }
                 if (intColumn < 0)
                 {
-                    return False;
+                    return EmptyString;
                 }
-                Holder.Completion(Marshal.PtrToStringAuto(absFilename), (uint)intLine, (uint)intColumn);
-                /*if ()
+                var fileName = Holder.Completion(Marshal.PtrToStringAuto(absFilename), (uint)intLine, (uint)intColumn);
+                if (fileName.Length == 0)
                 {
-                    return True;
-                }*/
-                return True;
+                    return EmptyString;
+                }
+                //Todo: メモリを解放する
+                var rawPtr = Marshal.StringToHGlobalUni(fileName);
+                return rawPtr;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                //pass
+                logger.Error(e);
             }
-            return False;
+            return EmptyString;
 		}
         
 	}
