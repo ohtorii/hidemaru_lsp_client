@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HidemaruLspClient
 {
-	class LspClientLogger : LSP.Client.ILogger
+	class LspClientLogger : LSP.Client.Logger
 	{
 		NLog.Logger logger = null;
 		public NLog.Logger GetLogger()
@@ -34,32 +34,39 @@ namespace HidemaruLspClient
 			}
 			logger = NLog.LogManager.GetCurrentClassLogger();
 		}
-		public void Debug(string message)
+		override public bool IsFatalEnabled { get { return logger.IsFatalEnabled; } }
+		override public bool IsErrorEnabled { get { return logger.IsErrorEnabled; } }
+		override public bool IsWarnEnabled { get { return logger.IsWarnEnabled; } }
+		override public bool IsInfoEnabled { get { return logger.IsInfoEnabled; } }
+		override public bool IsDebugEnabled { get { return logger.IsDebugEnabled; } }
+		override public bool IsTraceEnabled { get { return logger.IsTraceEnabled; } }
+
+		override public void Debug(string message)
 		{
 			logger.Debug(message);
 		}
 
-		public void Error(string message)
+		override public void Error(string message)
 		{
 			logger.Error(message);
 		}
 
-		public void Fatal(string message)
+		override public void Fatal(string message)
 		{
 			logger.Fatal(message);
 		}
 
-		public void Info(string message)
+		override public void Info(string message)
 		{
 			logger.Info(message);
 		}
 
-		public void Trace(string message)
+		override public void Trace(string message)
 		{
 			logger.Trace(message);
 		}
 
-		public void Warn(string message)
+		override public void Warn(string message)
 		{
 			logger.Warn(message);
 		}
@@ -67,9 +74,9 @@ namespace HidemaruLspClient
 
 	class EnterLeaveLogger
     {
-		Logger logger;
+        NLog.Logger logger;
 		string methodName;
-		public EnterLeaveLogger(string methodName, Logger logger)
+		public EnterLeaveLogger(string methodName, NLog.Logger logger)
         {
 			this.logger = logger;
 			this.methodName = methodName;

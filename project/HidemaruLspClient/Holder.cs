@@ -16,7 +16,7 @@ namespace HidemaruLspClient
     {
         static LSP.Client.StdioClient	client_		= null;
         static LspClientLogger			lspLogger_		= null;
-		static Logger					logger;
+		static NLog.Logger					logger;
 		static Configuration.Option		options_	=null;
 		static HashSet<string>			openedFiles = new HashSet<string>();
 		static TempFileCollection				tmpFiles;

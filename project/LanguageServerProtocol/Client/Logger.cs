@@ -4,40 +4,29 @@ using System.Text;
 
 namespace LSP.Client
 {
-	interface ILogger
+	/// <summary>
+	/// 
+	/// </summary>
+	class Logger
 	{
-		void Trace(string message);
-		void Debug(string message);
-		void Info(string message);
-		void Warn(string message);
-		void Error(string message);
-		void Fatal(string message);
+		public virtual bool IsFatalEnabled { get; }
+		public virtual bool IsErrorEnabled { get; }
+		public virtual bool IsWarnEnabled { get; }
+		public virtual bool IsInfoEnabled { get; }
+		public virtual bool IsDebugEnabled { get; }
+		public virtual bool IsTraceEnabled { get; }
+		public virtual void Trace(string message)	{ }
+		public virtual void Debug(string message)	{ }
+		public virtual void Info(string message)	{ }
+		public virtual void Warn(string message)	{ }
+		public virtual void Error(string message)	{ }
+		public virtual void Fatal(string message)	{ }
 	}
 
-	class NullLogger : ILogger
+	/// <summary>
+	/// 
+	/// </summary>
+	class NullLogger : Logger
 	{
-		public void Debug(string message)
-		{			
-		}
-
-		public void Error(string message)
-		{		
-		}
-
-		public void Fatal(string message)
-		{		
-		}
-
-		public void Info(string message)
-		{		
-		}
-
-		public void Trace(string message)
-		{		
-		}
-
-		public void Warn(string message)
-		{		
-		}
 	}
 }

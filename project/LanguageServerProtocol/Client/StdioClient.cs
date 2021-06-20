@@ -39,7 +39,7 @@ namespace LSP.Client
 		[Serializable]
 		public class LspParameter
 		{
-			public ILogger logger;
+			public Logger logger;
 			/// <summary>
 			/// 実行ファイル名
 			/// </summary>
@@ -164,6 +164,7 @@ namespace LSP.Client
 			{
 				return;
 			}
+			if(param_.logger.IsDebugEnabled)
 			{
 				var jsonDataUnicode = Encoding.UTF8.GetString(e);
 				param_.logger.Debug("<--- " + jsonDataUnicode.Replace("\n", "\\n").Replace("\r", "\\r"));
@@ -426,7 +427,7 @@ namespace LSP.Client
 		}
 		void WriteStandardInput(byte[] payload)
 		{
-
+			if (param_.logger.IsDebugEnabled)
 			{
 				var jsonDataUnicode = Encoding.UTF8.GetString(payload);
 				param_.logger.Debug("---> " + jsonDataUnicode.Replace("\n", "\\n").Replace("\r","\\r"));
