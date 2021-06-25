@@ -1,5 +1,7 @@
 ﻿using LSP.Client;
 using LSP.Model;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using System;
 using System.CodeDom.Compiler;
@@ -19,19 +21,29 @@ namespace HidemaruLspClient
 		static NLog.Logger					logger;
 		static Configuration.Option		options_	=null;
 		static HashSet<string>			openedFiles = new HashSet<string>();
-		static TempFileCollection				tmpFiles;
-		static int tempNumber = 0;
+		static List<string> tempFilename=new List<string>();
 
 		public static void Initialized(LspClientLogger l)
         {
 			lspLogger_ = l;
 			logger= LogManager.GetCurrentClassLogger();
-
-			if(tmpFiles==null)
-			{
-				Directory.CreateDirectory(Config.tempDirectoryName);
-				tmpFiles=new TempFileCollection(Config.tempDirectoryName, false);
-			}
+			TempFile.Initialize();
+		}
+		public static void Destroy()
+        {
+			var logger = LogManager.GetCurrentClassLogger();
+			foreach (var name in tempFilename)
+            {
+				try
+				{
+					File.Delete(name);
+                }
+                catch(Exception e)
+                {
+					logger.Error(e);
+				}
+            }
+			tempFilename.Clear();
 		}
 		public static bool Start(string serverConfigFilename, string currentSourceCodeDirectory)
 		{
@@ -64,13 +76,18 @@ namespace HidemaruLspClient
 				{
 					return false;
 				}
+				JObject WorkspaceConfiguration=null;
+				if (options_.WorkspaceConfig!="") {
+					WorkspaceConfiguration = (JObject)JsonConvert.DeserializeObject(options_.WorkspaceConfig);
+				}
 				client_ = new LSP.Client.StdioClient();
 				client_.StartLspProcess(
 					new LSP.Client.StdioClient.LspParameter
 					{
 						logger = lspLogger_,
 						exeFileName = options_.ExcutablePath,
-						exeArguments = options_.Arguments
+						exeArguments = options_.Arguments,
+						jsonWorkspaceConfiguration= WorkspaceConfiguration,
 					}
 				);
 			}
@@ -157,19 +174,16 @@ namespace HidemaruLspClient
 			{
 				return "";
 			}
-			string tempFilename;
+			var fs = TempFile.Create();
+			using (var sw = new StreamWriter(fs))
 			{
-				tempFilename = tmpFiles.AddExtension(String.Format("dict{0}", tempNumber));
-				tempNumber++;
-			}
-            using (var file = File.CreateText(tempFilename))
-            {
-                foreach (var item in completionList.items)
+				foreach (var item in completionList.items)
 				{
-					file.WriteLine(item.label);
+					sw.WriteLine(item.label);
 				}
 			}
-			return tempFilename;
+			tempFilename.Add(fs.Name);
+			return fs.Name;
 		}
 
 		static string FileNameToLanguageId(string filename)

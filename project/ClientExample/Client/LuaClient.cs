@@ -123,7 +123,7 @@ namespace ClientExample
 			var FileName = "cmd";
 			var serverCmd = Path.Combine(sumnekoLuaLanguageServer, @"sumneko-lua-language-server.cmd");
 			var Arguments = String.Format(@"/c ""{0}""", serverCmd);
-			var WorkingDirectory = rootPath;
+			var WorkingDirectory = "";//rootPath;
 #endif
 
 			var client = new LSP.Client.StdioClient();

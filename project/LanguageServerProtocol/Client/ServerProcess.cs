@@ -90,6 +90,7 @@ namespace LSP.Client
                 StandardErrorEncoding = Encoding.UTF8,
                 
                 WorkingDirectory= WorkingDirectory,
+                CreateNoWindow  = true,
                 UseShellExecute = false,
             };
         }

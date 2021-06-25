@@ -99,6 +99,20 @@ namespace HidemaruLspClient
             }
             return EmptyString;
 		}
-        
-	}
+
+        [DllExport]
+        public static IntPtr DllDetachFunc_After_Hm866(IntPtr n)
+        {
+            var logger = LogManager.GetCurrentClassLogger();
+            try
+            {
+                logger.Trace("DllDetachFunc_After_Hm866 (n={0})", n);
+                Holder.Destroy();
+            }catch(Exception e)
+            {
+                logger.Error(e);
+            }
+            return True;
+        }
+    }
 }

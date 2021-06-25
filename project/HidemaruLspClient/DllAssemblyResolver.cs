@@ -49,7 +49,7 @@ namespace HidemaruLspClient
                     return Assembly.LoadFile(targetfullpath);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

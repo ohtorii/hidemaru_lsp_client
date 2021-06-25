@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ClientExample
 {
-	class Logger : LSP.Client.ILogger
+	class Logger : LSP.Client.Logger
 	{
 		static NLog.Logger logger = null;
 
@@ -30,32 +30,39 @@ namespace ClientExample
 			}
 			logger = NLog.LogManager.GetCurrentClassLogger();
 		}
-		public void Debug(string message)
+		public override bool IsFatalEnabled { get { return logger.IsFatalEnabled; } }
+		public override bool IsErrorEnabled { get { return logger.IsErrorEnabled; } }
+		public override bool IsWarnEnabled { get { return logger.IsWarnEnabled; } }
+		public override bool IsInfoEnabled { get { return logger.IsInfoEnabled; } }
+		public override bool IsDebugEnabled { get { return logger.IsDebugEnabled; } }
+		public override bool IsTraceEnabled { get { return logger.IsTraceEnabled; } }
+
+		public override void Debug(string message)
 		{
 			logger.Debug(message);
 		}
 
-		public void Error(string message)
+		public override void Error(string message)
 		{
 			logger.Error(message);
 		}
 
-		public void Fatal(string message)
+		public override void Fatal(string message)
 		{
 			logger.Fatal(message);
 		}
 
-		public void Info(string message)
+		public override void Info(string message)
 		{
 			logger.Info(message);
 		}
 
-		public void Trace(string message)
+		public override void Trace(string message)
 		{
 			logger.Trace(message);
 		}
 
-		public void Warn(string message)
+		public override void Warn(string message)
 		{
 			logger.Warn(message);
 		}
