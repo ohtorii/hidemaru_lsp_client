@@ -172,6 +172,7 @@ namespace HidemaruLspClient
 			var completionList = (CompletionList)result;
 			if (completionList.items.Length == 0)
 			{
+				logger.Info("completionList.items.Length == 0");
 				return "";
 			}
 			var fs = TempFile.Create();

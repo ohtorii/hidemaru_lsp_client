@@ -68,6 +68,7 @@
     <Compile Include="DllAssemblyResolver.cs" />
     <Compile Include="DllInterface.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="Hidemaru.cs" />
     <Compile Include="Holder.cs" />
     <Compile Include="LspClientLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
