@@ -19,6 +19,7 @@ namespace HidemaruLspClient
         static DllInterface()
         {
             Holder.Initialized(lspClientLogger);
+            Hidemaru.Initialize();
         }
         static IntPtr BoolToIntptr(bool value)
         {

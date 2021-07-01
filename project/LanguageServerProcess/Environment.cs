@@ -37,6 +37,32 @@ namespace LanguageServerProcess
             return currentWorkingDirectory_;
         }
         /// <summary>
+        /// RootUriをアドホックに見付ける。
+        /// 
+        ///（数値が小さいほど優先順位が高い）
+        /// 1. Repository
+        /// 2. 編集中ファイルのフォルダ
+        /// </summary>
+        /// <returns>URI形式のパス名</returns>
+        public static string FindRootUriAsAdhoc()
+        {
+            var rootUri = new Uri(FindRootDirectoryAsAdhoc());
+            return rootUri.AbsoluteUri;
+        }
+        /// <summary>
+        /// RootDirectoryをアドホックに見付ける。
+        /// </summary>
+        /// <returns>絶対パス形式</returns>
+        public static string FindRootDirectoryAsAdhoc()
+        {
+            var repo = FindRepositoryDirectoryName();
+            if (repo != "")
+            {
+                return repo;
+            }
+            return GetCurrentWorkingDirectoryName();
+        }
+        /// <summary>
         /// VisualStudioのソリューションファイル(.sln)名を探す
         /// </summary>
         /// <returns>ソリューションファイル(.sln)への絶対パス、または、空文字</returns>

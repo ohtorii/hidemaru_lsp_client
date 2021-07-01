@@ -17,10 +17,10 @@ namespace HidemaruLspClient
             }
             param.trace = "verbose";//"off";
             {
-                //var workspace = param.capabilities.workspace;
-                //workspace.configuration = true;
-                //workspace.applyEdit = true;
-                //workspace.workspaceFolders = true;
+                var workspace = param.capabilities.workspace;
+                workspace.configuration = true;
+                workspace.applyEdit = true;
+                workspace.workspaceFolders = true;
             }
             {
                 var window = param.capabilities.window;

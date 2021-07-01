@@ -13,12 +13,7 @@ namespace LanguageServerProcess {
             return String.Format(@"/c ""{0}""", serverCmd);
         }
         public override string GetRootUri(){
-            var repo=LSP.Environment.FindRepositoryDirectoryName();
-            if(repo.Length==0){
-                repo=LSP.Environment.GetCurrentWorkingDirectoryName();
-            }
-            var rootUri=new Uri(repo);
-            return rootUri.AbsoluteUri;
+            return LSP.Environment.FindRootUriAsAdhoc();
         }
         public override string GetWorkspaceConfig() { 
             return 

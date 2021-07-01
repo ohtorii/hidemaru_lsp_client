@@ -26,7 +26,7 @@ namespace HidemaruLspClient
 		delegate IntPtr Delegate_Hidemaru_GetTotalTextUnicode();
 		static Delegate_Hidemaru_GetTotalTextUnicode Hidemaru_GetTotalTextUnicode;
 
-		static Hidemaru()
+		static public void Initialize()
         {
             IntPtr hmod = GetModuleHandle(null); //hidemaru.exe自身
 

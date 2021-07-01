@@ -3,10 +3,12 @@
 
 #include <iostream>
 #include <string>
+#include"Hoge.h"
 
 int main()
 {
     auto message = std::string("Hello World!\n");
     std::cout << message.
+    //auto h = Hoge();
     return 0;
 }

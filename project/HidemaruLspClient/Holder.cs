@@ -6,6 +6,7 @@ using NLog;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,9 +21,37 @@ namespace HidemaruLspClient
         static LspClientLogger			lspLogger_		= null;
 		static NLog.Logger					logger;
 		static Configuration.Option		options_	=null;
-		static HashSet<string>			openedFiles = new HashSet<string>();
 		static List<string> tempFilename=new List<string>();
-
+		class Document
+		{
+			public string Filename { get; set; } = "";
+			public Uri Uri { get; set; } = null;
+			public int ContentsVersion { get; set; } = 1;
+			public int ContentsHash { get; set; } = 0;
+        }
+		static Document openedFiles = null;
+		enum DigOpenStatus
+        {
+			/// <summary>
+			/// ファイルを開いた
+			/// </summary>
+			Opened,
+			/// <summary>
+			/// ファイールはオープン済み
+			/// </summary>
+			AlreadyOpened,
+        }
+		enum DigChangeStatus
+        {
+			/// <summary>
+			/// 変更あり
+			/// </summary>
+			Changed,
+			/// <summary>
+			/// 変更無し
+			/// </summary>
+			NoChanged,
+        }
 		public static void Initialized(LspClientLogger l)
         {
 			lspLogger_ = l;
@@ -99,9 +128,9 @@ namespace HidemaruLspClient
 			{
 				var param = UtilInitializeParams.Initialzie();
 				var rootUri = new Uri(options_.RootUri);
-				param.rootUri = rootUri.AbsoluteUri;
-				param.rootPath = rootUri.AbsolutePath;
-				param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "VisualStudio-Solution" } };
+				param.rootUri          = rootUri.AbsoluteUri;
+				param.rootPath         = rootUri.AbsolutePath;
+				param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "FooBarHoge" } };
 				client_.SendInitialize(param);
 			}
 		}
@@ -114,24 +143,59 @@ namespace HidemaruLspClient
 				client_.SendInitialized(param);
 			}
 		}
-        public static bool DigOpen(string filename)
+        /// <summary>
+		/// 
+		/// </summary>
+		/// <param name="filename"></param>
+		/// <returns></returns>
+		static DigOpenStatus DigOpen(string filename)
 		{
-            if (openedFiles.Contains(filename))
+            if (openedFiles!=null)
             {
-				return true;
+				Debug.Assert(openedFiles.Filename==filename);
+				return DigOpenStatus.AlreadyOpened;
             }
 			var languageId = FileNameToLanguageId(filename);
-			var sourceVersion = 1;									//Todo: Openしたのでとりあえず1にする。（後で修正）
+			var sourceVersion = 1;
 			var sourceUri = new Uri(filename);
+
 			var param = new DidOpenTextDocumentParams();
-			param.textDocument.uri = sourceUri.AbsoluteUri;
-			param.textDocument.version = sourceVersion;
-			param.textDocument.text = File.ReadAllText(sourceUri.AbsolutePath, System.Text.Encoding.UTF8);
-			param.textDocument.languageId = languageId;
+			param.textDocument.uri			= sourceUri.AbsoluteUri;
+			param.textDocument.version		= sourceVersion;
+			param.textDocument.text			= Hidemaru.GetTotalTextUnicode();
+			param.textDocument.languageId	= languageId;			
 			client_.SendTextDocumentDigOpen(param);
 
-			openedFiles.Add(filename);
-			return true;
+			openedFiles = new Document { 
+							Filename		= filename, 
+							Uri				= sourceUri, 
+							ContentsVersion	= sourceVersion , 
+							ContentsHash	= param.textDocument.text .GetHashCode()
+			};
+			return DigOpenStatus.Opened;
+		}
+        static DigChangeStatus DigChange(string filename)
+        {
+			Debug.Assert(openedFiles.Filename==filename);
+			
+			var text = Hidemaru.GetTotalTextUnicode();
+			{
+				var currentHash = text.GetHashCode();
+				var prevHash    = openedFiles.ContentsHash;
+				if (currentHash == prevHash)
+				{
+					return DigChangeStatus.NoChanged;
+				}
+			}
+			++openedFiles.ContentsVersion;
+
+			var param = new DidChangeTextDocumentParams { 
+							contentChanges = new[] { new TextDocumentContentChangeEvent { text = text } },
+			};
+			param.textDocument.uri = openedFiles.Uri.AbsoluteUri;
+			param.textDocument.version = openedFiles.ContentsVersion;			
+			client_.SendTextDocumentDidChange(param);
+			return DigChangeStatus.Changed;
 		}
 		/// <summary>
 		/// 
@@ -142,21 +206,26 @@ namespace HidemaruLspClient
 		/// <returns>辞書の一時ファイル名(絶対パス)</returns>
 		static public string Completion(string filename, uint line, uint column)
 		{
-			if (!DigOpen(filename))
-			{
-				return "";
-			}
+            if (DigOpen(filename) == DigOpenStatus.AlreadyOpened)
+            {
+				DigChange(filename);
+            }
+			
 			object result;
 			{
 				RequestId id;
 				{
 					var param = new CompletionParams();
 					var sourceUri = new Uri(filename);
+#if true
 					param.context.triggerKind = CompletionTriggerKind.Invoked;
-					//param.context.triggerCharacter = ".";
-					param.textDocument.uri = sourceUri.AbsoluteUri;
-					param.position.line = line;
-					param.position.character = column;
+#else
+					param.context.triggerKind = CompletionTriggerKind.TriggerCharacter;
+					param.context.triggerCharacter = ;
+#endif
+					param.textDocument.uri		= sourceUri.AbsoluteUri;
+					param.position.line			= line;
+					param.position.character	= column;
 					id = client_.SendTextDocumentCompletion(param);
 				}
 

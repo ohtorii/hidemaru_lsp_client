@@ -12,11 +12,11 @@ namespace ClientExample
 
         static void Main(string[] args)
 		{
-			//CSharpClient.Start();
+			CSharpClient.Start();
 			//PythonClient.Start();
 			//CppClient.Start();
 			//VimScriptClient.Start();
-			LuaClient.Start();
+			//LuaClient.Start();
 		}
 
     }    

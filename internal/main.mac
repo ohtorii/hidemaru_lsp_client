@@ -55,7 +55,7 @@ main:
         return false;
     }
     //Memo: -1して0始まりにする
-    $$dictionalyFileName=dllfuncstrw(#dllHidemaruLspClient, "Completion",filename2,lineno-1,column);
+    $$dictionalyFileName=dllfuncstrw(#dllHidemaruLspClient, "Completion",filename2,lineno-1,column_wcs);
     if($$dictionalyFileName==""){
         message "Completion に失敗";
         return false;

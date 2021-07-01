@@ -12,20 +12,7 @@ namespace LanguageServerProcess {
             var sb = new StringBuilder();
             sb.Append("-lsp --encoding utf-8");
             {
-                var source="";
-                {
-                    var sln = LSP.Environment.FindVisualStudioSolutionFileName();
-                    if(sln!=""){
-                        source=sln;
-                    }else{
-                        var repo=LSP.Environment.FindRepositoryDirectoryName();
-                        if(repo!=""){
-                            source=repo;
-                        }else{
-                            //pass
-                        }
-                    }
-                }
+                var source=FindSource();
                 if(source!=""){
                     sb.AppendFormat(" --source {0}",source);
                 }
@@ -37,13 +24,19 @@ namespace LanguageServerProcess {
             }
             return sb.ToString();
         }
-        public override string GetRootUri(){
-            var repo=LSP.Environment.FindRepositoryDirectoryName();
-            if(repo.Length==0){
-                repo=LSP.Environment.GetCurrentWorkingDirectoryName();
+        static string FindSource(){
+            var sln = LSP.Environment.FindVisualStudioSolutionFileName();
+            if(sln!=""){
+                return sln;
             }
-            var rootUri=new Uri(repo);
-            return rootUri.AbsoluteUri;
+            var repo=LSP.Environment.FindRepositoryDirectoryName();
+            if(repo!=""){
+                return repo;
+            }
+            return LSP.Environment.GetCurrentWorkingDirectoryName();
+        }
+        public override string GetRootUri(){
+            return LSP.Environment.FindRootUriAsAdhoc();
         }
     }
 }
