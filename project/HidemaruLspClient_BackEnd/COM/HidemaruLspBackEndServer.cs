@@ -12,14 +12,14 @@ namespace HidemaruLspClient
     [ComVisible(true)]
     [Guid(LspContract.Constants.ServerClass)]
     [ProgId(LspContract.Constants.ProgId)]
-    [ComDefaultInterface(typeof(IServer))]
-    public sealed class ExeServer : IServer
+    [ComDefaultInterface(typeof(IHidemaruLspBackEndServer))]
+    public sealed class HidemaruLspBackEndServer : IHidemaruLspBackEndServer
     {
-        public ExeServer()
+        public HidemaruLspBackEndServer()
         {
             COMRegistration.Ole32.CoAddRefServerProcess();
         }
-        ~ExeServer()
+        ~HidemaruLspBackEndServer()
         {
             if (COMRegistration.Ole32.CoReleaseServerProcess() == 0)
             {
@@ -27,7 +27,7 @@ namespace HidemaruLspClient
                 Environment.Exit(success);
             }
         }
-        int IServer.Add(int x, int y)
+        int IHidemaruLspBackEndServer.Add(int x, int y)
         {
             return x + y;
         }
@@ -41,7 +41,7 @@ namespace HidemaruLspClient
         /// コンストラクタ
         /// (Memo)アウトプロセスサーバなので createobject するたびに呼ばれる
         /// </summary>        
-        bool IServer.Initialize()
+        bool IHidemaruLspBackEndServer.Initialize()
         {
             var logger = LogManager.GetCurrentClassLogger();
             try
@@ -63,7 +63,7 @@ namespace HidemaruLspClient
         /// <param name="serverConfigFilename"></param>
         /// <param name="currentSourceCodeDirectory"></param>
         /// <returns></returns>
-        bool IServer.Start(string ExcutablePath,
+        bool IHidemaruLspBackEndServer.Start(string ExcutablePath,
                           string Arguments,
                           string RootUri,
                           string WorkspaceConfig,
@@ -94,7 +94,7 @@ namespace HidemaruLspClient
         /// <param name="line"></param>
         /// <param name="column"></param>
         /// <returns>成功時＝辞書ファル名、失敗時=空文字</returns>
-        string IServer.Completion(string absFilename, long line, long column)
+        string IHidemaruLspBackEndServer.Completion(string absFilename, long line, long column)
         {
             var logger = LogManager.GetCurrentClassLogger();
             logger.Trace("Completion");
@@ -122,7 +122,7 @@ namespace HidemaruLspClient
         /// 秀丸マクロ終了時に呼び出されるメソッド
         /// </summary>
         /// <param name="reason"></param>
-        void IServer.Finalizer(int reason)
+        void IHidemaruLspBackEndServer.Finalizer(int reason)
         {
             /* reason
              *  1　releaseobjectで解放

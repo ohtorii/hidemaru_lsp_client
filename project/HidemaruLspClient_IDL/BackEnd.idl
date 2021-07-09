@@ -6,7 +6,7 @@ import "ocidl.idl";
     oleautomation,
     uuid(9159F305-06A3-4231-B023-BFF30CE0D9E8)
 ]
-interface IServer : IDispatch
+interface IHidemaruLspBackEndServer : IDispatch
 {    
     HRESULT Initialize([out, retval] boolean* ret);
     HRESULT Add([in]int x, [in] int y, [out, retval] int* ret);
@@ -32,6 +32,6 @@ library HidemaruLspClient_BackEnd_Lib
     ]
     coclass Server
     {
-        [default] interface IServer;
+        [default] interface IHidemaruLspBackEndServer;
     }
 }

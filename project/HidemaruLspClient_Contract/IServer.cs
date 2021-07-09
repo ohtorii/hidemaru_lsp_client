@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
  */
 [ComVisible(true)]
 [Guid(LspContract.Constants.ServerInterface)]
-public interface IServer
+public interface IHidemaruLspBackEndServer
 {
     bool Initialize();
     int Add(int x, int y);

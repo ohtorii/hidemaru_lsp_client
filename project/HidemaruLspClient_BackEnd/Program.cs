@@ -49,7 +49,7 @@ namespace HidemaruLspClient
                 {
                     string regCommandMaybe = args[0];
                     var exePath = Process.GetCurrentProcess().MainModule.FileName;
-                    var progId = Attribute.GetCustomAttribute(typeof(ExeServer), typeof(ProgIdAttribute)) as ProgIdAttribute;
+                    var progId = Attribute.GetCustomAttribute(typeof(HidemaruLspBackEndServer), typeof(ProgIdAttribute)) as ProgIdAttribute;
                     
                     switch (regCommandMaybe.ToLower()) {
                         case "/regserver":
@@ -87,7 +87,7 @@ namespace HidemaruLspClient
 
                 using (var server = new LocalServer())
                 {
-                    server.RegisterClass<ExeServer>(LspContract.Constants.ServerClassGuid);
+                    server.RegisterClass<HidemaruLspBackEndServer>(LspContract.Constants.ServerClassGuid);
                     server.Run();
                 }
                 Trace.WriteLine("[Finish]exe");

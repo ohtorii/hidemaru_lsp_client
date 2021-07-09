@@ -11,7 +11,7 @@ namespace HidemaruLspClient_FrontEnd
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
     public class Service
     {
-        IServer server_ = null;
+        IHidemaruLspBackEndServer server_ = null;
         static DllAssemblyResolver dasmr = new DllAssemblyResolver();
 
         public bool Initialize()
@@ -24,13 +24,13 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     //事前にBackEndをspawnしたほうが良いと思う
                     object obj;
-                    int hr = Ole32.CoCreateInstance(LspContract.Constants.ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IServer).GUID, out obj);
+                    int hr = Ole32.CoCreateInstance(LspContract.Constants.ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
                     if (hr < 0)
                     {
                         Marshal.ThrowExceptionForHR(hr);
                     }
 
-                    server_ = (IServer)obj;
+                    server_ = (IHidemaruLspBackEndServer)obj;
 
                 }
                 return server_.Initialize();

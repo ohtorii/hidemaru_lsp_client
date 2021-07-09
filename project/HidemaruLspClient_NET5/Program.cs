@@ -8,13 +8,13 @@ namespace HidemaruLspClient_NET5
         static void Main(string[] args)
         {
             object obj;
-            int hr = Ole32.CoCreateInstance(LspContract.Constants.ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IServer).GUID, out obj);
+            int hr = Ole32.CoCreateInstance(LspContract.Constants.ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
             if (hr < 0)
             {
                 Marshal.ThrowExceptionForHR(hr);
             }
 
-            var server = (IServer)obj;
+            var server = (IHidemaruLspBackEndServer)obj;
             var ans = server.Add(1, 2);
             Console.WriteLine($"ans = {ans}");
             //var ret = server.Hoge("MyString");
