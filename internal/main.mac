@@ -11,8 +11,12 @@
 $comClientFileName=@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_FrontEnd\bin\Debug\HidemaruLspClient_FrontEnd.dll";
 execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $comClientFileName;
 $comClientFileName=getresultex(-1);
-
 $comServiceName="HidemaruLspClient_FrontEnd.Service";
+
+
+$logFileName=@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_client.log";
+execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;
+$logFileName=getresultex(-1);
 
 
 $rootFolder=currentmacrodirectory+@"\..";
@@ -46,7 +50,7 @@ main:
         return false;
     }
     setcomdetachmethod ##obj,"Finalizer";
-    ##n=callmethod_returnnum(##obj,"Initialize");
+    ##n=callmethod_returnnum(##obj,"Initialize",$logFileName);
     if(##n==false){
         message "Initializeに失敗";
         return false;

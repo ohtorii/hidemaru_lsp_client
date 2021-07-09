@@ -36,18 +36,22 @@ namespace HidemaruLspClient
             return true;
         }
 
-        static LspClientLogger lspClientLogger = new LspClientLogger(Config.logFileName);
+        static LspClientLogger lspClientLogger = null;
         /// <summary>
         /// コンストラクタ
         /// (Memo)アウトプロセスサーバなので createobject するたびに呼ばれる
         /// </summary>        
-        bool IHidemaruLspBackEndServer.Initialize()
+        bool IHidemaruLspBackEndServer.Initialize(string logFileName)
         {
+            if (lspClientLogger == null)
+            {
+                lspClientLogger = new LspClientLogger(logFileName);
+            }
+
             var logger = LogManager.GetCurrentClassLogger();
             try
             {
                 Holder.Initialized(lspClientLogger);
-                //Hidemaru.Initialize();
             }
             catch (Exception e)
             {
@@ -64,26 +68,29 @@ namespace HidemaruLspClient
         /// <param name="currentSourceCodeDirectory"></param>
         /// <returns></returns>
         bool IHidemaruLspBackEndServer.Start(string ExcutablePath,
-                          string Arguments,
-                          string RootUri,
-                          string WorkspaceConfig,
-                          string currentSourceCodeDirectory)
+                                             string Arguments,
+                                             string RootUri,
+                                             string WorkspaceConfig,
+                                             string currentSourceCodeDirectory)
         {
-            /*
+            
             var logger = LogManager.GetCurrentClassLogger();
 
             logger.Trace("Start");
             try
             {
-                var ret = Holder.Start(serverConfigFilename, currentSourceCodeDirectory);
+                var ret = Holder.Start(ExcutablePath,
+                                       Arguments,
+                                       RootUri,
+                                       WorkspaceConfig,
+                                       currentSourceCodeDirectory);
                 logger.Trace("Result={0}", ret);
                 return ret;
             }
             catch (Exception e)
             {
-                //pass
                 logger.Error(e);
-            }*/
+            }
             return false;
         }
 
@@ -94,7 +101,7 @@ namespace HidemaruLspClient
         /// <param name="line"></param>
         /// <param name="column"></param>
         /// <returns>成功時＝辞書ファル名、失敗時=空文字</returns>
-        string IHidemaruLspBackEndServer.Completion(string absFilename, long line, long column)
+        string IHidemaruLspBackEndServer.Completion(string absFilename, long line, long column, string text)
         {
             var logger = LogManager.GetCurrentClassLogger();
             logger.Trace("Completion");
@@ -108,7 +115,7 @@ namespace HidemaruLspClient
                 {
                     return "";
                 }
-                var fileName = Holder.Completion(absFilename, (uint)line, (uint)column);
+                var fileName = Holder.Completion(absFilename, (uint)line, (uint)column, text);
                 return fileName;
             }
             catch (Exception e)

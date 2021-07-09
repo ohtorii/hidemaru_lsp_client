@@ -89,7 +89,11 @@ namespace HidemaruLspClient
             }
 			tempFilename.Clear();
 		}
-		public static bool Start(string serverConfigFilename, string currentSourceCodeDirectory)
+		public static bool Start(string ExcutablePath,
+								string Arguments,
+								string RootUri,
+								string WorkspaceConfig,
+								string currentSourceCodeDirectory)
 		{
 			var temp = new EnterLeaveLogger("Start",logger);
 			{
@@ -97,13 +101,22 @@ namespace HidemaruLspClient
 				{//起動済み
 					return true;
 				}
-				if (!InitializeClient(serverConfigFilename, currentSourceCodeDirectory))
+				options_ = new Option
+				{
+					ExcutablePath	= ExcutablePath,
+					Arguments		= Arguments,
+					RootUri			= RootUri,
+                    WorkspaceConfig = WorkspaceConfig,
+				};
+
+				if (!InitializeClient(currentSourceCodeDirectory))
 				{
 					return false;
 				}
 				InitializeServer();
 				while (client_.Status != LSP.Client.StdioClient.Mode.ServerInitializeFinish)
 				{
+					//Todo: timeoutを処理する
 					Thread.Sleep(0);
 				}
 				InitializedClient();
@@ -111,12 +124,10 @@ namespace HidemaruLspClient
 			return true;
 		}
 		
-		static bool InitializeClient(string serverConfigFilename, string currentSourceCodeDirectory)
+		static bool InitializeClient(string currentSourceCodeDirectory)
         {
-/* Todo: 後で実装
 			var temp = new EnterLeaveLogger("InitializeClient", logger);
-			{
-				
+			{				
 				JObject WorkspaceConfiguration=null;
 				if (options_.WorkspaceConfig!="") {
 					WorkspaceConfiguration = (JObject)JsonConvert.DeserializeObject(options_.WorkspaceConfig);
@@ -125,14 +136,14 @@ namespace HidemaruLspClient
 				client_.StartLspProcess(
 					new LSP.Client.StdioClient.LspParameter
 					{
-						logger = lspLogger_,
-						exeFileName = options_.ExcutablePath,
-						exeArguments = options_.Arguments,
-						jsonWorkspaceConfiguration= WorkspaceConfiguration,
+                        logger						= lspLogger_,
+                        exeFileName					= options_.ExcutablePath,
+						exeArguments				= options_.Arguments,
+						jsonWorkspaceConfiguration	= WorkspaceConfiguration,
 					}
 				);
 			}
-*/
+
 			return true;
 		}
 		static void InitializeServer()
@@ -161,7 +172,7 @@ namespace HidemaruLspClient
 		/// </summary>
 		/// <param name="filename"></param>
 		/// <returns></returns>
-		static DigOpenStatus DigOpen(string filename)
+		static DigOpenStatus DigOpen(string filename, string text)
 		{
             if (openedFiles!=null)
             {
@@ -175,7 +186,7 @@ namespace HidemaruLspClient
 			var param = new DidOpenTextDocumentParams();
 			param.textDocument.uri			= sourceUri.AbsoluteUri;
 			param.textDocument.version		= sourceVersion;
-			param.textDocument.text			= File.ReadAllText(filename,Encoding.UTF8);//Hidemaru.GetTotalTextUnicode();
+			param.textDocument.text			= text;
 			param.textDocument.languageId	= languageId;			
 			client_.SendTextDocumentDigOpen(param);
 
@@ -187,11 +198,10 @@ namespace HidemaruLspClient
 			};
 			return DigOpenStatus.Opened;
 		}
-        static DigChangeStatus DigChange(string filename)
+        static DigChangeStatus DigChange(string filename, string text)
         {
 			Debug.Assert(openedFiles.Filename==filename);
 
-			var text = File.ReadAllText(filename, Encoding.UTF8); //Hidemaru.GetTotalTextUnicode();
 			{
 				var currentHash = text.GetHashCode();
 				var prevHash    = openedFiles.ContentsHash;
@@ -205,8 +215,8 @@ namespace HidemaruLspClient
 			var param = new DidChangeTextDocumentParams { 
 							contentChanges = new[] { new TextDocumentContentChangeEvent { text = text } },
 			};
-			param.textDocument.uri = openedFiles.Uri.AbsoluteUri;
-			param.textDocument.version = openedFiles.ContentsVersion;			
+			param.textDocument.uri		= openedFiles.Uri.AbsoluteUri;
+			param.textDocument.version	= openedFiles.ContentsVersion;			
 			client_.SendTextDocumentDidChange(param);
 			return DigChangeStatus.Changed;
 		}
@@ -217,11 +227,12 @@ namespace HidemaruLspClient
 		/// <param name="line"></param>
 		/// <param name="column"></param>
 		/// <returns>辞書の一時ファイル名(絶対パス)</returns>
-		static public string Completion(string filename, uint line, uint column)
+		static public string Completion(string filename, uint line, uint column, string text)
 		{
-            if (DigOpen(filename) == DigOpenStatus.AlreadyOpened)
+			//Todo: DigOpen,DigChangeはFrontEndで処理する
+			if (DigOpen(filename,text) == DigOpenStatus.AlreadyOpened)
             {
-				DigChange(filename);
+				DigChange(filename,text);
             }
 			
 			object result;

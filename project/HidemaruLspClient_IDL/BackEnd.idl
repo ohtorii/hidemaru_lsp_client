@@ -8,7 +8,7 @@ import "ocidl.idl";
 ]
 interface IHidemaruLspBackEndServer : IDispatch
 {    
-    HRESULT Initialize([out, retval] boolean* ret);
+    HRESULT Initialize([in]BSTR logFileName, [out, retval] boolean* ret);
     HRESULT Add([in]int x, [in] int y, [out, retval] int* ret);
     HRESULT Finalizer([in]int reason);
     HRESULT Start([in]BSTR ExcutablePath,
@@ -17,7 +17,7 @@ interface IHidemaruLspBackEndServer : IDispatch
                   [in]BSTR WorkspaceConfig,
                   [in]BSTR currentSourceCodeDirectory,
                   [out, retval]boolean *ret);
-    HRESULT Completion([in]BSTR absFilename, long line, long column, [out, retval]BSTR*ret);
+    HRESULT Completion([in]BSTR absFilename, [in]hyper line, [in]hyper column, [in]BSTR text, [out, retval]BSTR*ret);
 };
 
 [

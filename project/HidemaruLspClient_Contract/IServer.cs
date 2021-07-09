@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [Guid(LspContract.Constants.ServerInterface)]
 public interface IHidemaruLspBackEndServer
 {
-    bool Initialize();
+    bool Initialize(string logFileName);
     int Add(int x, int y);
 
     void Finalizer(int reason);
@@ -17,6 +17,6 @@ public interface IHidemaruLspBackEndServer
                 string RootUri,
                 string WorkspaceConfig,
                 string currentSourceCodeDirectory);     
-    string Completion(string absFilename, long line, long column);
+    string Completion(string absFilename, long line, long column, string text);
 }
 

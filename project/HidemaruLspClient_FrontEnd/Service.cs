@@ -14,7 +14,7 @@ namespace HidemaruLspClient_FrontEnd
         IHidemaruLspBackEndServer server_ = null;
         static DllAssemblyResolver dasmr = new DllAssemblyResolver();
 
-        public bool Initialize()
+        public bool Initialize(string logFilename)
         {
             try
             {
@@ -29,11 +29,9 @@ namespace HidemaruLspClient_FrontEnd
                     {
                         Marshal.ThrowExceptionForHR(hr);
                     }
-
                     server_ = (IHidemaruLspBackEndServer)obj;
-
                 }
-                return server_.Initialize();
+                return server_.Initialize(logFilename);
             }
             catch(Exception e)
             {
@@ -58,10 +56,22 @@ namespace HidemaruLspClient_FrontEnd
                 return -1;
             }
         }
-        
+        public void Finalizer(int reason)
+        {
+            try
+            {
+                server_.Finalizer(reason);
+                server_ = null;
+                dasmr = null;
+            }
+            catch (Exception e)
+            {
+                //Todo:あとで実装
+            }
+            return;
+        }
         public bool Start(string serverConfigFilename, string currentSourceCodeDirectory)
         {
-/*
             try
             {
                 var options = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
@@ -79,37 +89,23 @@ namespace HidemaruLspClient_FrontEnd
             catch (Exception e)
             {
                 //logger.Error(e);
-                return false;
             }
-*/
             return false;
         }
-        public string Completion(string absFilename, IntPtr line, IntPtr column)
+        public string Completion(string absFilename, long line, long column)
         {
-/*
             try
             {
-                return server_.Completion(absFilename, line, column);
+                var text = Hidemaru.GetTotalTextUnicode();
+                return server_.Completion(absFilename, line, column, text);
             }catch(Exception e)
             {
                 //Todo: あとで実装
+                //log
             }
-*/
             return "";
         }
-        public void Finalizer(int reason)
-        {
-            try
-            {
-                server_.Finalizer(reason);
-                server_ = null;
-                dasmr = null;
-            }catch(Exception e)
-            {
-                //Todo:あとで実装
-            }
-            return;
-        }
+        
 
 
 
