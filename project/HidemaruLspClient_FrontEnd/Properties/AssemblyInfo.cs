@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // アセンブリに関する一般情報は以下の属性セットをとおして制御されます。
 // 制御されます。アセンブリに関連付けられている情報を変更するには、
 // これらの属性値を変更してください。
-[assembly: AssemblyTitle("HidemaruLspClient")]
+[assembly: AssemblyTitle("HidemaruLspClient_dotNetFramework")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("HidemaruLspClient")]
+[assembly: AssemblyProduct("HidemaruLspClient_dotNetFramework")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -17,10 +17,10 @@ using System.Runtime.InteropServices;
 // ComVisible を false に設定すると、このアセンブリ内の型は COM コンポーネントから
 // 参照できなくなります。COM からこのアセンブリ内の型にアクセスする必要がある場合は、
 // その型の ComVisible 属性を true に設定してください。
-[assembly: ComVisible(false)]
+[assembly: ComVisible(true)]
 
 // このプロジェクトが COM に公開される場合、次の GUID が typelib の ID になります
-[assembly: Guid("85f6b299-48f9-489e-b3ed-10df9c3e1842")]
+[assembly: Guid("3ac45af0-e188-45b2-a8e8-f5e3688b31a0")]
 
 // アセンブリのバージョン情報は、以下の 4 つの値で構成されています:
 //

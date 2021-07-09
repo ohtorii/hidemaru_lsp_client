@@ -1,0 +1,37 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+    object,
+    oleautomation,
+    uuid(9159F305-06A3-4231-B023-BFF30CE0D9E8)
+]
+interface IServer : IDispatch
+{    
+    HRESULT Initialize([out, retval] boolean* ret);
+    HRESULT Add([in]int x, [in] int y, [out, retval] int* ret);
+    HRESULT Finalizer([in]int reason);
+    HRESULT Start([in]BSTR ExcutablePath,
+                  [in]BSTR Arguments,
+                  [in]BSTR RootUri,
+                  [in]BSTR WorkspaceConfig,
+                  [in]BSTR currentSourceCodeDirectory,
+                  [out, retval]boolean *ret);
+    HRESULT Completion([in]BSTR absFilename, long line, long column, [out, retval]BSTR*ret);
+};
+
+[
+    uuid(27E4EB65-F8C3-4191-BF62-E46D85964111)
+]
+library HidemaruLspClient_BackEnd_Lib
+{
+    importlib("stdole2.tlb");
+
+    [
+        uuid(EF516543-D040-46CC-88B3-FD64C09DB652)
+    ]
+    coclass Server
+    {
+        [default] interface IServer;
+    }
+}

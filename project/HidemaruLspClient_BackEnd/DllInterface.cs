@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿//using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace HidemaruLspClient
 {
+#if false
     public class DllInterface
     {
         static readonly IntPtr True  = (IntPtr)1;   //1==True
@@ -116,4 +117,5 @@ namespace HidemaruLspClient
             return True;
         }
     }
+#endif
 }

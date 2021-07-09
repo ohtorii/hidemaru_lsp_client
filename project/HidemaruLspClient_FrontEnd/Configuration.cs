@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿//using NLog;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -8,11 +8,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HidemaruLspClient
+namespace HidemaruLspClient_FrontEnd
 {
     class Configuration
     {
-        static Logger logger = null;
+        //static Logger logger = null;
 
         public class Option
         {
@@ -51,13 +51,13 @@ namespace HidemaruLspClient
         /// <param name="serverConfigFilename"></param>
         public static Option Eval(string serverConfigFilename, string currentSourceCodeDirectory)
         {
-            if (logger == null)
+            /*if (logger == null)
             {
                 logger = LogManager.GetCurrentClassLogger();
-            }
+            }*/
             LanguageServerProcess.Environment.Initialize(currentSourceCodeDirectory);
             
-            var temp = new EnterLeaveLogger("Eval",logger);
+            /*var temp = new EnterLeaveLogger("Eval",logger);*/
             {
                 var result = new Option();
                 {
@@ -67,20 +67,21 @@ namespace HidemaruLspClient
                         CompilerOptions  = MakeCompilerOptions(),
                         GenerateInMemory = true,
                     };
-                    logger.Debug("CompilerOptions={0}", compileParameters.CompilerOptions);
+//                    logger.Debug("CompilerOptions={0}", compileParameters.CompilerOptions);
                     compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);
-                    if (logger.IsDebugEnabled)
+/*                    if (logger.IsDebugEnabled)
                     {
                         logger.Debug("compileParameters.ReferencedAssemblies[]={ReferencedAssemblies}", ReferencedAssemblies.ToList());
                     }
 
                     logger.Info("filename={0}", serverConfigFilename);
+*/
                     var code = File.ReadAllText(serverConfigFilename);
                     var cr = codeDom.CompileAssemblyFromSource(compileParameters, code);
                     if (0 < cr.Errors.Count)
                     {
                         foreach (var err in cr.Errors){
-                            logger.Error(err);
+                            //logger.Error(err);
                         }
                         return null;
                     }
@@ -92,7 +93,7 @@ namespace HidemaruLspClient
                         var mi = t.GetMethod(method.name);
                         var s = mi.Invoke(instance, null);
                         method.action(result, s);
-                        logger.Info("{0}={1}",method.name,s);
+                        //logger.Info("{0}={1}",method.name,s);
                     }
                 }
                 return result;

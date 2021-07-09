@@ -85,7 +85,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceFolders.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\WorkspaceSymbols.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Converter\WorkDoneProgressBaseConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utils\ExtensionMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\LICENSE" />

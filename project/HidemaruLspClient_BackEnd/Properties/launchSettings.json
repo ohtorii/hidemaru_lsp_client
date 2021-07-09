@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "HidemaruLspClient": {
+      "commandName": "Project"
+    },
+    "hidemaru": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Hidemaru\\Hidemaru.exe"
+    }
+  }
+}

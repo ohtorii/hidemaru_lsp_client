@@ -13,14 +13,24 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+
 namespace HidemaruLspClient
 {
-    class Holder
+	public class Option
+	{
+		public string ExcutablePath { get; set; }
+		public string Arguments { get; set; }
+		public string RootUri { get; set; }
+		public string WorkspaceConfig { get; set; }
+	}
+
+	class Holder
     {
+		static bool initialized_ = false;
         static LSP.Client.StdioClient	client_		= null;
         static LspClientLogger			lspLogger_		= null;
 		static NLog.Logger					logger;
-		static Configuration.Option		options_	=null;
+		static Option		options_	=null;
 		static List<string> tempFilename=new List<string>();
 		class Document
 		{
@@ -54,9 +64,14 @@ namespace HidemaruLspClient
         }
 		public static void Initialized(LspClientLogger l)
         {
+            if (initialized_)
+            {
+				return;
+            }
 			lspLogger_ = l;
 			logger= LogManager.GetCurrentClassLogger();
 			TempFile.Initialize();
+			initialized_ = true;
 		}
 		public static void Destroy()
         {
@@ -98,13 +113,10 @@ namespace HidemaruLspClient
 		
 		static bool InitializeClient(string serverConfigFilename, string currentSourceCodeDirectory)
         {
+/* Todo: 後で実装
 			var temp = new EnterLeaveLogger("InitializeClient", logger);
 			{
-				options_ = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
-				if (options_ == null)
-				{
-					return false;
-				}
+				
 				JObject WorkspaceConfiguration=null;
 				if (options_.WorkspaceConfig!="") {
 					WorkspaceConfiguration = (JObject)JsonConvert.DeserializeObject(options_.WorkspaceConfig);
@@ -120,6 +132,7 @@ namespace HidemaruLspClient
 					}
 				);
 			}
+*/
 			return true;
 		}
 		static void InitializeServer()
@@ -162,7 +175,7 @@ namespace HidemaruLspClient
 			var param = new DidOpenTextDocumentParams();
 			param.textDocument.uri			= sourceUri.AbsoluteUri;
 			param.textDocument.version		= sourceVersion;
-			param.textDocument.text			= Hidemaru.GetTotalTextUnicode();
+			param.textDocument.text			= File.ReadAllText(filename,Encoding.UTF8);//Hidemaru.GetTotalTextUnicode();
 			param.textDocument.languageId	= languageId;			
 			client_.SendTextDocumentDigOpen(param);
 
@@ -177,8 +190,8 @@ namespace HidemaruLspClient
         static DigChangeStatus DigChange(string filename)
         {
 			Debug.Assert(openedFiles.Filename==filename);
-			
-			var text = Hidemaru.GetTotalTextUnicode();
+
+			var text = File.ReadAllText(filename, Encoding.UTF8); //Hidemaru.GetTotalTextUnicode();
 			{
 				var currentHash = text.GetHashCode();
 				var prevHash    = openedFiles.ContentsHash;

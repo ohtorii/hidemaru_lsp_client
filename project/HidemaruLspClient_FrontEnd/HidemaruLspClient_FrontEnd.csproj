@@ -4,15 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{65C8B342-BEC1-4BE8-A1A6-5E63122F5D92}</ProjectGuid>
+    <ProjectGuid>{3AC45AF0-E188-45B2-A8E8-F5E3688B31A0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LanguageServerProcess</RootNamespace>
-    <AssemblyName>LanguageServerProcess</AssemblyName>
+    <RootNamespace>HidemaruLspClient_FrontEnd</RootNamespace>
+    <AssemblyName>HidemaruLspClient_FrontEnd</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +21,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\LanguageServerProcess.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -43,9 +41,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\HidemaruLspClient_Contract\Contract.cs">
+      <Link>Contract.cs</Link>
+    </Compile>
+    <Compile Include="..\HidemaruLspClient_Contract\IServer.cs">
+      <Link>IServer.cs</Link>
+    </Compile>
     <Compile Include="Configuration.cs" />
-    <Compile Include="Environment.cs" />
+    <Compile Include="DllAssemblyResolver.cs" />
+    <Compile Include="Hidemaru.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Service.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LanguageServerProcess\LanguageServerProcess.csproj">
+      <Project>{65c8b342-bec1-4be8-a1a6-5e63122f5d92}</Project>
+      <Name>LanguageServerProcess</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
