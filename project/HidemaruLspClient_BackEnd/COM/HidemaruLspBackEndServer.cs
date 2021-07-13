@@ -9,6 +9,17 @@ using System.Threading.Tasks;
 
 namespace HidemaruLspClient
 {
+    class TargetServer : ITargetServer
+    {
+        public string ServerName { get; set; }
+        public string RootUri { get; set; }
+
+        public void Initialize()
+        {
+            ServerName = "";
+            RootUri = "";
+        }
+    }
     [ComVisible(true)]
     [Guid(LspContract.Constants.ServerClass)]
     [ProgId(LspContract.Constants.ProgId)]
@@ -30,13 +41,16 @@ namespace HidemaruLspClient
         int IHidemaruLspBackEndServer.Add(int x, int y)
         {
             return x + y;
-        }
-        public bool Hoge(string x)
-        {
-            return true;
-        }
+        }        
 
         static LspClientLogger lspClientLogger = null;
+        static ComClientLogger comClientLogger = null;
+
+        ITargetServer IHidemaruLspBackEndServer.CreateTargetServer()
+        {
+            return new TargetServer();
+        }
+
         /// <summary>
         /// コンストラクタ
         /// (Memo)アウトプロセスサーバなので createobject するたびに呼ばれる
@@ -60,6 +74,19 @@ namespace HidemaruLspClient
             }
             return true;
         }
+        ILspClientLogger IHidemaruLspBackEndServer.GetLogger()
+        {
+            if (comClientLogger == null)
+            {
+                Debug.Assert(lspClientLogger != null);
+                comClientLogger = new ComClientLogger(lspClientLogger);
+            }
+            return comClientLogger;
+        }
+
+        /*あとで作る
+        Dictionary<int,Holder>WorkerHolder_=new Dictionary<int,Holder>();
+        */
 
         /// <summary>
         /// LSPサーバを起動する
@@ -67,23 +94,45 @@ namespace HidemaruLspClient
         /// <param name="serverConfigFilename"></param>
         /// <param name="currentSourceCodeDirectory"></param>
         /// <returns></returns>
-        bool IHidemaruLspBackEndServer.Start(string ExcutablePath,
-                                             string Arguments,
-                                             string RootUri,
-                                             string WorkspaceConfig,
-                                             string currentSourceCodeDirectory)
+        bool IHidemaruLspBackEndServer.Start(
+            ITargetServer TargetServer,
+            string ExcutablePath,
+            string Arguments,
+            string WorkspaceConfig,
+            string currentSourceCodeDirectory)
         {
-            
+
+          /*  {
+                var hash = TargetServer.GetHashCode();
+                if (WorkerHolder_.ContainsKey(hash))
+                {
+                    return WorkerHolder_[hash];
+                }
+                var h = new Holder();
+                var ret = h.Start(ExcutablePath,
+                                    Arguments,
+                                    WorkspaceConfig,
+                                    currentSourceCodeDirectory);
+                if (ret == false)
+                {
+                    return null;
+                }
+                WorkerHolder_[hash] = h;
+                return h;
+
+            }*/
+
             var logger = LogManager.GetCurrentClassLogger();
 
             logger.Trace("Start");
             try
             {
-                var ret = Holder.Start(ExcutablePath,
-                                       Arguments,
-                                       RootUri,
-                                       WorkspaceConfig,
-                                       currentSourceCodeDirectory);
+                var ret = Holder.Start(
+                    TargetServer,
+                    ExcutablePath,
+                    Arguments,
+                    WorkspaceConfig,
+                    currentSourceCodeDirectory);
                 logger.Trace("Result={0}", ret);
                 return ret;
             }
@@ -93,7 +142,14 @@ namespace HidemaruLspClient
             }
             return false;
         }
-
+        void IHidemaruLspBackEndServer.DigOpen(ITargetServer TargetServer, string filename, string text, int contentsVersion)
+        {
+            Holder.DigOpen(filename, text, contentsVersion);
+        }
+        void IHidemaruLspBackEndServer.DigChange(ITargetServer TargetServer, string filename, string text, int contentsVersion)
+        {
+            Holder.DigChange(filename, text,contentsVersion);
+        }
         /// <summary>
         /// 補完を行う
         /// </summary>
@@ -101,7 +157,7 @@ namespace HidemaruLspClient
         /// <param name="line"></param>
         /// <param name="column"></param>
         /// <returns>成功時＝辞書ファル名、失敗時=空文字</returns>
-        string IHidemaruLspBackEndServer.Completion(string absFilename, long line, long column, string text)
+        string IHidemaruLspBackEndServer.Completion(ITargetServer TargetServer, string absFilename, long line, long column)
         {
             var logger = LogManager.GetCurrentClassLogger();
             logger.Trace("Completion");
@@ -115,7 +171,7 @@ namespace HidemaruLspClient
                 {
                     return "";
                 }
-                var fileName = Holder.Completion(absFilename, (uint)line, (uint)column, text);
+                var fileName = Holder.Completion(absFilename, (uint)line, (uint)column);
                 return fileName;
             }
             catch (Exception e)
@@ -129,7 +185,7 @@ namespace HidemaruLspClient
         /// 秀丸マクロ終了時に呼び出されるメソッド
         /// </summary>
         /// <param name="reason"></param>
-        void IHidemaruLspBackEndServer.Finalizer(int reason)
+        void IHidemaruLspBackEndServer.Finalizer(ITargetServer TargetServer, int reason)
         {
             /* reason
              *  1　releaseobjectで解放
@@ -147,5 +203,7 @@ namespace HidemaruLspClient
                 logger.Error(e);
             }
         }
+
+        
     }
 }

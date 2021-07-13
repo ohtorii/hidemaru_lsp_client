@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,8 +12,43 @@ namespace HidemaruLspClient_FrontEnd
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
     public class Service
     {
+        static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
+
         IHidemaruLspBackEndServer server_ = null;
-        static DllAssemblyResolver dasmr = new DllAssemblyResolver();
+        ILspClientLogger logger_ = null;        
+        ITargetServer targetServer_=null;
+
+        class Document
+        {
+            public string Filename { get; set; } = "";
+            public Uri Uri { get; set; } = null;
+            public int ContentsVersion { get; set; } = 1;
+            public int ContentsHash { get; set; } = 0;
+        }
+        Document openedFile = new Document();
+
+        enum DigOpenStatus
+        {
+            /// <summary>
+            /// ファイルを開いた
+            /// </summary>
+            Opened,
+            /// <summary>
+            /// ファイールはオープン済み
+            /// </summary>
+            AlreadyOpened,
+        }
+        enum DigChangeStatus
+        {
+            /// <summary>
+            /// 変更あり
+            /// </summary>
+            Changed,
+            /// <summary>
+            /// 変更無し
+            /// </summary>
+            NoChanged,
+        }
 
         public bool Initialize(string logFilename)
         {
@@ -30,12 +66,24 @@ namespace HidemaruLspClient_FrontEnd
                         Marshal.ThrowExceptionForHR(hr);
                     }
                     server_ = (IHidemaruLspBackEndServer)obj;
+                    var ret = server_.Initialize(logFilename);
+                    if (ret)
+                    {
+                        targetServer_ = server_.CreateTargetServer();
+                        logger_     = server_.GetLogger();
+                        Configuration.Initialize(logger_);
+                    }
+                    else
+                    {
+                        server_ = null;
+                    }
+                    return ret;
                 }
-                return server_.Initialize(logFilename);
+                return true;
             }
             catch(Exception e)
             {
-                //Todo: あとで実装
+                server_ = null;
             }
             return false;
         }
@@ -51,7 +99,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 return server_.Add(x, y);
             }
-            catch (System.Exception e)
+            catch (System.Exception )
             {
                 return -1;
             }
@@ -60,13 +108,21 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
-                server_.Finalizer(reason);
-                server_ = null;
-                dasmr = null;
+                if (server_ != null)
+                {
+                    server_.Finalizer(targetServer_,reason);
+                    server_ = null;
+                }
+                dasmr_ = null;
+                logger_ = null;
+                targetServer_ = null;
             }
             catch (Exception e)
             {
-                //Todo:あとで実装
+                if (logger_ != null)
+                {
+                    logger_.Error(e.ToString());
+                }
             }
             return;
         }
@@ -79,29 +135,66 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     return false;
                 }
+                targetServer_.ServerName = options.ServerName;
+                targetServer_.RootUri     = options.RootUri;
                 return server_.Start(
+                    targetServer_,
                     options.ExcutablePath, 
                     options.Arguments,
-                    options.RootUri,
                     options.WorkspaceConfig,
                     currentSourceCodeDirectory);
             }
             catch (Exception e)
             {
-                //logger.Error(e);
+                logger_.Error(e.ToString());
             }
             return false;
+        }
+        private DigOpenStatus DigOpen(string absFilename)
+        {
+            if (openedFile.Filename == absFilename)
+            {
+                return DigOpenStatus.AlreadyOpened;
+            }            
+            var text = Hidemaru.GetTotalTextUnicode();
+            var contentsVersion   = 1;
+            server_.DigOpen(targetServer_,absFilename,text, contentsVersion);
+
+            var sourceUri = new Uri(absFilename);            
+            openedFile.Filename         = absFilename;
+            openedFile.Uri              = sourceUri;
+            openedFile.ContentsVersion  = contentsVersion;
+            openedFile.ContentsHash     = text.GetHashCode();            
+            return DigOpenStatus.Opened;
+        }
+        private DigChangeStatus DigChange(string absFilename)
+        {
+            Debug.Assert(openedFile.Filename == absFilename);
+            var text = Hidemaru.GetTotalTextUnicode();
+            {
+                var currentHash = text.GetHashCode();
+                var prevHash    = openedFile.ContentsHash;
+                if (currentHash == prevHash)
+                {
+                    return DigChangeStatus.NoChanged;
+                }
+            }
+            ++openedFile.ContentsVersion;
+            server_.DigChange(targetServer_, absFilename,text,openedFile.ContentsVersion);
+            return DigChangeStatus.Changed;
         }
         public string Completion(string absFilename, long line, long column)
         {
             try
             {
-                var text = Hidemaru.GetTotalTextUnicode();
-                return server_.Completion(absFilename, line, column, text);
+                if (DigOpen(absFilename) == DigOpenStatus.AlreadyOpened)
+                {
+                    DigChange(absFilename);
+                }            
+                return server_.Completion(targetServer_, absFilename, line, column);
             }catch(Exception e)
             {
-                //Todo: あとで実装
-                //log
+                logger_.Error(e.ToString());
             }
             return "";
         }

@@ -12,10 +12,11 @@ namespace HidemaruLspClient_FrontEnd
 {
     class Configuration
     {
-        //static Logger logger = null;
+        static ILspClientLogger logger_ = null;
 
         public class Option
         {
+            public string ServerName { get; set; }
             public string ExcutablePath { get; set; }
             public string Arguments { get; set; }
             public string RootUri { get; set; }
@@ -28,6 +29,7 @@ namespace HidemaruLspClient_FrontEnd
             public Action<Option, object> action { get; set; }
         }
         static readonly Method[] Methods = new Method[]{
+            new Method { name="GetServerName",      action=(Option dst,object src)=>dst.ServerName      =src.ToString()  },
             new Method { name="GetExcutablePath",   action=(Option dst,object src)=>dst.ExcutablePath   =src.ToString()  },
             new Method { name="GetArguments",       action=(Option dst,object src)=>dst.Arguments       =src.ToString()  },
             new Method { name="GetRootUri",         action=(Option dst,object src)=>dst.RootUri         =src.ToString()  },
@@ -45,19 +47,20 @@ namespace HidemaruLspClient_FrontEnd
             "System.Xml.Linq.dll",
         };
 
+        public static void Initialize(ILspClientLogger logger)
+        {
+            logger_ = logger;
+        }
         /// <summary>
         /// 構成ファイルを評価する
         /// </summary>
         /// <param name="serverConfigFilename"></param>
         public static Option Eval(string serverConfigFilename, string currentSourceCodeDirectory)
         {
-            /*if (logger == null)
-            {
-                logger = LogManager.GetCurrentClassLogger();
-            }*/
+            logger_.Info(string.Format("filename={0}", serverConfigFilename));
+
             LanguageServerProcess.Environment.Initialize(currentSourceCodeDirectory);
             
-            /*var temp = new EnterLeaveLogger("Eval",logger);*/
             {
                 var result = new Option();
                 {
@@ -67,21 +70,21 @@ namespace HidemaruLspClient_FrontEnd
                         CompilerOptions  = MakeCompilerOptions(),
                         GenerateInMemory = true,
                     };
-//                    logger.Debug("CompilerOptions={0}", compileParameters.CompilerOptions);
+                    logger_.Debug(string.Format("CompilerOptions={0}", compileParameters.CompilerOptions));
                     compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);
-/*                    if (logger.IsDebugEnabled)
+                    if (logger_.IsDebugEnabled)
                     {
-                        logger.Debug("compileParameters.ReferencedAssemblies[]={ReferencedAssemblies}", ReferencedAssemblies.ToList());
+                        logger_.Debug(string.Format("compileParameters.ReferencedAssemblies[]={0}", ReferencedAssemblies.ToList()));
                     }
 
-                    logger.Info("filename={0}", serverConfigFilename);
-*/
+                    logger_.Info(string.Format("filename={0}", serverConfigFilename));
+
                     var code = File.ReadAllText(serverConfigFilename);
                     var cr = codeDom.CompileAssemblyFromSource(compileParameters, code);
                     if (0 < cr.Errors.Count)
                     {
                         foreach (var err in cr.Errors){
-                            //logger.Error(err);
+                            logger_.Error(err.ToString());
                         }
                         return null;
                     }
@@ -93,7 +96,7 @@ namespace HidemaruLspClient_FrontEnd
                         var mi = t.GetMethod(method.name);
                         var s = mi.Invoke(instance, null);
                         method.action(result, s);
-                        //logger.Info("{0}={1}",method.name,s);
+                        logger_.Info(string.Format("{0}={1}",method.name,s));
                     }
                 }
                 return result;

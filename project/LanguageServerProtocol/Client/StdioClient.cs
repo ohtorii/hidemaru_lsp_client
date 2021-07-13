@@ -38,7 +38,7 @@ namespace LSP.Client
 		[Serializable]
 		public class LspParameter
 		{
-			public Logger logger;
+			public ILogger logger;
 			/// <summary>
 			/// 実行ファイル名
 			/// </summary>

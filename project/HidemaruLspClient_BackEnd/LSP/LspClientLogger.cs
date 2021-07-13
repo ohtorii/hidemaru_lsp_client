@@ -1,6 +1,5 @@
 ﻿using LSP.Client;
 using NLog;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HidemaruLspClient
 {
-	class LspClientLogger : LSP.Client.Logger
+    class LspClientLogger : LSP.Client.ILogger
 	{
 		NLog.Logger logger = null;
 		public NLog.Logger GetLogger()
@@ -34,39 +33,39 @@ namespace HidemaruLspClient
 			}
 			logger = NLog.LogManager.GetCurrentClassLogger();
 		}
-		override public bool IsFatalEnabled { get { return logger.IsFatalEnabled; } }
-		override public bool IsErrorEnabled { get { return logger.IsErrorEnabled; } }
-		override public bool IsWarnEnabled { get { return logger.IsWarnEnabled; } }
-		override public bool IsInfoEnabled { get { return logger.IsInfoEnabled; } }
-		override public bool IsDebugEnabled { get { return logger.IsDebugEnabled; } }
-		override public bool IsTraceEnabled { get { return logger.IsTraceEnabled; } }
+		public bool IsFatalEnabled { get { return logger.IsFatalEnabled; } }
+		public bool IsErrorEnabled { get { return logger.IsErrorEnabled; } }
+		public bool IsWarnEnabled { get { return logger.IsWarnEnabled; } }
+		public bool IsInfoEnabled { get { return logger.IsInfoEnabled; } }
+		public bool IsDebugEnabled { get { return logger.IsDebugEnabled; } }
+		public bool IsTraceEnabled { get { return logger.IsTraceEnabled; } }
 
-		override public void Debug(string message)
+		public void Debug(string message)
 		{
 			logger.Debug(message);
 		}
 
-		override public void Error(string message)
+		public void Error(string message)
 		{
 			logger.Error(message);
 		}
 
-		override public void Fatal(string message)
+		public void Fatal(string message)
 		{
 			logger.Fatal(message);
 		}
 
-		override public void Info(string message)
+		public void Info(string message)
 		{
 			logger.Info(message);
 		}
 
-		override public void Trace(string message)
+		public void Trace(string message)
 		{
 			logger.Trace(message);
 		}
 
-		override public void Warn(string message)
+		public void Warn(string message)
 		{
 			logger.Warn(message);
 		}

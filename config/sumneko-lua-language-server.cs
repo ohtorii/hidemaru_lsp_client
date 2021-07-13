@@ -5,6 +5,9 @@ using LSP=LanguageServerProcess;
 namespace LanguageServerProcess {
     class ServerConfiguration : LSP.Configuration
     {
+        public override string GetServerName(){
+            return "sumneko-lua-language-server";
+        }
         public override string GetExcutablePath(){
             return "cmd.exe";
         }

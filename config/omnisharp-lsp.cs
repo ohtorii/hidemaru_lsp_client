@@ -5,6 +5,9 @@ using LSP=LanguageServerProcess;
 namespace LanguageServerProcess {
     class ServerConfiguration : LSP.Configuration
     {
+        public override string GetServerName(){
+            return "omnisharp-lsp";
+        }
         public override string GetExcutablePath(){
             return System.Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\omnisharp-lsp\OmniSharp.exe");
         }

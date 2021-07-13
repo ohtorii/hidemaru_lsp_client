@@ -16,8 +16,9 @@ using System.Threading.Tasks;
 
 namespace HidemaruLspClient
 {
-	public class Option
+	class Option
 	{
+		public string ServerName { get; set; }
 		public string ExcutablePath { get; set; }
 		public string Arguments { get; set; }
 		public string RootUri { get; set; }
@@ -32,15 +33,8 @@ namespace HidemaruLspClient
 		static NLog.Logger					logger;
 		static Option		options_	=null;
 		static List<string> tempFilename=new List<string>();
-		class Document
-		{
-			public string Filename { get; set; } = "";
-			public Uri Uri { get; set; } = null;
-			public int ContentsVersion { get; set; } = 1;
-			public int ContentsHash { get; set; } = 0;
-        }
-		static Document openedFiles = null;
-		enum DigOpenStatus
+		
+		/*enum DigOpenStatus
         {
 			/// <summary>
 			/// ファイルを開いた
@@ -61,7 +55,7 @@ namespace HidemaruLspClient
 			/// 変更無し
 			/// </summary>
 			NoChanged,
-        }
+        }*/
 		public static void Initialized(LspClientLogger l)
         {
             if (initialized_)
@@ -89,9 +83,9 @@ namespace HidemaruLspClient
             }
 			tempFilename.Clear();
 		}
-		public static bool Start(string ExcutablePath,
+		public static bool Start(ITargetServer TargetServer,
+								string ExcutablePath,
 								string Arguments,
-								string RootUri,
 								string WorkspaceConfig,
 								string currentSourceCodeDirectory)
 		{
@@ -103,9 +97,10 @@ namespace HidemaruLspClient
 				}
 				options_ = new Option
 				{
+					ServerName		= TargetServer.ServerName,
 					ExcutablePath	= ExcutablePath,
 					Arguments		= Arguments,
-					RootUri			= RootUri,
+					RootUri			= TargetServer.RootUri,
                     WorkspaceConfig = WorkspaceConfig,
 				};
 
@@ -172,53 +167,27 @@ namespace HidemaruLspClient
 		/// </summary>
 		/// <param name="filename"></param>
 		/// <returns></returns>
-		static DigOpenStatus DigOpen(string filename, string text)
-		{
-            if (openedFiles!=null)
-            {
-				Debug.Assert(openedFiles.Filename==filename);
-				return DigOpenStatus.AlreadyOpened;
-            }
+		public static void DigOpen(string filename, string text, int contentsVersion)
+		{            
 			var languageId = FileNameToLanguageId(filename);
-			var sourceVersion = 1;
 			var sourceUri = new Uri(filename);
 
 			var param = new DidOpenTextDocumentParams();
 			param.textDocument.uri			= sourceUri.AbsoluteUri;
-			param.textDocument.version		= sourceVersion;
+			param.textDocument.version		= contentsVersion;
 			param.textDocument.text			= text;
 			param.textDocument.languageId	= languageId;			
 			client_.SendTextDocumentDigOpen(param);
-
-			openedFiles = new Document { 
-							Filename		= filename, 
-							Uri				= sourceUri, 
-							ContentsVersion	= sourceVersion , 
-							ContentsHash	= param.textDocument.text .GetHashCode()
-			};
-			return DigOpenStatus.Opened;
 		}
-        static DigChangeStatus DigChange(string filename, string text)
-        {
-			Debug.Assert(openedFiles.Filename==filename);
-
-			{
-				var currentHash = text.GetHashCode();
-				var prevHash    = openedFiles.ContentsHash;
-				if (currentHash == prevHash)
-				{
-					return DigChangeStatus.NoChanged;
-				}
-			}
-			++openedFiles.ContentsVersion;
-
+        public static void DigChange(string filename, string text, int contentsVersion)
+        {						
 			var param = new DidChangeTextDocumentParams { 
 							contentChanges = new[] { new TextDocumentContentChangeEvent { text = text } },
 			};
-			param.textDocument.uri		= openedFiles.Uri.AbsoluteUri;
-			param.textDocument.version	= openedFiles.ContentsVersion;			
+			var sourceUri = new Uri(filename);
+			param.textDocument.uri		= sourceUri.AbsoluteUri;
+			param.textDocument.version	= contentsVersion;			
 			client_.SendTextDocumentDidChange(param);
-			return DigChangeStatus.Changed;
 		}
 		/// <summary>
 		/// 
@@ -227,14 +196,8 @@ namespace HidemaruLspClient
 		/// <param name="line"></param>
 		/// <param name="column"></param>
 		/// <returns>辞書の一時ファイル名(絶対パス)</returns>
-		static public string Completion(string filename, uint line, uint column, string text)
-		{
-			//Todo: DigOpen,DigChangeはFrontEndで処理する
-			if (DigOpen(filename,text) == DigOpenStatus.AlreadyOpened)
-            {
-				DigChange(filename,text);
-            }
-			
+		static public string Completion(string filename, uint line, uint column)
+		{						
 			object result;
 			{
 				RequestId id;

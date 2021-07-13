@@ -12,6 +12,11 @@ namespace LanguageServerProcess
     public abstract class Configuration
     {
         /// <summary>
+        /// サーバ名を取得する
+        /// </summary>
+        /// <returns></returns>
+        public abstract string GetServerName();
+        /// <summary>
         /// 実行ファイル名を取得する
         /// </summary>
         /// <returns></returns>

@@ -1,6 +1,52 @@
 import "oaidl.idl";
 import "ocidl.idl";
 
+/*typedef enum
+{
+    Opened=0,
+    AlreadyOpened,
+}DigOpenStatus;
+typedef enum
+{
+    Changed=0,
+    NoChanged,
+}DigChangeStatus;
+*/
+[
+    object,
+    oleautomation, 
+    uuid(318C52CD-4A12-4C98-892B-1830B026768D)
+]
+interface ILspClientLogger :IDispatch {
+    [propget] HRESULT IsFatalEnabled([out,retval]boolean*ret);
+    [propget] HRESULT IsErrorEnabled([out, retval]boolean* ret);
+    [propget] HRESULT IsWarnEnabled([out, retval]boolean* ret);
+    [propget] HRESULT IsInfoEnabled([out, retval]boolean* ret);
+    [propget] HRESULT IsDebugEnabled([out, retval]boolean* ret);
+    [propget] HRESULT IsTraceEnabled([out, retval]boolean* ret);
+    HRESULT Trace([in]BSTR message);
+    HRESULT Debug([in]BSTR message);
+    HRESULT Info([in]BSTR message);
+    HRESULT Warn([in]BSTR message);
+    HRESULT Error([in]BSTR message);
+    HRESULT Fatal([in]BSTR message);
+};
+
+[
+    object,
+    oleautomation,
+    uuid(47137F87-E07A-422E-9FB8-F0B13C615D2F)
+]
+interface ITargetServer :IDispatch
+{
+    [propget] HRESULT ServerName([out,retval]BSTR*ret);
+    [propput] HRESULT ServerName([in]BSTR ServerName);
+    [propget] HRESULT RootUri([out, retval]BSTR* ret);
+    [propput] HRESULT RootUri([in]BSTR rootUri);
+    HRESULT Initialize();
+}
+
+
 [
     object,
     oleautomation,
@@ -8,16 +54,20 @@ import "ocidl.idl";
 ]
 interface IHidemaruLspBackEndServer : IDispatch
 {    
+    HRESULT CreateTargetServer([out]ITargetServer**targetServer);
     HRESULT Initialize([in]BSTR logFileName, [out, retval] boolean* ret);
+    HRESULT GetLogger([out]ILspClientLogger** logger);
     HRESULT Add([in]int x, [in] int y, [out, retval] int* ret);
-    HRESULT Finalizer([in]int reason);
-    HRESULT Start([in]BSTR ExcutablePath,
+    HRESULT Finalizer([in]ITargetServer* TargetServer, [in]int reason);
+    HRESULT Start([in]ITargetServer* TargetServer,
+                  [in]BSTR ExcutablePath,
                   [in]BSTR Arguments,
-                  [in]BSTR RootUri,
                   [in]BSTR WorkspaceConfig,
                   [in]BSTR currentSourceCodeDirectory,
                   [out, retval]boolean *ret);
-    HRESULT Completion([in]BSTR absFilename, [in]hyper line, [in]hyper column, [in]BSTR text, [out, retval]BSTR*ret);
+    HRESULT DigOpen([in]ITargetServer* TargetServer,[in]BSTR filename, [in]BSTR text, int contentsVersion);
+    HRESULT DigChange([in]ITargetServer* TargetServer, [in]BSTR filename, [in]BSTR text, int contentsVersion);
+    HRESULT Completion([in]ITargetServer* TargetServer, [in]BSTR absFilename, [in]hyper line, [in]hyper column, [out, retval]BSTR*ret);
 };
 
 [
