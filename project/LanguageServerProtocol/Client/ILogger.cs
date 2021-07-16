@@ -1,7 +1,7 @@
 ﻿namespace LSP.Client
 {
     /// <summary>
-    /// 
+    /// ログのインターフェース
     /// </summary>
     public interface ILogger
 	{

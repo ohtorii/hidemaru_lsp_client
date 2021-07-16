@@ -28,7 +28,7 @@ namespace HidemaruLspClient
             using (var consoleTrace = new ConsoleTraceListener())
             {
                 Trace.Listeners.Add(consoleTrace);
-                Trace.WriteLine("[Start]exe");
+                Trace.WriteLine("[Create]exe");
                 string tlbPath;
                 if (Environment.Is64BitProcess)
                 {
@@ -97,7 +97,15 @@ namespace HidemaruLspClient
         static void Usage()
         {
             //Todo: Usage を書く
-            Console.WriteLine("Usage");
+            Console.WriteLine(
+@"Usage:
+/regserver -regserver
+/unregserver -unregserver
+/regserverperuser -regserverperuser
+/unregserverperuser -unregserverperuser
+/? /help -h --help
+"
+); ; 
         }
     }
 }

@@ -9,23 +9,49 @@ using System.Threading.Tasks;
 
 namespace HidemaruLspClient
 {
-    class TargetServer : ITargetServer
-    {
-        public string ServerName { get; set; }
-        public string RootUri { get; set; }
-
-        public void Initialize()
-        {
-            ServerName = "";
-            RootUri = "";
-        }
-    }
     [ComVisible(true)]
     [Guid(LspContract.Constants.ServerClass)]
     [ProgId(LspContract.Constants.ProgId)]
     [ComDefaultInterface(typeof(IHidemaruLspBackEndServer))]
-    public sealed class HidemaruLspBackEndServer : IHidemaruLspBackEndServer
+    public sealed partial class HidemaruLspBackEndServer : IHidemaruLspBackEndServer
     {
+        static LspClientLogger lspClientLogger_ = null;
+        static ComClientLogger comClientLogger_ = null;
+
+        class WorkerPair
+        {
+            public WorkerPair(Worker w)
+            {
+                worker = w;
+                Used();
+            }            
+            Worker worker =null;
+            public Worker GetWorker()
+            {
+                return worker;
+            }
+            public void Used()
+            {
+                referenceCounter += 1;
+            }
+            public bool UnUsed()
+            {
+                referenceCounter -= 1;
+                if (referenceCounter == 0)
+                {
+                    //worker.Destroy();
+                    //worker = null;
+                    return true;
+                }
+                return false;
+            }
+            int referenceCounter = 0;
+        }
+        static Dictionary<LspKey, WorkerPair> workerHolder_ = new Dictionary<LspKey, WorkerPair>();
+
+
+
+
         public HidemaruLspBackEndServer()
         {
             COMRegistration.Ole32.CoAddRefServerProcess();
@@ -38,34 +64,29 @@ namespace HidemaruLspClient
                 Environment.Exit(success);
             }
         }
+
+        [LogMethod]
         int IHidemaruLspBackEndServer.Add(int x, int y)
         {
             return x + y;
-        }        
-
-        static LspClientLogger lspClientLogger = null;
-        static ComClientLogger comClientLogger = null;
-
-        ITargetServer IHidemaruLspBackEndServer.CreateTargetServer()
-        {
-            return new TargetServer();
         }
 
+        [LogMethod]
         /// <summary>
         /// コンストラクタ
         /// (Memo)アウトプロセスサーバなので createobject するたびに呼ばれる
         /// </summary>        
         bool IHidemaruLspBackEndServer.Initialize(string logFileName)
         {
-            if (lspClientLogger == null)
+            if (lspClientLogger_ == null)
             {
-                lspClientLogger = new LspClientLogger(logFileName);
+                lspClientLogger_ = new LspClientLogger(logFileName);
             }
 
             var logger = LogManager.GetCurrentClassLogger();
             try
             {
-                Holder.Initialized(lspClientLogger);
+                Worker.Initialize(lspClientLogger_);
             }
             catch (Exception e)
             {
@@ -76,134 +97,74 @@ namespace HidemaruLspClient
         }
         ILspClientLogger IHidemaruLspBackEndServer.GetLogger()
         {
-            if (comClientLogger == null)
+            if (comClientLogger_ == null)
             {
-                Debug.Assert(lspClientLogger != null);
-                comClientLogger = new ComClientLogger(lspClientLogger);
+                Debug.Assert(lspClientLogger_ != null);
+                comClientLogger_ = new ComClientLogger(lspClientLogger_);
             }
-            return comClientLogger;
+            return comClientLogger_;
         }
 
-        /*あとで作る
-        Dictionary<int,Holder>WorkerHolder_=new Dictionary<int,Holder>();
-        */
-
+        [LogMethod]
         /// <summary>
         /// LSPサーバを起動する
         /// </summary>
         /// <param name="serverConfigFilename"></param>
         /// <param name="currentSourceCodeDirectory"></param>
         /// <returns></returns>
-        bool IHidemaruLspBackEndServer.Start(
-            ITargetServer TargetServer,
+        IWorker IHidemaruLspBackEndServer.CreateWorker(
+            string ServerName,
             string ExcutablePath,
             string Arguments,
-            string WorkspaceConfig,
-            string currentSourceCodeDirectory)
+            string RootUri,
+            string WorkspaceConfig)
         {
-
-          /*  {
-                var hash = TargetServer.GetHashCode();
-                if (WorkerHolder_.ContainsKey(hash))
+            var logger = LogManager.GetCurrentClassLogger();
+            try
+            {
+                var target = new LspKey(ServerName, RootUri);                
+                if (workerHolder_.ContainsKey(target))
                 {
-                    return WorkerHolder_[hash];
+                    var w = workerHolder_[target];
+                    w.Used();
+                    return w.GetWorker();
                 }
-                var h = new Holder();
-                var ret = h.Start(ExcutablePath,
+                var ins = new Worker(target);
+                var ret = ins.Start(  ServerName,
+                                    ExcutablePath,
                                     Arguments,
-                                    WorkspaceConfig,
-                                    currentSourceCodeDirectory);
+                                    RootUri,
+                                    WorkspaceConfig);
                 if (ret == false)
                 {
                     return null;
                 }
-                WorkerHolder_[hash] = h;
-                return h;
-
-            }*/
-
-            var logger = LogManager.GetCurrentClassLogger();
-
-            logger.Trace("Start");
-            try
-            {
-                var ret = Holder.Start(
-                    TargetServer,
-                    ExcutablePath,
-                    Arguments,
-                    WorkspaceConfig,
-                    currentSourceCodeDirectory);
-                logger.Trace("Result={0}", ret);
-                return ret;
-            }
-            catch (Exception e)
+                workerHolder_[target] = new WorkerPair(ins);
+                return ins;
+            }catch(Exception e)
             {
                 logger.Error(e);
             }
-            return false;
-        }
-        void IHidemaruLspBackEndServer.DigOpen(ITargetServer TargetServer, string filename, string text, int contentsVersion)
-        {
-            Holder.DigOpen(filename, text, contentsVersion);
-        }
-        void IHidemaruLspBackEndServer.DigChange(ITargetServer TargetServer, string filename, string text, int contentsVersion)
-        {
-            Holder.DigChange(filename, text,contentsVersion);
-        }
-        /// <summary>
-        /// 補完を行う
-        /// </summary>
-        /// <param name="absFilename"></param>
-        /// <param name="line"></param>
-        /// <param name="column"></param>
-        /// <returns>成功時＝辞書ファル名、失敗時=空文字</returns>
-        string IHidemaruLspBackEndServer.Completion(ITargetServer TargetServer, string absFilename, long line, long column)
-        {
-            var logger = LogManager.GetCurrentClassLogger();
-            logger.Trace("Completion");
-            try
-            {
-                if (line < 0)
-                {
-                    return "";
-                }
-                if (column < 0)
-                {
-                    return "";
-                }
-                var fileName = Holder.Completion(absFilename, (uint)line, (uint)column);
-                return fileName;
-            }
-            catch (Exception e)
-            {
-                logger.Error(e);
-            }
-            return "";
+            return null;
         }
 
-        /// <summary>
-        /// 秀丸マクロ終了時に呼び出されるメソッド
-        /// </summary>
-        /// <param name="reason"></param>
-        void IHidemaruLspBackEndServer.Finalizer(ITargetServer TargetServer, int reason)
+        [LogMethod]
+        void IHidemaruLspBackEndServer.DestroyWorker(IWorker worker)
         {
-            /* reason
-             *  1　releaseobjectで解放
-             *  3　プロセス終了時
-             *  4　マクロ終了時(keepobject #obj,0;のとき)
-             */
-            var logger = LogManager.GetCurrentClassLogger();
-            try
+            var ins = worker as Worker;
+            Debug.Assert(ins != null);
+            
+            var key = ins.key;
+            var value = workerHolder_[key];
+            //Debug.Assert(value.worker.key == key);
+
+            if (value.UnUsed())
             {
-                logger.Trace("Finalizer (n={0})", reason);
-                Holder.Destroy();
-            }
-            catch (Exception e)
-            {
-                logger.Error(e);
+                var ret = workerHolder_.Remove(key);
+                Debug.Assert(ret == true);
+
+                ins.Stop();
             }
         }
-
-        
     }
 }

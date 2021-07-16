@@ -101,7 +101,7 @@ namespace COMRegistration
 
         public void RegisterClass<T>(Guid clsid) where T : new()
         {
-            Trace.WriteLine($"[Start]Registering class object:");
+            Trace.WriteLine($"[Create]Registering class object:");
             Trace.Indent();
             Trace.WriteLine($"CLSID: {clsid:B}");
             Trace.WriteLine($"Type: {typeof(T)}");
@@ -132,7 +132,7 @@ namespace COMRegistration
             // This sample does not handle lifetime management of the server.
             // For details around ref counting and locking of out-of-proc COM servers, see
             // https://docs.microsoft.com/windows/win32/com/out-of-process-server-implementation-helpers
-            Trace.WriteLine($"[Start]Run");
+            Trace.WriteLine($"[Create]Run");
             Console.ReadLine();
             Trace.WriteLine($"[Finish]Run");
         }

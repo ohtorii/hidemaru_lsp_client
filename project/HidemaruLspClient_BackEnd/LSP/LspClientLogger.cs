@@ -69,21 +69,5 @@ namespace HidemaruLspClient
 		{
 			logger.Warn(message);
 		}
-	}
-
-	class EnterLeaveLogger
-    {
-        NLog.Logger logger;
-		string methodName;
-		public EnterLeaveLogger(string methodName, NLog.Logger logger)
-        {
-			this.logger = logger;
-			this.methodName = methodName;
-			this.logger.Trace("{0} Enter.", this.methodName);
-		}
-        ~EnterLeaveLogger()
-        {
-			this.logger.Trace("{0} Leave.", this.methodName);
-		}
-	}
+	}	
 }

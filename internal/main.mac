@@ -24,6 +24,8 @@ $iniServerConfig=$rootFolder+"\\server_config.ini";
 call GetAbsolutePathName $iniServerConfig;
 $iniServerConfig=$$return;
 
+$comObjectName="lsp.client.obj";
+#comObjectShare=0;
 
 /////////////////////////////////////////////////////////////////////////////
 //    メイン処理
@@ -44,22 +46,31 @@ main:
     }
 
     debuginfo 1;
-    ##obj = createobject($comClientFileName,$comServiceName);
-	if(##obj==0){
-        message "COMのロードに失敗しました";
-        return false;
+    $$obj = getstaticvariable($comObjectName,#comObjectShare);
+    if($$obj!=""){
+        ##obj = val($$obj);
+    }else{
+        ##obj = createobject($comClientFileName,$comServiceName);
+        if(##obj==0){
+            message "COMのロードに失敗しました";
+            return false;
+        }
+        setstaticvariable $comObjectName,str(##obj),#comObjectShare;
+        keepobject ##obj, 2;
+
+        setcomdetachmethod ##obj,"Finalizer";
+        ##n=callmethod_returnnum(##obj,"Initialize",$logFileName);
+        if(##n==false){
+            message "Initializeに失敗";
+            return false;
+        }
+        ##n=callmethod_returnnum(##obj,"CreateWorker",$$absConfigFileName,directory2);
+        if(##n==false){
+            message "Start に失敗";
+            return false;
+        }
     }
-    setcomdetachmethod ##obj,"Finalizer";
-    ##n=callmethod_returnnum(##obj,"Initialize",$logFileName);
-    if(##n==false){
-        message "Initializeに失敗";
-        return false;
-    }
-    ##n=callmethod_returnnum(##obj,"Start",$$absConfigFileName,directory2);
-    if(##n==false){
-        message "Start に失敗";
-        return false;
-    }
+
     //Memo: -1して0始まりにする
     $$dictionalyFileName=callmethod_returnstr(##obj, "Completion",filename2,lineno-1,column_wcs);
     if($$dictionalyFileName==""){

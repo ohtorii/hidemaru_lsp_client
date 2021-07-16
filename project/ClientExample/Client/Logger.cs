@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ClientExample
 {
-	class Logger : LSP.Client.Logger
+    class Logger : LSP.Client.ILogger
 	{
 		static NLog.Logger logger = null;
 
@@ -30,39 +30,39 @@ namespace ClientExample
 			}
 			logger = NLog.LogManager.GetCurrentClassLogger();
 		}
-		public override bool IsFatalEnabled { get { return logger.IsFatalEnabled; } }
-		public override bool IsErrorEnabled { get { return logger.IsErrorEnabled; } }
-		public override bool IsWarnEnabled { get { return logger.IsWarnEnabled; } }
-		public override bool IsInfoEnabled { get { return logger.IsInfoEnabled; } }
-		public override bool IsDebugEnabled { get { return logger.IsDebugEnabled; } }
-		public override bool IsTraceEnabled { get { return logger.IsTraceEnabled; } }
+		public bool IsFatalEnabled { get { return logger.IsFatalEnabled; } }
+		public bool IsErrorEnabled { get { return logger.IsErrorEnabled; } }
+		public bool IsWarnEnabled { get { return logger.IsWarnEnabled; } }
+		public bool IsInfoEnabled { get { return logger.IsInfoEnabled; } }
+		public bool IsDebugEnabled { get { return logger.IsDebugEnabled; } }
+		public bool IsTraceEnabled { get { return logger.IsTraceEnabled; } }
 
-		public override void Debug(string message)
+		public void Debug(string message)
 		{
 			logger.Debug(message);
 		}
 
-		public override void Error(string message)
+		public void Error(string message)
 		{
 			logger.Error(message);
 		}
 
-		public override void Fatal(string message)
+		public void Fatal(string message)
 		{
 			logger.Fatal(message);
 		}
 
-		public override void Info(string message)
+		public void Info(string message)
 		{
 			logger.Info(message);
 		}
 
-		public override void Trace(string message)
+		public void Trace(string message)
 		{
 			logger.Trace(message);
 		}
 
-		public override void Warn(string message)
+		public void Warn(string message)
 		{
 			logger.Warn(message);
 		}

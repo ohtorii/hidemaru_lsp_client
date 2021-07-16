@@ -15,8 +15,8 @@ namespace HidemaruLspClient_FrontEnd
         static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
 
         IHidemaruLspBackEndServer server_ = null;
-        ILspClientLogger logger_ = null;        
-        ITargetServer targetServer_=null;
+        IWorker worker_ = null;
+        ILspClientLogger logger_ = null;                
 
         class Document
         {
@@ -68,8 +68,7 @@ namespace HidemaruLspClient_FrontEnd
                     server_ = (IHidemaruLspBackEndServer)obj;
                     var ret = server_.Initialize(logFilename);
                     if (ret)
-                    {
-                        targetServer_ = server_.CreateTargetServer();
+                    {                     
                         logger_     = server_.GetLogger();
                         Configuration.Initialize(logger_);
                     }
@@ -107,15 +106,15 @@ namespace HidemaruLspClient_FrontEnd
         public void Finalizer(int reason)
         {
             try
-            {
+            {                
                 if (server_ != null)
                 {
-                    server_.Finalizer(targetServer_,reason);
-                    server_ = null;
+                    server_.DestroyWorker(worker_);
                 }
+                worker_ = null;
+                server_ = null;
                 dasmr_ = null;
-                logger_ = null;
-                targetServer_ = null;
+                logger_ = null;                
             }
             catch (Exception e)
             {
@@ -126,23 +125,27 @@ namespace HidemaruLspClient_FrontEnd
             }
             return;
         }
-        public bool Start(string serverConfigFilename, string currentSourceCodeDirectory)
+        public bool CreateWorker(string serverConfigFilename, string currentSourceCodeDirectory)
         {
+            Debug.Assert(worker_ == null);
             try
             {
                 var options = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
                 if (options == null)
                 {
                     return false;
+                }                
+                worker_=server_.CreateWorker(
+                            options.ServerName,
+                            options.ExcutablePath, 
+                            options.Arguments,
+                            options.RootUri,
+                            options.WorkspaceConfig);
+                if (worker_ == null)
+                {
+                    return false;
                 }
-                targetServer_.ServerName = options.ServerName;
-                targetServer_.RootUri     = options.RootUri;
-                return server_.Start(
-                    targetServer_,
-                    options.ExcutablePath, 
-                    options.Arguments,
-                    options.WorkspaceConfig,
-                    currentSourceCodeDirectory);
+                return true;
             }
             catch (Exception e)
             {
@@ -152,13 +155,15 @@ namespace HidemaruLspClient_FrontEnd
         }
         private DigOpenStatus DigOpen(string absFilename)
         {
+            Debug.Assert(worker_ != null);
+
             if (openedFile.Filename == absFilename)
             {
                 return DigOpenStatus.AlreadyOpened;
             }            
             var text = Hidemaru.GetTotalTextUnicode();
             var contentsVersion   = 1;
-            server_.DigOpen(targetServer_,absFilename,text, contentsVersion);
+            worker_.DigOpen(absFilename,text, contentsVersion);
 
             var sourceUri = new Uri(absFilename);            
             openedFile.Filename         = absFilename;
@@ -169,6 +174,7 @@ namespace HidemaruLspClient_FrontEnd
         }
         private DigChangeStatus DigChange(string absFilename)
         {
+            Debug.Assert(worker_ != null);
             Debug.Assert(openedFile.Filename == absFilename);
             var text = Hidemaru.GetTotalTextUnicode();
             {
@@ -180,18 +186,19 @@ namespace HidemaruLspClient_FrontEnd
                 }
             }
             ++openedFile.ContentsVersion;
-            server_.DigChange(targetServer_, absFilename,text,openedFile.ContentsVersion);
+            worker_.DigChange(absFilename,text,openedFile.ContentsVersion);
             return DigChangeStatus.Changed;
         }
         public string Completion(string absFilename, long line, long column)
         {
+            Debug.Assert(worker_ != null);
             try
             {
                 if (DigOpen(absFilename) == DigOpenStatus.AlreadyOpened)
                 {
                     DigChange(absFilename);
                 }            
-                return server_.Completion(targetServer_, absFilename, line, column);
+                return worker_.Completion(absFilename, line, column);
             }catch(Exception e)
             {
                 logger_.Error(e.ToString());

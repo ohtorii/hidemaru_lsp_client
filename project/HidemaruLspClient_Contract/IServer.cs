@@ -24,32 +24,29 @@ public interface ILspClientLogger
 }
 
 [ComVisible(true)]
-[Guid("47137F87-E07A-422E-9FB8-F0B13C615D2F")]
-public interface ITargetServer
+[Guid("E8153825-63C2-4C50-9889-0DEB4CFB4033")]
+public interface IWorker
 {
-    string ServerName { get; set; }
-    string RootUri { get; set; }
-    void Initialize();
+    void DigOpen(string filename, string text, int contentsVersion);
+    void DigChange(string filename, string text, int contentsVersion);
+    string Completion(string absFilename, long line, long column);
 }
 
 [ComVisible(true)]
 [Guid(LspContract.Constants.ServerInterface)]
 public interface IHidemaruLspBackEndServer
-{
-    ITargetServer CreateTargetServer();
+{    
     bool Initialize(string logFileName);
     ILspClientLogger GetLogger();
     int Add(int x, int y);
 
-    void Finalizer(ITargetServer TargetServer, int reason);
-    bool Start(
-        ITargetServer TargetServer,
-        string ExcutablePath,
-        string Arguments,
-        string WorkspaceConfig,
-        string currentSourceCodeDirectory);
-    void DigOpen(ITargetServer TargetServer,string filename, string text, int contentsVersion);
-    void DigChange(ITargetServer TargetServer, string filename, string text, int contentsVersion);
-    string Completion(ITargetServer TargetServer, string absFilename, long line, long column);
+    //void Finalizer(ITargetServer TargetServer, int reason);
+    IWorker CreateWorker(
+                string ServerName,
+                string ExcutablePath,
+                string Arguments,
+                string RootUri,
+                string WorkspaceConfig);
+    void DestroyWorker(IWorker worker);
 }
 

@@ -95,6 +95,7 @@ namespace LSP.Client
 			server_.StartRedirect();
 			server_.StartThreadLoop();
 		}
+		
 #region LSP_Event
 		/*void OnResponseError(ResponseMessage response)
 		{
