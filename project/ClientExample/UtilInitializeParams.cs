@@ -1,16 +1,11 @@
 ﻿using LSP.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ClientExample
 {
-	class UtilInitializeParams
-	{
-        static public InitializeParams Initialzie()
-		{
+    internal class UtilInitializeParams
+    {
+        public static InitializeParams Initialzie()
+        {
             var param = new InitializeParams();
             param.initializationOptions = null;
             param.processId = System.Diagnostics.Process.GetCurrentProcess().Id;
@@ -191,5 +186,5 @@ namespace ClientExample
             }
             return param;
         }
-	}
+    }
 }

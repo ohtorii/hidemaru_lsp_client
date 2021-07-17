@@ -1,16 +1,14 @@
-﻿using LSP.Model;
+﻿using LSP.Client;
 using System;
-using System.Threading;
 using System.IO;
-using LSP.Client;
 
 namespace ClientExample
 {
-	class CSharpClient : ExampleBase
+    internal class CSharpClient : ExampleBase
     {
-        static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\csharp\");
-        static string solutionFileName = Path.Combine(rootPath, "simple.sln");
-        static string logFilename = Environment.ExpandEnvironmentVariables(@"D:\temp\LSP-Server\lsp_server_response_cs.txt");
+        private static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\csharp\");
+        private static string solutionFileName = Path.Combine(rootPath, "simple.sln");
+        private static string logFilename = Environment.ExpandEnvironmentVariables(@"D:\temp\LSP-Server\lsp_server_response_cs.txt");
 
         internal override Uri rootUri => new Uri(rootPath);
 
@@ -22,7 +20,6 @@ namespace ClientExample
 
         internal override StdioClient CreateClient()
         {
-            
 #if false
             //OK
             var FileName = @"d:\Temp\LSP-Server\omnisharp-win-x64-1.37.8\OmniSharp.exe";

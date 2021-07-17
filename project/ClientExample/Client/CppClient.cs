@@ -1,19 +1,17 @@
-﻿using LSP.Model;
-using System;
-using System.IO;
-using System.Threading;
+﻿using System;
 
 namespace ClientExample
 {
-    class CppClient : ExampleBase
-	{
-		static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\cpp\");
+    internal class CppClient : ExampleBase
+    {
+        private static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\cpp\");
         internal override Uri rootUri => new Uri(rootPath);
-		internal override Uri sourceUri => new Uri(rootUri, @"ConsoleApplication\ConsoleApplication.cpp");
+        internal override Uri sourceUri => new Uri(rootUri, @"ConsoleApplication\ConsoleApplication.cpp");
         internal override string languageId => "cpp";
-        internal override CompilationPosition compilationPosition => new CompilationPosition { line=9,character=25};
-		internal override LSP.Client.StdioClient CreateClient()
-		{			
+        internal override CompilationPosition compilationPosition => new CompilationPosition { line = 9, character = 25 };
+
+        internal override LSP.Client.StdioClient CreateClient()
+        {
 #if false
 			//OK
 			string logFilename = @"D:\temp\LSP-Server\lsp_server_response_clangd.txt";
@@ -21,11 +19,11 @@ namespace ClientExample
 			var Arguments = @"";
 			var WorkingDirectory = @"";
 #elif true
-			//OK
-			string logFilename = @"D:\temp\LSP-Server\lsp_server_response_clangd.txt";
-			var FileName = @"C:\Program Files\LLVM\bin\clangd.exe";
-			var Arguments = @"";//@"--log=verbose";
-			var WorkingDirectory = System.IO.Path.GetDirectoryName(sourceUri.AbsolutePath);
+            //OK
+            string logFilename = @"D:\temp\LSP-Server\lsp_server_response_clangd.txt";
+            var FileName = @"C:\Program Files\LLVM\bin\clangd.exe";
+            var Arguments = @"";//@"--log=verbose";
+            var WorkingDirectory = System.IO.Path.GetDirectoryName(sourceUri.AbsolutePath);
 #elif false
 			//NG
 			/*
@@ -36,16 +34,17 @@ namespace ClientExample
 			var Arguments = @"";
 			var WorkingDirectory = rootPath;
 #endif
-			var client = new LSP.Client.StdioClient();
-			client.StartLspProcess(
-				new LSP.Client.StdioClient.LspParameter { 
-					exeFileName = FileName, 
-					exeArguments = Arguments, 
-					exeWorkingDirectory = WorkingDirectory,
-					logger = new Logger(logFilename)
-				}
-			);
-			return client;
-		}			
+            var client = new LSP.Client.StdioClient();
+            client.StartLspProcess(
+                new LSP.Client.StdioClient.LspParameter
+                {
+                    exeFileName = FileName,
+                    exeArguments = Arguments,
+                    exeWorkingDirectory = WorkingDirectory,
+                    logger = new Logger(logFilename)
+                }
+            );
+            return client;
+        }
     }
 }

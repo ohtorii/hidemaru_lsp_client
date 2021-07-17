@@ -1,26 +1,20 @@
-﻿using LSP.Model;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ClientExample
 {
-    class LuaClient : ExampleBase
-	{
-
-		static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\lua\");				
+    internal class LuaClient : ExampleBase
+    {
+        private static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\lua\");
         internal override Uri rootUri => new Uri(rootPath);
         internal override Uri sourceUri => new Uri(rootUri, @"test1.lua");
         internal override string languageId => "lua";
-        internal override CompilationPosition compilationPosition => new CompilationPosition { line=11,character=9};
-        static JObject workspaceConfig = (JObject)JsonConvert.DeserializeObject(
+        internal override CompilationPosition compilationPosition => new CompilationPosition { line = 11, character = 9 };
+
+        private static JObject workspaceConfig = (JObject)JsonConvert.DeserializeObject(
 @" {
     ""Lua"": {
         ""color"": {
@@ -62,7 +56,6 @@ namespace ClientExample
         }
     }
 }");
-        
 
         internal override LSP.Client.StdioClient CreateClient()
         {
@@ -86,6 +79,7 @@ namespace ClientExample
             });
             return client;
         }
+
         internal override void DigOpen(LSP.Client.StdioClient client)
         {
             base.DigOpen(client);

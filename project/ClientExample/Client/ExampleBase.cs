@@ -1,29 +1,32 @@
-﻿using LSP.Model;
+﻿using LSP.Client;
+using LSP.Model;
 using System;
-using System.Threading;
-using System.IO;
-using LSP.Client;
 using System.Diagnostics;
+using System.IO;
 
 namespace ClientExample
 {
     internal abstract class ExampleBase
     {
-        internal abstract Uri rootUri{get;}
+        internal abstract Uri rootUri { get; }
         internal abstract Uri sourceUri { get; }
+
         //internal abstract string logFilename { get; }
         internal abstract string languageId { get; }
+
         internal class CompilationPosition
         {
             public uint line { get; set; }
             public uint character { get; set; }
         }
-        internal abstract CompilationPosition compilationPosition { get;  }
+
+        internal abstract CompilationPosition compilationPosition { get; }
+
         internal abstract StdioClient CreateClient();
-        internal virtual object serverInitializationOptions { get; } =null;
 
+        internal virtual object serverInitializationOptions { get; } = null;
 
-        int sourceVersion = 0;
+        private int sourceVersion = 0;
 
         public void Start()
         {
@@ -31,7 +34,7 @@ namespace ClientExample
 
             Console.WriteLine("==== InitializeServer ====");
             {
-                var initializeId=InitializeServer(client);
+                var initializeId = InitializeServer(client);
                 var result = (InitializeResult)client.QueryResponse(initializeId);
                 Debug.Assert(client.Status == LSP.Client.StdioClient.Mode.ServerInitializeFinish);
             }
@@ -58,6 +61,7 @@ namespace ClientExample
             //Console.WriteLine("続行するには何かキーを押してください．．．");
             //Console.ReadKey();
         }
+
         internal virtual void Completion(StdioClient client)
         {
             RequestId requestId;
@@ -92,6 +96,7 @@ namespace ClientExample
                 Console.WriteLine("[Success]completion.items.Length={0}", completion.items.Length);
             }
         }
+
         internal virtual void DidChange(LSP.Client.StdioClient client)
         {
             var text = File.ReadAllText(sourceUri.AbsolutePath, System.Text.Encoding.UTF8);
@@ -101,7 +106,6 @@ namespace ClientExample
             param.contentChanges = new[] { new TextDocumentContentChangeEvent { text = text } };
             param.textDocument.uri = sourceUri.AbsoluteUri;
             param.textDocument.version = sourceVersion;
-
         }
 
         internal virtual void DidChangeConfiguration(LSP.Client.StdioClient client)
@@ -110,6 +114,7 @@ namespace ClientExample
             param.settings = new object();
             client.SendWorkspaceDidChangeConfiguration(param);
         }
+
         internal virtual void DigOpen(LSP.Client.StdioClient client)
         {
             sourceVersion = 1;//Openしたのでとりあえず1にする。
@@ -121,6 +126,7 @@ namespace ClientExample
             param.textDocument.languageId = languageId;
             client.SendTextDocumentDigOpen(param);
         }
+
         internal virtual void InitializedClient(LSP.Client.StdioClient client)
         {
             var param = new InitializedParams();
@@ -136,6 +142,7 @@ namespace ClientExample
             param.initializationOptions = serverInitializationOptions;
             return client.SendInitialize(param);
         }
+
         internal virtual void Shutdown(StdioClient client)
         {
             var requestId = client.SendShutdown();
@@ -148,6 +155,5 @@ namespace ClientExample
             client.SendExit();
             Console.WriteLine("[Success]Shutdown.");
         }
-
     }
 }
