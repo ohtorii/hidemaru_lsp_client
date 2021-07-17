@@ -101,6 +101,7 @@ namespace HidemaruLspClient
 			{
 				return false;
 			}
+			//Todo: ClientExampleのように初期化を待つ
 			InitializeServer();
 			while (client_.Status != LSP.Client.StdioClient.Mode.ServerInitializeFinish)
 			{

@@ -78,7 +78,7 @@ namespace LSP.Client
 #else
 			param_ = param.DeepClone();
 #endif
-			mediator_ = new Mediator(	source_.Token);
+			mediator_ = new Mediator(source_.Token, param_.logger);
 			{
                 var Protocol = mediator_.Protocol;
 				Protocol.OnWindowLogMessage				+= this.OnWindowLogMessage;
@@ -110,10 +110,16 @@ namespace LSP.Client
 		}*/
 		void OnWindowLogMessage(LogMessageParams param)
 		{
-			Console.WriteLine(String.Format("[OnWindowLogMessage]{0}",param.message));
+			if (param_.logger.IsTraceEnabled)
+			{
+				param_.logger.Trace(String.Format("[OnWindowLogMessage]{0}", param.message));
+			}
 		}
 		void OnWindowShowMessage(ShowMessageParams param) {
-			Console.WriteLine(String.Format("[OnWindowShowMessage]{0}",param.message));
+			if (param_.logger.IsTraceEnabled)
+			{
+				param_.logger.Trace(String.Format("[OnWindowShowMessage]{0}", param.message));
+			}
 		}
 		void OnWorkspaceConfiguration(int request_id, ConfigurationParams param)
 		{
@@ -136,27 +142,41 @@ namespace LSP.Client
 		void OnWorkspaceSemanticTokensRefresh()
         {
 			//Todo: workspace/semanticTokens/refresh
-			Console.WriteLine("Todo:workspace/semanticTokens/refresh");
+			if (param_.logger.IsTraceEnabled)
+			{
+				param_.logger.Trace("Todo:workspace/semanticTokens/refresh");
+			}
 		}
 		void OnClientRegisterCapability(int id, RegistrationParams param)
 		{
 			//Todo: client/registerCapability
-			Console.WriteLine("Todo: client/registerCapability");
+			if (param_.logger.IsTraceEnabled)
+			{
+				param_.logger.Trace("Todo: client/registerCapability");
+			}
 		}
 		void OnWindowWorkDoneProgressCreate(int id, WorkDoneProgressCreateParams param)
 		{
 			//Todo: window/workDoneProgress/create
-			Console.WriteLine("Todo: window/workDoneProgress/create");
+			if (param_.logger.IsTraceEnabled)
+			{
+				param_.logger.Trace("Todo: window/workDoneProgress/create");
+			}
 		}
 		void OnProgress(ProgressParams param)
 		{
 			//Todo: $/progress
-			Console.WriteLine("Todo: $/progress");
+			if (param_.logger.IsTraceEnabled) { 
+				param_.logger.Trace("Todo: $/progress");
+			}
 		}
 		void OnTextDocumentPublishDiagnostics(PublishDiagnosticsParams param)
 		{
 			//Todo: ‘textDocument/publishDiagnostics'
-			Console.WriteLine("Todo: textDocument/publishDiagnostics");
+			if (param_.logger.IsTraceEnabled)
+			{
+				param_.logger.Trace("Todo: textDocument/publishDiagnostics");
+			}
 		}
 		#endregion
 
@@ -284,25 +304,21 @@ namespace LSP.Client
 			CompletionList f(JToken arg) {
 				if (arg == null)
 				{
-					//Console.WriteLine("Completion==null");
 					return null;
 				}
 				if (arg is JArray)
 				{
-					//CompletionItem[]
-					var items = arg.ToObject<CompletionItem[]>();
-					//Console.WriteLine("Completion. num={0}", items.Length);
+					//CompletionItem[]の場合
+					var items = arg.ToObject<CompletionItem[]>();					
 					return new CompletionList { items=items};
 				}
 				var obj = arg.ToObject<JObject>();
 				if (obj.ContainsKey("isIncomplete"))
 				{
-					//CompletionList
-					var list = obj.ToObject<CompletionList>();
-					//Console.WriteLine("Completion. num={0}", list.items.Length);
+					//CompletionListの場合
+					var list = obj.ToObject<CompletionList>();					
 					return list;
-				}
-				//Console.WriteLine("Completion. Not found.");
+				}				
 				return null;
 			}
 			

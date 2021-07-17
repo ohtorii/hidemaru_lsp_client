@@ -71,11 +71,12 @@ namespace LSP.Client
         static int HeaderContentLengthLength_ = HeaderContentLength_.Length;
         
         List<byte> bufferStreamUTF8_ = new List<byte>();
-        
+        ILogger logger_;
 
-        public Protocol(CancellationToken token)
+        public Protocol(CancellationToken token, ILogger logger)
 		{
             this.cancelToken_ = token;
+            this.logger_=logger;
         }
         public bool StoreBuffer(byte[] streamString)
 		{
@@ -291,8 +292,7 @@ namespace LSP.Client
                 }
                 catch (JsonReaderException e)
                 {
-                    //Todo: ログ出力する
-                    //Console.WriteLine(e);
+                    logger_.Fatal(e.ToString());
                     throw;
                 }
 
@@ -327,7 +327,7 @@ namespace LSP.Client
 				else
 				{
                     Debug.Assert(false);
-                    Console.WriteLine("[Error]Unknown receiver.");
+                    logger_.Error("[Error]Unknown receiver.");
                     return false;
                 }
             }
@@ -351,7 +351,10 @@ namespace LSP.Client
                     this.OnWindowWorkDoneProgressCreate(request.id, requestParams.ToObject<WorkDoneProgressCreateParams>());
                     return;
                 default:
-                    Console.WriteLine(string.Format("[Error]Not impliment. method={0}/params={1}",request.method, request.@params));
+                    if (logger_.IsWarnEnabled)
+                    {
+                        logger_.Warn(string.Format("Not impliment. method={0}/params={1}", request.method, request.@params));
+                    }
                     return;
             }
 		}
@@ -382,7 +385,10 @@ namespace LSP.Client
                     this.OnProgress(notificationParams.ToObject<ProgressParams>());
                     return;
                 default:
-                    Console.WriteLine(String.Format("[Error]Not impliment. [{0}]{1}", notification.method, notification.@params));
+                    if (logger_.IsWarnEnabled)
+                    {
+                        logger_.Warn(String.Format("Not impliment. [{0}]{1}", notification.method, notification.@params));
+                    }
                     return;
             }
         }
@@ -409,7 +415,10 @@ namespace LSP.Client
             if (callback == null)
             {
                 //対応するid無し。無視する。
-                Console.WriteLine(string.Format("[対応するid無し]{0}", receiver));
+                if (logger_.IsWarnEnabled)
+                {
+                    logger_.Warn(string.Format("[対応するid無し]{0}", receiver));
+                }
             }
             else
             {
@@ -427,7 +436,7 @@ namespace LSP.Client
              */
             outPairKakkoIndex = -1;
 
-            System.Diagnostics.Debug.Assert(bufferStreamUTF8_[0] == Convert.ToByte('{'));
+            Debug.Assert(bufferStreamUTF8_[0] == Convert.ToByte('{'));
 
             int index = 0;
             int counter = 0;

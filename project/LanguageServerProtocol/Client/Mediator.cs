@@ -21,9 +21,9 @@ namespace LSP.Client
         Protocol protocol_;
         Task runner_;
 
-		public Mediator(CancellationToken token)
+		public Mediator(CancellationToken token, ILogger logger)
         {
-            protocol_ = new Protocol(token);
+            protocol_ = new Protocol(token, logger);
         }               
 
         public void StoreBuffer(byte[] streamString)
