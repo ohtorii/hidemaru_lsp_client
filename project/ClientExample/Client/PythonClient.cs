@@ -23,27 +23,27 @@ namespace ClientExample
 		internal override LSP.Client.StdioClient CreateClient()
 		{
 #if false
-			//OK
+			//Memo:問題なく動作する
 			var logFilename = @"D:\temp\LSP-Server\lsp_server_response_pyls.txt";
 			var FileName = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\pyls-all\venv\Scripts\pyls.exe");
 			var Arguments = @"-v --log-file D:\temp\LSP-Server\pyls.log";
 			var WorkingDirectory = @"";
 #elif false
-			//OK
+			//Memo:問題なく動作する
 			var logFilename = @"D:\temp\LSP-Server\lsp_server_response_Microsoft_Python.txt";
 			var FileName = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\.vscode\extensions\ms-python.python-2021.5.842923320\languageServer.0.5.59\Microsoft.Python.LanguageServer.exe");
 			var Arguments = @"";
 			var WorkingDirectory = @"";
 			useMicrosoftPythonLanguageServer = true;
 #elif false
-			//OK
+			//Memo:問題なく動作する
 			var logFilename = @"D:\temp\LSP-Server\lsp_server_response_pyls-ms.txt";
 			var FileName  = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\pyls-ms\dotnet.exe");
 			var Arguments = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\pyls-ms\Microsoft.Python.LanguageServer.dll");
 			var WorkingDirectory = @"";
 			useMicrosoftPythonLanguageServer = true;
 #elif false
-			//OK
+			//Memo:問題なく動作する
 			//.NET Runtime version 3.1.15
 			//Microsoft.Python.LanguageServer version Latest 0.2
 			var logFilename = @"D:\temp\LSP-Server\lsp_server_response_pyls-ms.txt";
@@ -52,7 +52,7 @@ namespace ClientExample
 			var WorkingDirectory = @"";
 			useMicrosoftPythonLanguageServer = true;
 #elif true
-			//OK
+			//Memo:問題なく動作する
 			var logFilename = @"D:\temp\LSP-Server\lsp_server_response_jedi_language_server.txt";
 			var FileName = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\jedi-language-server\venv\Scripts\jedi-language-server.exe");
 			var Arguments = @"";

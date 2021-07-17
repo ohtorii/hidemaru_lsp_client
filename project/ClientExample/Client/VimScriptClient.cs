@@ -6,23 +6,23 @@ using System.Threading;
 
 namespace ClientExample
 {
-	class VimScriptClient
+    class VimScriptClient : ExampleBase
 	{
-        static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\vim\");
-        static Uri rootUri = new Uri(rootPath);
-        static Uri sourceUri = new Uri(rootUri, @"test1.vim");
-        static int sourceVersion = 0;
-        static string logFilename = Environment.ExpandEnvironmentVariables(@"D:\temp\LSP-Server\lsp_server_response_vim.txt");
-
-        public static void Start()
+        static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\vim\");        
+        internal override Uri rootUri => new Uri(rootPath);
+        internal override Uri sourceUri => new Uri(rootUri, @"test1.vim");
+        internal override string languageId => "vim";
+        internal override CompilationPosition compilationPosition => new CompilationPosition { line = 9, character = 6 };
+        internal override object serverInitializationOptions { get { return CreateInitializationOptions(); } }
+        internal override LSP.Client.StdioClient CreateClient()
         {
-#if true
+            string logFilename = Environment.ExpandEnvironmentVariables(@"D:\temp\LSP-Server\lsp_server_response_vim.txt");
+
             //OK
             var FileName = @"cmd";
             var vimLanguageServerCmd = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\vim-language-server\vim-language-server.cmd");
             var Arguments = string.Format("/c\"{0}\" --stdio", vimLanguageServerCmd);
             var WorkingDirectory = rootUri.AbsolutePath;
-#endif
 
             var client = new LSP.Client.StdioClient();
             client.StartLspProcess(
@@ -33,27 +33,7 @@ namespace ClientExample
                     logger = new Logger(logFilename) 
                 }
             );
-
-            Console.WriteLine("==== InitializeServer ====");
-            InitializeServer(client, CreateInitializationOptions());
-            while (client.Status != LSP.Client.StdioClient.Mode.ServerInitializeFinish)
-            {
-                Thread.Sleep(100);
-            }
-
-            Console.WriteLine("==== InitializedClient ====");
-            InitializedClient(client);
-
-            Console.WriteLine("==== OpenTextDocument ====");
-            DigOpen(client);
-            //Memo: ウェイトを入れると補完候補(Completion)を取得できる。（何故だ・・・
-            Thread.Sleep(1000);
-
-            Console.WriteLine("==== Completion ====");
-            Completion(client);
-
-            Console.WriteLine("続行するには何かキーを押してください．．．");
-            Console.ReadKey();
+            return client;
         }
         static string CreateInitializationOptions()
 		{
@@ -78,48 +58,15 @@ namespace ClientExample
 
             return string.Format(initializationOptions,vimruntime,runtimepath, isNeovim);
         }
+        internal override void DigOpen(LSP.Client.StdioClient client)
+        {
+            base.DigOpen(client);
+            //Todo: サーバが準備できるまで正攻法でまつ
 
-		
-        static void InitializeServer(LSP.Client.StdioClient client,string jsonInitializationOptions)
-        {
-            var param = UtilInitializeParams.Initialzie();
-            param.rootUri = rootUri.AbsoluteUri;
-            param.rootPath = rootUri.AbsolutePath;
-            param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "test1-root-folder" } };
-            param.initializationOptions = jsonInitializationOptions;
-            client.SendInitialize(param);
-        }
-        static void InitializedClient(LSP.Client.StdioClient client)
-        {
-            var param = new InitializedParams();
-            client.SendInitialized(param);
-        }
-        static void DigOpen(LSP.Client.StdioClient client)
-        {
-            sourceVersion = 1;//Openしたのでとりあえず1にする。
-
-            var param = new DidOpenTextDocumentParams();
-            param.textDocument.uri = sourceUri.AbsoluteUri;
-            param.textDocument.version = sourceVersion;
-            param.textDocument.text = File.ReadAllText(sourceUri.AbsolutePath, System.Text.Encoding.UTF8);
-            param.textDocument.languageId = "vim";
-            client.SendTextDocumentDigOpen(param);
-        }
-
-        static void Completion(LSP.Client.StdioClient client)
-        {
-            var param = new CompletionParams();
-#if false
-            param.context.triggerKind = CompletionTriggerKind.TriggerCharacter;
-            param.context.triggerCharacter = ".";
-#else
-            param.context.triggerKind = CompletionTriggerKind.TriggerCharacter;
-            param.context.triggerCharacter = ":";
-#endif
-            param.textDocument.uri = sourceUri.AbsoluteUri;
-            param.position.line = 9;
-            param.position.character = 6;
-            client.SendTextDocumentCompletion(param);
+            //サーバが準備できるまでちょっと待つ
+            int time = 1000;
+            Console.WriteLine("Waiting {0}ms.", time);
+            Thread.Sleep(time);
         }
     }
 }

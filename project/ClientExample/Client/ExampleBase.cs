@@ -20,7 +20,7 @@ namespace ClientExample
         }
         internal abstract CompilationPosition compilationPosition { get;  }
         internal abstract StdioClient CreateClient();
-
+        internal virtual object serverInitializationOptions { get; } =null;
 
 
         int sourceVersion = 0;
@@ -55,8 +55,8 @@ namespace ClientExample
             Console.WriteLine("==== Shutdown ====");
             Shutdown(client);
 
-            Console.WriteLine("続行するには何かキーを押してください．．．");
-            Console.ReadKey();
+            //Console.WriteLine("続行するには何かキーを押してください．．．");
+            //Console.ReadKey();
         }
         internal virtual void Completion(StdioClient client)
         {
@@ -76,14 +76,19 @@ namespace ClientExample
 
                 requestId = client.SendTextDocumentCompletion(param);
             }
-            int timeout = 3*1000;
-            var completion = (CompletionList)client.QueryResponse(requestId, timeout);
+            //int timeout = 3*1000;//適当
+            var completion = (CompletionList)client.QueryResponse(requestId);
             if (completion == null)
             {
                 Console.WriteLine("[Failed]Compilation");
+                throw new Exception();
             }
             else
             {
+                if (completion.items.Length == 0)
+                {
+                    throw new Exception();
+                }
                 Console.WriteLine("[Success]completion.items.Length={0}", completion.items.Length);
             }
         }
@@ -128,6 +133,7 @@ namespace ClientExample
             param.rootUri = rootUri.AbsoluteUri;
             param.rootPath = rootUri.AbsolutePath;
             param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "VisualStudio-Solution" } };
+            param.initializationOptions = serverInitializationOptions;
             return client.SendInitialize(param);
         }
         internal virtual void Shutdown(StdioClient client)

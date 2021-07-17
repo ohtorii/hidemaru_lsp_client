@@ -1,27 +1,19 @@
-﻿
-using System;
-using System.IO;
-using System.Threading;
-
-
-namespace ClientExample
+﻿namespace ClientExample
 {
+    internal class Program
+    {
+        private static void Main(string[] args)
+        {
+            Runner(new CSharpClient());
+            Runner(new PythonClient());
+            Runner(new LuaClient());
+            Runner(new CppClient());
+            Runner(new VimScriptClient());
+        }
 
-    class Program
-	{
-
-        static void Main(string[] args)
-		{
-			//var o = new CSharpClient();
-			//o.Start();
-
-			var o = new PythonClient();
-			o.Start();
-
-			//CppClient.Start();
-			//VimScriptClient.Start();
-			//LuaClient.Start();
-		}
-
-    }    
+        private static void Runner(ExampleBase example)
+        {
+            example.Start();
+        }
+    }
 }
