@@ -297,8 +297,8 @@ namespace LSP.Client
                 }
 
                 /*
-                 * (Before) bufferStreamUTF8={"method":"initialized",...}Content-Length: 128\n\n{
-                 * (After)  bufferStreamUTF8=Content-Length: 128\n\n{
+                 * (Before) bufferStreamUTF8={"method":"initialized",...}Content-Length: 128\r\n{
+                 * (After)  bufferStreamUTF8=Content-Length: 128\r\n{
                  */
                 bufferStreamUTF8_.RemoveRange(0, contentLength);
             }
@@ -359,7 +359,7 @@ namespace LSP.Client
 		{
             //Todo: switchをやめて動的登録にする
             var notification = receiver.ToObject<NotificationMessage>();
-            var notificationParams = (JObject)notification.@params;
+            var notificationParams=notification.@params as JObject;
             switch (notification.method)
             {
                 case "textDocument/publishDiagnostics":

@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Client\CppClient.cs" />
     <Compile Include="Client\CSharpClient.cs" />
+    <Compile Include="Client\ExampleBase.cs" />
     <Compile Include="Client\Logger.cs" />
     <Compile Include="Client\LuaClient.cs" />
     <Compile Include="Program.cs" />

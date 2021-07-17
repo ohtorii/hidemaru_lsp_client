@@ -31,6 +31,9 @@ namespace LSP.Client
 			ServerInitializeStart,
 			ServerInitializeFinish,
 			ClientInitializeFinish,
+			ServerShutdownStart,
+			ServerShutdownFinish,
+			ServerExit,
 		}
 
 		public Mode Status {  get; private set; }
@@ -185,18 +188,30 @@ namespace LSP.Client
 #endregion
 
 #region Send-Rpc
-		public void SendInitialize(IInitializeParams param)
+		public RequestId SendInitialize(IInitializeParams param)
 		{
 			Debug.Assert(Status == Mode.Init);
-			SendRequest(param, "initialize", ActionInitialize);			
+			var id = SendRequest(param, "initialize", ActionInitialize);			
 			Status = Mode.ServerInitializeStart;
+			return id;
 		}		
-		//Memo: デバッグ用にpublicとしている
 		void ActionInitialize(ResponseMessage response)
-		{
+		{ 
 			var arg = (JToken)response.result;
-			var result = arg.ToObject<InitializeResult>();
-			Status = Mode.ServerInitializeFinish;
+			var id = new RequestId(response.id);
+			var value = new Response
+			{
+				Item = arg.ToObject<InitializeResult>(),
+				Exist = true
+			};
+			lock (response_)
+			{
+				Debug.Assert(response_.ContainsKey(id));
+
+				//Memo: response_[]とStatusは一緒に設定する。
+				response_[id] = value;
+				Status = Mode.ServerInitializeFinish;
+			}
 		}
 		public void SendInitialized(IInitializedParams param)
 		{
@@ -204,6 +219,44 @@ namespace LSP.Client
 			//Memo: クライアントからサーバへの通知なので、サーバからクライアントへの返信は無い。			
 			SendNotification(param, "initialized");
 			Status = Mode.ClientInitializeFinish;
+		}
+		public RequestId SendShutdown()
+        {
+			Debug.Assert(Status == Mode.ClientInitializeFinish);
+			Status = Mode.ServerShutdownStart;
+			return SendRequest(null, "shutdown", ActionShutdown);
+		}
+		void ActionShutdown(ResponseMessage response)
+        {
+			//Todo: ここでのエラー処理は、実際にエラーが発生してから考える。（今は仮実装）
+			Debug.Assert(response.error == null);
+
+			if (response.error == null)
+			{
+				Status = Mode.ServerShutdownFinish;
+            }
+            else
+            {
+				Status = Mode.ClientInitializeFinish;
+            }
+
+			var id = new RequestId(response.id);
+			var value = new Response
+			{
+				Item = response.error,
+				Exist = true
+			};
+			lock (response_)
+			{
+				Debug.Assert(response_.ContainsKey(id));
+				response_[id] = value;
+			}
+        }
+		public void SendExit()
+        {
+			Debug.Assert(Status == Mode.ServerShutdownFinish);
+			SendNotification(null, "exit");
+			Status = Mode.ServerExit;
 		}
 		public void SendTextDocumentDigOpen(IDidOpenTextDocumentParams param)
 		{
@@ -231,14 +284,14 @@ namespace LSP.Client
 			CompletionList f(JToken arg) {
 				if (arg == null)
 				{
-					Console.WriteLine("Completion==null");
+					//Console.WriteLine("Completion==null");
 					return null;
 				}
 				if (arg is JArray)
 				{
 					//CompletionItem[]
 					var items = arg.ToObject<CompletionItem[]>();
-					Console.WriteLine("Completion. num={0}", items.Length);
+					//Console.WriteLine("Completion. num={0}", items.Length);
 					return new CompletionList { items=items};
 				}
 				var obj = arg.ToObject<JObject>();
@@ -246,10 +299,10 @@ namespace LSP.Client
 				{
 					//CompletionList
 					var list = obj.ToObject<CompletionList>();
-					Console.WriteLine("Completion. num={0}", list.items.Length);
+					//Console.WriteLine("Completion. num={0}", list.items.Length);
 					return list;
 				}
-				Console.WriteLine("Completion. Not found.");
+				//Console.WriteLine("Completion. Not found.");
 				return null;
 			}
 			

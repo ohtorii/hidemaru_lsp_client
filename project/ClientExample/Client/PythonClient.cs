@@ -2,35 +2,42 @@
 using System;
 using System.Threading;
 using System.IO;
+using LSP.Client;
 
 namespace ClientExample
 {
-	class PythonClient
+	class PythonClient:ExampleBase
 	{
-		static string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\python\");
-		static Uri rootUri = new Uri(rootPath);
-		static Uri sourceUri = new Uri(rootUri, @"completion.py");
-		static int sourceVersion = 0;
-		static bool useMicrosoftPythonLanguageServer = false;
+		string rootPath = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\TestData\python\");						
+		bool useMicrosoftPythonLanguageServer = false;
 
-		public static void Start()
+
+		internal override Uri rootUri => new Uri(rootPath);
+
+        internal override Uri sourceUri => new Uri(rootUri, @"completion.py");
+        
+
+        internal override string languageId => "python";
+
+        internal override CompilationPosition compilationPosition => new CompilationPosition { line = 1, character = 10 };
+		internal override LSP.Client.StdioClient CreateClient()
 		{
 #if false
 			//OK
-			string logFilename = @"D:\temp\LSP-Server\lsp_server_response_pyls.txt";
+			var logFilename = @"D:\temp\LSP-Server\lsp_server_response_pyls.txt";
 			var FileName = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\pyls-all\venv\Scripts\pyls.exe");
 			var Arguments = @"-v --log-file D:\temp\LSP-Server\pyls.log";
 			var WorkingDirectory = @"";
-#elif true
+#elif false
 			//OK
-			string logFilename = @"D:\temp\LSP-Server\lsp_server_response_Microsoft_Python.txt";
+			var logFilename = @"D:\temp\LSP-Server\lsp_server_response_Microsoft_Python.txt";
 			var FileName = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\.vscode\extensions\ms-python.python-2021.5.842923320\languageServer.0.5.59\Microsoft.Python.LanguageServer.exe");
 			var Arguments = @"";
 			var WorkingDirectory = @"";
 			useMicrosoftPythonLanguageServer = true;
 #elif false
 			//OK
-			string logFilename = @"D:\temp\LSP-Server\lsp_server_response_pyls-ms.txt";
+			var logFilename = @"D:\temp\LSP-Server\lsp_server_response_pyls-ms.txt";
 			var FileName  = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\pyls-ms\dotnet.exe");
 			var Arguments = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\pyls-ms\Microsoft.Python.LanguageServer.dll");
 			var WorkingDirectory = @"";
@@ -39,14 +46,14 @@ namespace ClientExample
 			//OK
 			//.NET Runtime version 3.1.15
 			//Microsoft.Python.LanguageServer version Latest 0.2
-			string logFilename = @"D:\temp\LSP-Server\lsp_server_response_pyls-ms.txt";
-			var FileName = @"D:\temp\LSP-Server\python-language-server-0.2\output\bin\Release\dotnet.exe";
-			var Arguments = @"D:\temp\LSP-Server\python-language-server-0.2\output\bin\Release\Microsoft.Python.LanguageServer.dll";
+			var logFilename = @"D:\temp\LSP-Server\lsp_server_response_pyls-ms.txt";
+			var FileName = @"D:\ReferenceSourceCodes\LSP-Server\Servers\python-language-server-0.2\output\bin\Release\dotnet.exe";
+			var Arguments = @"D:\ReferenceSourceCodes\LSP-Server\Servers\python-language-server-0.2\output\bin\Release\Microsoft.Python.LanguageServer.dll";
 			var WorkingDirectory = @"";
 			useMicrosoftPythonLanguageServer = true;
-#elif false
+#elif true
 			//OK
-			string logFilename = @"D:\temp\LSP-Server\lsp_server_response_jedi_language_server.txt";
+			var logFilename = @"D:\temp\LSP-Server\lsp_server_response_jedi_language_server.txt";
 			var FileName = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\jedi-language-server\venv\Scripts\jedi-language-server.exe");
 			var Arguments = @"";
 			var WorkingDirectory = Path.GetDirectoryName(sourceUri.AbsolutePath);
@@ -54,35 +61,18 @@ namespace ClientExample
 
 			var client = new LSP.Client.StdioClient();
 			client.StartLspProcess(
-				new LSP.Client.StdioClient.LspParameter { 
-					exeFileName = FileName, 
-					exeArguments = Arguments, 
-					exeWorkingDirectory = WorkingDirectory, 
+				new LSP.Client.StdioClient.LspParameter
+				{
+					exeFileName = FileName,
+					exeArguments = Arguments,
+					exeWorkingDirectory = WorkingDirectory,
 					logger = new Logger(logFilename)
 				}
 			);
-
-			Console.WriteLine("==== InitializeServer ====");
-			InitializeServer(client);
-			while (client.Status != LSP.Client.StdioClient.Mode.ServerInitializeFinish)
-			{
-				Thread.Sleep(100);
-			}			
-
-			Console.WriteLine("==== InitializedClient ====");
-			InitializedClient(client);
-			
-			Console.WriteLine("==== OpenTextDocument ====");
-			DigOpen(client);
-
-			Thread.Sleep(6000);
-			Console.WriteLine("==== Completion ====");
-			Completion(client);			
-
-			Console.WriteLine("続行するには何かキーを押してください．．．");
-			Console.ReadKey();
+			return client;
 		}
-		static void InitializeServer(LSP.Client.StdioClient client)
+
+        internal override RequestId InitializeServer(LSP.Client.StdioClient client)
 		{
 			var param = UtilInitializeParams.Initialzie();
 			param.rootUri = rootUri.AbsoluteUri;
@@ -108,38 +98,17 @@ namespace ClientExample
 
 				param.initializationOptions = pythonOptions;
 			}
-			client.SendInitialize(param);
+			return client.SendInitialize(param);
 		}
-		static void InitializedClient(LSP.Client.StdioClient client)
-		{
-			var param = new InitializedParams();
-			client.SendInitialized(param);
-		}
-		static void DigOpen(LSP.Client.StdioClient client)
-		{
-			sourceVersion = 1;//Openしたのでとりあえず1にする。
+		internal override void DigOpen(LSP.Client.StdioClient client)
+        {
+			base.DigOpen(client);
+			//Todo: サーバが準備できるまで正攻法でまつ
 
-			var param = new DidOpenTextDocumentParams();
-			param.textDocument.uri = sourceUri.AbsoluteUri;
-			param.textDocument.version = sourceVersion;
-			param.textDocument.text = File.ReadAllText(sourceUri.AbsolutePath, System.Text.Encoding.UTF8); 
-			param.textDocument.languageId = "python";
-			client.SendTextDocumentDigOpen(param);
-		}
-		static void Completion(LSP.Client.StdioClient client)
-		{
-			var param = new CompletionParams();
-#if false
-            param.context.triggerKind = CompletionTriggerKind.TriggerCharacter;
-            param.context.triggerCharacter = ".";
-#else
-			param.context.triggerKind = CompletionTriggerKind.TriggerCharacter;
-			param.context.triggerCharacter = ".";
-#endif
-			param.textDocument.uri = sourceUri.AbsoluteUri;
-			param.position.line = 1;
-			param.position.character = 10;
-			client.SendTextDocumentCompletion(param);
+			//サーバが準備できるまでちょっと待つ
+			int time = 6000;
+			Console.WriteLine("Waiting {0}ms.", time);
+			Thread.Sleep(time);
 		}
 	}
 }
