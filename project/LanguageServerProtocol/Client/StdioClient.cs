@@ -272,6 +272,21 @@ namespace LSP.Client
 				response_[id] = value;
 			}
         }
+		public void LoggingResponseLeak()
+        {
+            if (param_.logger.IsErrorEnabled == false)
+            {
+				return;
+            }
+            lock (response_)
+            {
+				foreach(var item in response_)
+                {
+					var requestId = item.Key;
+					param_.logger.Error(string.Format("requestId is leaked. requestId={0}", requestId));
+                }
+            }
+        }
 		public void SendExit()
         {
 			Debug.Assert(Status == Mode.ServerShutdownFinish);
@@ -396,6 +411,10 @@ namespace LSP.Client
 				}
 
 				Thread.Sleep(0);
+			}
+			if (param_.logger.IsInfoEnabled)
+			{
+				param_.logger.Info(string.Format("QueryResponse timeout. id={0}/millisecondsTimeout={1}", id, millisecondsTimeout));
 			}
 			return null;
         }

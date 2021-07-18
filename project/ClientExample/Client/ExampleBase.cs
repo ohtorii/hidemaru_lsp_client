@@ -146,13 +146,14 @@ namespace ClientExample
         internal virtual void Shutdown(StdioClient client)
         {
             var requestId = client.SendShutdown();
-            var error = (ResponseError)client.QueryResponse(requestId);
+            var error = client.QueryResponse(requestId) as ResponseError;
             if (error != null)
             {
                 Console.WriteLine("[Failed]Shutdown.");
                 return;
             }
             client.SendExit();
+            client.LoggingResponseLeak();
             Console.WriteLine("[Success]Shutdown.");
         }
     }

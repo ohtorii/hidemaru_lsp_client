@@ -39,6 +39,7 @@ namespace HidemaruLspClient
             }
         }
 
+		const int defaultTimeout = 6000;
 		static bool				initialized_ = false;
 		static LspClientLogger	lspLogger_   = null;
 
@@ -67,15 +68,6 @@ namespace HidemaruLspClient
 			TempFile.Initialize();
 			initialized_ = true;
 		}		
-		
-		[LogMethod]
-		public void Stop()
-        {
-			prevCompletionTempFile_.Delete();
-			//Todo: LSPサーバを止める
-			//Todo: LSPサーバのプロセスを終了させる
-		}
-
 		[LogMethod]
 		public bool Start(
 				string ServerName,
@@ -101,15 +93,14 @@ namespace HidemaruLspClient
 			{
 				return false;
 			}
-			//Todo: ClientExampleのように初期化を待つ
-			InitializeServer();
-			while (client_.Status != LSP.Client.StdioClient.Mode.ServerInitializeFinish)
-			{
-				//Todo: timeoutを処理する
-				Thread.Sleep(0);
-			}
-			InitializedClient();
 			
+			var reqId=InitializeServer();
+			var response = client_.QueryResponse(reqId, millisecondsTimeout: defaultTimeout) as InitializeResult;
+            if (response == null)
+            {
+				return false;
+			}
+			InitializedClient();			
 			return true;
 		}
 
@@ -134,14 +125,14 @@ namespace HidemaruLspClient
 		}
 
 		[LogMethod]
-		void InitializeServer()
+		RequestId InitializeServer()
 		{			
 			var param = UtilInitializeParams.Initialzie();
 			var rootUri = new Uri(options_.RootUri);
 			param.rootUri          = rootUri.AbsoluteUri;
 			param.rootPath         = rootUri.AbsolutePath;
 			param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "FooBarHoge" } };
-			client_.SendInitialize(param);
+			return client_.SendInitialize(param);
 		}
 
 		[LogMethod]
@@ -149,6 +140,28 @@ namespace HidemaruLspClient
 		{
 			var param = new InitializedParams();
 			client_.SendInitialized(param);			
+		}
+
+		[LogMethod]
+		public void Stop()
+		{
+			prevCompletionTempFile_.Delete();
+			Shutdown();
+			client_.LoggingResponseLeak();
+		}
+		[LogMethod]
+		void Shutdown()
+		{
+			var requestId = client_.SendShutdown();
+			var error = client_.QueryResponse(requestId) as ResponseError;
+			if (error != null)
+			{
+				if (lspLogger_.IsErrorEnabled) {
+					lspLogger_.Error(string.Format("Shutdown. code={0}/message={1}",error.code,error.message));
+				}
+				return;
+			}
+			client_.SendExit();
 		}
 
 		[LogMethod]
@@ -216,12 +229,9 @@ namespace HidemaruLspClient
 					id = client_.SendTextDocumentCompletion(param);
 				}
 
-				var millisecondsTimeout = 2000;
-				result = client_.QueryResponse(id, millisecondsTimeout);
+				result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
 				if (result == null)
 				{
-					var logger = LogManager.GetCurrentClassLogger();
-					logger.Error("Completion timeout. millisecondsTimeout={0}", millisecondsTimeout);
 					return "";
 				}
 			}
@@ -229,8 +239,6 @@ namespace HidemaruLspClient
 			var completionList = (CompletionList)result;
 			if (completionList.items.Length == 0)
 			{
-				var logger = LogManager.GetCurrentClassLogger();
-				logger.Info("completionList.items.Length == 0");
 				return "";
 			}
 
@@ -263,6 +271,6 @@ namespace HidemaruLspClient
 			}
 			//(Ex) ".cpp" -> "cpp"
 			return extension.Substring(1);
-		}
+		}		
 	}
 }
