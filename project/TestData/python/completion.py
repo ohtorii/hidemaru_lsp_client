@@ -1,2 +1,3 @@
 ﻿import sys
 sys.stdin.
+"".

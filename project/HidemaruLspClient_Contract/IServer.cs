@@ -23,13 +23,59 @@ public interface ILspClientLogger
     void Fatal(string message);
 }
 
+#region IPublishDiagnosticsParams
+[ComVisible(true)]
+[Guid("53A84500-EAF3-4248-B167-D9921EE8AB51")]
+public interface IPosition
+{
+    long character { get; }
+    long line { get;  }
+}
+[ComVisible(true)]
+[Guid("D3E64D92-3ABB-494B-A26F-A856DFE54D54")]
+public interface IRange
+{
+    IPosition start { get;}
+    IPosition end { get; }
+}
+
+[ComVisible(true)]
+[Guid("5DC500BE-636F-4886-8FF5-6359D46B3342")]
+public interface IDiagnostic
+{
+    IRange range { get; }
+}
+[ComVisible(true)]
+[Guid("C5E68A27-29AD-4D35-8E12-7C5712D781D3")]
+public interface IPublishDiagnosticsParams
+{
+    string uri { get; }
+    long version { get; }
+    long getDiagnosticsLength();
+    IDiagnostic getDiagnostics(long index);
+}
+#endregion
+
 [ComVisible(true)]
 [Guid("E8153825-63C2-4C50-9889-0DEB4CFB4033")]
 public interface IWorker
 {
-    void DigOpen(string filename, string text, int contentsVersion);
-    void DigChange(string filename, string text, int contentsVersion);
+    void DigOpen(string absFilename, string text, int contentsVersion);
+    void DigChange(string absFilename, string text, int contentsVersion);
+    /// <summary>
+    /// 補完
+    /// </summary>
+    /// <param name="absFilename"></param>
+    /// <param name="line"></param>
+    /// <param name="column"></param>
+    /// <returns>単語一覧のファイル名</returns>
     string Completion(string absFilename, long line, long column);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="absFilename"></param>
+    /// <returns></returns>
+    IPublishDiagnosticsParams Diagnostics(string absFilename);
 }
 
 [ComVisible(true)]

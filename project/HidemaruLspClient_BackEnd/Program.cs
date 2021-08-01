@@ -79,9 +79,12 @@ namespace HidemaruLspClient
                         case "--help":
                             Usage();
                             return 0;
-                        /*default:
-                            Trace.WriteLine("Unknown argument.");
-                            return 1;*/
+#if false
+                        default:
+                            Console.WriteLine(string.Format("Unknown argument. {0}", regCommandMaybe));
+                            //Trace.WriteLine("Unknown argument. {0}", );
+                            return 1;
+#endif
                     }
                 }
 

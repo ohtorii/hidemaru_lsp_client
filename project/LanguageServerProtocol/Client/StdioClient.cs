@@ -2,28 +2,18 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace LSP.Client
 {
-	
 	class StdioClient
 	{
 		ServerProcess server_;
 		Mediator mediator_;
 		CancellationTokenSource source_=new CancellationTokenSource();
-		RequestIdGenerator requestIdGenerator_=new RequestIdGenerator();
-
-		class Response{
-			public object Item { get; set; } = null;
-			public bool Exist { get; set; } = false;
-        }
-		Dictionary<RequestId, Response> response_ = new Dictionary<RequestId, Response>();
 
 		public enum Mode
 		{
@@ -35,10 +25,10 @@ namespace LSP.Client
 			ServerShutdownFinish,
 			ServerExit,
 		}
+		public Mode Status { get; private set; }
+        Mode Status_Get() => Status;
+        void Status_Set(Mode m) => Status = m;
 
-		public Mode Status {  get; private set; }
-		
-		[Serializable]
 		public class LspParameter
 		{
 			public ILogger logger;
@@ -62,126 +52,48 @@ namespace LSP.Client
 			public JObject jsonWorkspaceConfiguration;
 		}
 		LspParameter param_;
-		public StdioClient()
-		{
+		ClientEvents clientEvents_;
+
+        public Sender Send { get; private set; }
+
+        public StdioClient()
+        {
 			Status = Mode.Init;
 		}
 		public void StartLspProcess(LspParameter param)
-		{
-			Debug.Assert(Status==Mode.Init);
+		{            
+			Debug.Assert(Status == Mode.Init);
 			if (param.logger == null)
 			{
 				param.logger = new NullLogger();
 			}
-#if true
 			param_ = param;
-#else
-			param_ = param.DeepClone();
-#endif
+			clientEvents_ = new ClientEvents(param_, this.EventResponseProxy);
 			mediator_ = new Mediator(source_.Token, param_.logger);
+			
 			{
                 var Protocol = mediator_.Protocol;
-				Protocol.OnWindowLogMessage				+= this.OnWindowLogMessage;
-				Protocol.OnWindowShowMessage            += this.OnWindowShowMessage;
-                Protocol.OnWorkspaceConfiguration       += this.OnWorkspaceConfiguration;
-				Protocol.OnWorkspaceSemanticTokensRefresh += this.OnWorkspaceSemanticTokensRefresh;
-				Protocol.OnClientRegisterCapability     += this.OnClientRegisterCapability;
-                Protocol.OnWindowWorkDoneProgressCreate += this.OnWindowWorkDoneProgressCreate;
-                Protocol.OnProgress                     += this.OnProgress;
-				Protocol.OnTextDocumentPublishDiagnostics += this.OnTextDocumentPublishDiagnostics;
+				Protocol.OnWindowLogMessage				  += this.clientEvents_.OnWindowLogMessage;
+				Protocol.OnWindowShowMessage              += this.clientEvents_.OnWindowShowMessage;
+                Protocol.OnWorkspaceConfiguration         += this.clientEvents_.OnWorkspaceConfiguration;
+				Protocol.OnWorkspaceSemanticTokensRefresh += this.clientEvents_.OnWorkspaceSemanticTokensRefresh;
+				Protocol.OnClientRegisterCapability       += this.clientEvents_.OnClientRegisterCapability;
+                Protocol.OnWindowWorkDoneProgressCreate   += this.clientEvents_.OnWindowWorkDoneProgressCreate;
+                Protocol.OnProgress                       += this.clientEvents_.OnProgress;
+				Protocol.OnTextDocumentPublishDiagnostics += this.clientEvents_.OnTextDocumentPublishDiagnostics;
 			}
-			server_ = new ServerProcess(param.exeFileName, param.exeArguments, param.exeWorkingDirectory);			
+			server_ = new ServerProcess(param.exeFileName, param.exeArguments, param.exeWorkingDirectory);
+			Send = new Sender(param, mediator_.StoreResponse, Status_Get, Status_Set, server_.WriteStandardInput);
+
 			server_.StartProcess();
-			server_.standardErrorReceived += Client_standardErrorReceived;
+			server_.standardErrorReceived  += Client_standardErrorReceived;
 			server_.standardOutputReceived += Client_standardOutputReceived;
 			server_.Exited += Server_Exited;
 			server_.StartRedirect();
 			server_.StartThreadLoop();
 		}
-		
-#region LSP_Event
-		/*void OnResponseError(ResponseMessage response)
-		{
-			Console.WriteLine(string.Format("[OnResponseError] id={0}/error={1}", response.id, response.error));
-			const string indent = "  ";
-			Console.WriteLine(indent + string.Format("code={0}",response.error.code));
-			Console.WriteLine(indent + string.Format("data={0}", response.error.@data));
-			Console.WriteLine(indent + string.Format("message={0}", response.error.message));
-		}*/
-		void OnWindowLogMessage(LogMessageParams param)
-		{
-			if (param_.logger.IsTraceEnabled)
-			{
-				param_.logger.Trace(String.Format("[OnWindowLogMessage]{0}", param.message));
-			}
-		}
-		void OnWindowShowMessage(ShowMessageParams param) {
-			if (param_.logger.IsTraceEnabled)
-			{
-				param_.logger.Trace(String.Format("[OnWindowShowMessage]{0}", param.message));
-			}
-		}
-		void OnWorkspaceConfiguration(int request_id, ConfigurationParams param)
-		{
-			var any = new JArray();
-			foreach (var item in param.items)
-			{
-				try
-				{
-					var jsonValue = param_.jsonWorkspaceConfiguration[item.section];
-					any.Add(jsonValue);
-				}
-				catch (Exception)
-				{
-					any.Add(null);
-				}
-			}
-			
-			ResponseWorkspaceConfiguration(request_id,any);
-		}
-		void OnWorkspaceSemanticTokensRefresh()
-        {
-			//Todo: workspace/semanticTokens/refresh
-			if (param_.logger.IsTraceEnabled)
-			{
-				param_.logger.Trace("Todo:workspace/semanticTokens/refresh");
-			}
-		}
-		void OnClientRegisterCapability(int id, RegistrationParams param)
-		{
-			//Todo: client/registerCapability
-			if (param_.logger.IsTraceEnabled)
-			{
-				param_.logger.Trace("Todo: client/registerCapability");
-			}
-		}
-		void OnWindowWorkDoneProgressCreate(int id, WorkDoneProgressCreateParams param)
-		{
-			//Todo: window/workDoneProgress/create
-			if (param_.logger.IsTraceEnabled)
-			{
-				param_.logger.Trace("Todo: window/workDoneProgress/create");
-			}
-		}
-		void OnProgress(ProgressParams param)
-		{
-			//Todo: $/progress
-			if (param_.logger.IsTraceEnabled) { 
-				param_.logger.Trace("Todo: $/progress");
-			}
-		}
-		void OnTextDocumentPublishDiagnostics(PublishDiagnosticsParams param)
-		{
-			//Todo: ‘textDocument/publishDiagnostics'
-			if (param_.logger.IsTraceEnabled)
-			{
-				param_.logger.Trace("Todo: textDocument/publishDiagnostics");
-			}
-		}
-		#endregion
-
-		#region Process_Event
-		private void Client_standardOutputReceived(object sender, byte[] e)
+        #region LSP_Server
+        void Client_standardOutputReceived(object sender, byte[] e)
 		{
 			if(e.Length==0)
 			{
@@ -194,347 +106,32 @@ namespace LSP.Client
 			}
 			mediator_.StoreBuffer(e);
 		}
-
-		private void Client_standardErrorReceived(object sender, byte[] e)
-		{
-			var unicodeString = Encoding.UTF8.GetString(e.ToArray());
-			Console.WriteLine(string.Format("[StandardError]{0}", unicodeString));
-		}
-		private void Server_Exited(object sender, EventArgs e)
-		{
-			Console.WriteLine("[Server_Exited]");
-			source_.Cancel();
-		}
-#endregion
-
-#region Send-Rpc
-		public RequestId SendInitialize(IInitializeParams param)
-		{
-			Debug.Assert(Status == Mode.Init);
-			var id = SendRequest(param, "initialize", ActionInitialize);			
-			Status = Mode.ServerInitializeStart;
-			return id;
-		}		
-		void ActionInitialize(ResponseMessage response)
-		{ 
-			var arg = (JToken)response.result;
-			var id = new RequestId(response.id);
-			var value = new Response
-			{
-				Item = arg.ToObject<InitializeResult>(),
-				Exist = true
-			};
-			lock (response_)
-			{
-				Debug.Assert(response_.ContainsKey(id));
-
-				//Memo: response_[]とStatusは一緒に設定する。
-				response_[id] = value;
-				Status = Mode.ServerInitializeFinish;
-			}
-		}
-		public void SendInitialized(IInitializedParams param)
-		{
-			Debug.Assert(Status == Mode.ServerInitializeFinish);
-			//Memo: クライアントからサーバへの通知なので、サーバからクライアントへの返信は無い。			
-			SendNotification(param, "initialized");
-			Status = Mode.ClientInitializeFinish;
-		}
-		public RequestId SendShutdown()
-        {
-			Debug.Assert(Status == Mode.ClientInitializeFinish);
-			Status = Mode.ServerShutdownStart;
-			return SendRequest(null, "shutdown", ActionShutdown);
-		}
-		void ActionShutdown(ResponseMessage response)
-        {
-			//Todo: ここでのエラー処理は、実際にエラーが発生してから考える。（今は仮実装）
-			Debug.Assert(response.error == null);
-
-			if (response.error == null)
-			{
-				Status = Mode.ServerShutdownFinish;
-            }
-            else
-            {
-				Status = Mode.ClientInitializeFinish;
-            }
-
-			var id = new RequestId(response.id);
-			var value = new Response
-			{
-				Item = response.error,
-				Exist = true
-			};
-			lock (response_)
-			{
-				Debug.Assert(response_.ContainsKey(id));
-				response_[id] = value;
-			}
-        }
-		public void LoggingResponseLeak()
-        {
-            if (param_.logger.IsErrorEnabled == false)
-            {
-				return;
-            }
-            lock (response_)
-            {
-				foreach(var item in response_)
-                {
-					var requestId = item.Key;
-					param_.logger.Error(string.Format("requestId is leaked. requestId={0}", requestId));
-                }
-            }
-        }
-		public void SendExit()
-        {
-			Debug.Assert(Status == Mode.ServerShutdownFinish);
-			SendNotification(null, "exit");
-			Status = Mode.ServerExit;
-		}
-		public void SendTextDocumentDigOpen(IDidOpenTextDocumentParams param)
-		{
-			Debug.Assert(Status == Mode.ClientInitializeFinish);
-			SendNotification(param, "textDocument/didOpen");
-		}
-		public void SendTextDocumentDidChange(IDidChangeTextDocumentParams param)
-		{
-			Debug.Assert(Status == Mode.ClientInitializeFinish);
-			SendNotification(param, "textDocument/didChange");
-		}
-		public RequestId SendTextDocumentCompletion(ICompletionParams param)
-		{
-			Debug.Assert(Status == Mode.ClientInitializeFinish);
-			return SendRequest(param, "textDocument/completion", ActionTextDocumentCompletion);
-		}		
-		public void ActionTextDocumentCompletion(ResponseMessage response)
-		{
-            if (response.error != null)
-            {
-				//エラーあり
-				return;
-            }
-
-			CompletionList f(JToken arg) {
-				if (arg == null)
-				{
-					return null;
-				}
-				if (arg is JArray)
-				{
-					//CompletionItem[]の場合
-					var items = arg.ToObject<CompletionItem[]>();					
-					return new CompletionList { items=items};
-				}
-				var obj = arg.ToObject<JObject>();
-				if (obj.ContainsKey("isIncomplete"))
-				{
-					//CompletionListの場合
-					var list = obj.ToObject<CompletionList>();					
-					return list;
-				}				
-				return null;
-			}
-			
-			var id = new RequestId(response.id);
-			var value = new Response { 
-								Item = f((JToken)response.result), 
-								Exist = true 
-							};
-            lock (response_)
-            {
-				Debug.Assert(response_.ContainsKey(id));
-				response_[id] = value;
-			}
-		}
-
-		public void SendWorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)
-		{
-			Debug.Assert(Status == Mode.ClientInitializeFinish);
-			SendNotification(param, "workspace/didChangeConfiguration");
-		}
-		/// <summary>
-		/// "workspace/configuration" に対する返信。
-		/// </summary>
-		/// <param name="request_id"></param>
-		/// <param name="any"></param>
-		void ResponseWorkspaceConfiguration(int request_id, JArray any)
-		{
-			Debug.Assert(Status == Mode.ClientInitializeFinish);
-			SendResponse(any, request_id, NullValueHandling.Include);
-		}
-
-		#endregion
-
-		#region  リクエストの返信
-		/// <summary>
-		/// リクエストの返信を取得する
-		/// </summary>
-		/// <param name="id"></param>
-		/// <param name="timeout"></param>
-		/// <returns></returns>
-		public object QueryResponse(RequestId id, int millisecondsTimeout = -1)
-        {
-			//Todo: ポーリングをやめる(System.Collections.ObjectModel.KeyedCollection<TKey,TItem> クラスを利用できると思う)
-			var sw = new Stopwatch();
-			sw.Start();
-			while (true) {
-				try
-				{
-					lock (response_)
-					{
-						var item = response_[id];
-						if ((item != null) && item.Exist)
-						{
-							response_.Remove(id);
-							return item.Item;
-						}
-					}
-				}
-				catch (KeyNotFoundException)
-				{
-					//pass
-				}
-
-				if(millisecondsTimeout == -1)
-                {
-                    //pass
-                }
-                else
-                {
-					int t = Math.Max(0, millisecondsTimeout);
-                    if (t < sw.ElapsedMilliseconds)
-                    {
-						break;
-                    }
-				}
-
-				Thread.Sleep(0);
-			}
-			if (param_.logger.IsInfoEnabled)
-			{
-				param_.logger.Info(string.Format("QueryResponse timeout. id={0}/millisecondsTimeout={1}", id, millisecondsTimeout));
-			}
-			return null;
-        }
-		#endregion
-
-		#region 低レイヤー
-		//
-		//低レイヤー
-		//
-		public RequestId SendRequest(object param, string method, Action<ResponseMessage> callback)
-		{
-			var id = requestIdGenerator_.NextId();
-			mediator_.StoreResponse(id, callback);
-			SendRequest(param,method,id);
-			return id;
-		}
-		/// <summary>
-		/// リクエスト送信
-		/// </summary>
-		/// <param name="param"></param>
-		/// <param name="method"></param>
-		/// <param name="id"></param>
-		/// <param name="nullValueHandling"></param>
-		/// <returns></returns>
-		public RequestId SendRequest(object param, string method, RequestId id, NullValueHandling nullValueHandling = NullValueHandling.Ignore)
-		{
-			byte[] payload;
-			{
-				var request = new RequestMessage
-				{
-					id      = id.intId,
-					method  = method,
-					@params = param
-				};
-				var jsonRpc = JsonConvert.SerializeObject(
-									request,
-									new JsonSerializerSettings
-									{
-										Formatting			= Formatting.None,
-										NullValueHandling	= nullValueHandling
-									}
-								);
-				payload = CreatePayLoad(jsonRpc);
-			}
-			PrepareToReceiveResponse(id);
-			WriteStandardInput(payload);
-			return id;
-		}
-		/// <summary>
-		/// 通知の送信
-		/// </summary>
-		/// <param name="jsonRpc"></param>
-		public void SendNotification(object param, string method, NullValueHandling nullValueHandling = NullValueHandling.Ignore)
-		{//memo: 通知なので返信は無い。
-			var notification = new NotificationMessage {method = method, @params = param };
-			var jsonRpc = JsonConvert.SerializeObject(notification, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = nullValueHandling });
-			var payload = CreatePayLoad(jsonRpc);
-			WriteStandardInput(payload);
-		}
-		public void SendResponse(object param, int id, NullValueHandling nullValueHandling = NullValueHandling.Ignore)
-		{
-			var response = new ResponseMessage { id=id, result=param};
-			var jsonRpc = JsonConvert.SerializeObject(response, new JsonSerializerSettings { Formatting = Formatting.None, NullValueHandling = nullValueHandling });
-			var payload = CreatePayLoad(jsonRpc);
-			WriteStandardInput(payload);
-		}
-		
-		/// <summary>
-		/// デバッグ用途のメソッド
-		/// </summary>
-		/// <param name="jsonRpc"></param>
-		/// <param name="id"></param>
-		/// <param name="callback"></param>
-		public void SendRaw(string jsonRpc, RequestId id, Action<ResponseMessage> callback)
-		{
-			mediator_.StoreResponse(id, callback);
-			var payload = CreatePayLoad(jsonRpc);
-			WriteStandardInput(payload);
-		}
-		static byte[] CreatePayLoad(string unicodeJson)
-		{
-			byte[] utf8Header;
-			var utf8Json = Encoding.UTF8.GetBytes(unicodeJson);
-			{
-				var unicodeHeader = string.Format("Content-Length: {0}\r\n\r\n", utf8Json.Length);
-				utf8Header = Encoding.UTF8.GetBytes(unicodeHeader);
-			}
-			var payload = new byte[utf8Header.Length + utf8Json.Length];
-
-			/*(Memo) payload=Content-Length: 1234\r\n\r\n
-			 */
-			Array.Copy(utf8Header, 0, payload, 0,                 utf8Header.Length);
-
-			/*(Memo) payload=Content-Length: 1234\r\n\r\n{"id":1,"jsonrpc":"2.0" ...
-			 */
-			Array.Copy(utf8Json,   0, payload, utf8Header.Length, utf8Json.Length);
-			return payload;
-		}
-		void WriteStandardInput(byte[] payload)
+		void Client_standardErrorReceived(object sender, byte[] e)
 		{
 			if (param_.logger.IsDebugEnabled)
 			{
-				var jsonDataUnicode = Encoding.UTF8.GetString(payload);
-				param_.logger.Debug("---> " + jsonDataUnicode.Replace("\n", "\\n").Replace("\r","\\r"));
+				var unicodeString = Encoding.UTF8.GetString(e.ToArray());
+				param_.logger.Debug(string.Format("[StandardError]{0}", unicodeString));
 			}
-
-			server_.WriteStandardInput(payload);
 		}
-		/// <summary>
-		/// レスポンスを受け取る用意をする
-		/// </summary>
-		/// <param name="id"></param>
-		void PrepareToReceiveResponse(RequestId id)
+		void Server_Exited(object sender, EventArgs e)
+		{			
+			param_.logger.Debug("Server_Exited");			
+			source_.Cancel();
+		}
+        #endregion
+        void EventResponseProxy(int request_id, JArray any)
+		{
+			Debug.Assert(Status == Mode.ClientInitializeFinish);
+			Send.Response(any, request_id, NullValueHandling.Include);
+		}
+		public object QueryResponse(RequestId id, int millisecondsTimeout = -1)
         {
-			lock (response_)
-			{
-				Debug.Assert(response_.ContainsKey(id)==false);
-				response_[id] = new Response();
-			}
+			return Send.QueryResponse(id, millisecondsTimeout);
+        }
+		public PublishDiagnosticsParams PullTextDocumentPublishDiagnostics(string textDocumentUri)
+        {
+			return clientEvents_.PullTextDocumentPublishDiagnostics(textDocumentUri);
 		}
-#endregion
-	}	
+	}
 }

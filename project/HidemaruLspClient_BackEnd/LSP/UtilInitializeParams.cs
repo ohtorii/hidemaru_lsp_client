@@ -50,9 +50,9 @@ namespace HidemaruLspClient
                 {//completion
                     textDocument.completion = new CompletionClientCapabilities();
                     var completion = textDocument.completion;
-                    completion.completionItem.snippetSupport = true;
+                    completion.completionItem.snippetSupport = false;
                     completion.completionItem.resolveSupport.properties = new[] { "additionalTextEdits" };
-                    completion.completionItem.documentationFormat = new[] { MarkupKind.markdown, MarkupKind.plaintext };
+                    completion.completionItem.documentationFormat = new[] { /*MarkupKind.markdown,*/ MarkupKind.plaintext };
                     completion.dynamicRegistration = false;
                     completion.completionItemKind.valueSet = new[] {
                         CompletionItemKind.Text         ,

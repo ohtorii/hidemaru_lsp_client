@@ -7,7 +7,7 @@ using URI = System.String;
 
 namespace LSP.Model
 {
-
+	[Serializable()]
 	class Diagnostic {
 		/**
 		 * The range at which the message applies.

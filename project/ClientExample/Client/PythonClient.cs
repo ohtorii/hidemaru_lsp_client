@@ -97,7 +97,7 @@ namespace ClientExample
 
                 param.initializationOptions = pythonOptions;
             }
-            return client.SendInitialize(param);
+            return client.Send.Initialize(param);
         }
 
         internal override void DigOpen(LSP.Client.StdioClient client)

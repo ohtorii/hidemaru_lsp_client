@@ -55,6 +55,9 @@ namespace ClientExample
             Console.WriteLine("==== Completion ====");
             Completion(client);
 
+            Console.WriteLine("==== textDocument/publishDiagnostics ====");
+            publishDiagnostics(client);
+
             Console.WriteLine("==== Shutdown ====");
             Shutdown(client);
 
@@ -62,6 +65,16 @@ namespace ClientExample
             //Console.ReadKey();
         }
 
+        internal virtual void publishDiagnostics(StdioClient client)
+        {
+            var diagnostics = client.PullTextDocumentPublishDiagnostics(sourceUri.AbsoluteUri);
+            if (diagnostics == null)
+            {
+                Console.WriteLine("diagnostics==null");
+                return;
+            }
+            Console.WriteLine(string.Format("diagnostics.diagnostics.Length={0}", diagnostics.diagnostics.Length));
+        }
         internal virtual void Completion(StdioClient client)
         {
             RequestId requestId;
@@ -78,21 +91,18 @@ namespace ClientExample
                 param.position.line = compilationPosition.line;
                 param.position.character = compilationPosition.character;
 
-                requestId = client.SendTextDocumentCompletion(param);
+                requestId = client.Send.TextDocumentCompletion(param);
             }
-            //int timeout = 3*1000;//適当
-            var completion = (CompletionList)client.QueryResponse(requestId);
+            var millisecondsTimeout = 1000;
+            Console.WriteLine(string.Format("millisecondsTimeout={0}", millisecondsTimeout));
+            var completion = (CompletionList)client.QueryResponse(requestId, millisecondsTimeout);
             if (completion == null)
             {
-                Console.WriteLine("[Failed]Compilation");
-                throw new Exception();
+                Console.WriteLine("Compilation is failed or timeout.");
+                //throw new Exception();
             }
             else
             {
-                if (completion.items.Length == 0)
-                {
-                    throw new Exception();
-                }
                 Console.WriteLine("[Success]completion.items.Length={0}", completion.items.Length);
             }
         }
@@ -112,7 +122,7 @@ namespace ClientExample
         {
             var param = new DidChangeConfigurationParams();
             param.settings = new object();
-            client.SendWorkspaceDidChangeConfiguration(param);
+            client.Send.WorkspaceDidChangeConfiguration(param);
         }
 
         internal virtual void DigOpen(LSP.Client.StdioClient client)
@@ -124,13 +134,13 @@ namespace ClientExample
             param.textDocument.version = sourceVersion;
             param.textDocument.text = File.ReadAllText(sourceUri.AbsolutePath, System.Text.Encoding.UTF8);
             param.textDocument.languageId = languageId;
-            client.SendTextDocumentDigOpen(param);
+            client.Send.TextDocumentDidOpen(param);
         }
 
         internal virtual void InitializedClient(LSP.Client.StdioClient client)
         {
             var param = new InitializedParams();
-            client.SendInitialized(param);
+            client.Send.Initialized(param);
         }
 
         internal virtual RequestId InitializeServer(LSP.Client.StdioClient client)
@@ -140,20 +150,20 @@ namespace ClientExample
             param.rootPath = rootUri.AbsolutePath;
             param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "VisualStudio-Solution" } };
             param.initializationOptions = serverInitializationOptions;
-            return client.SendInitialize(param);
+            return client.Send.Initialize(param);
         }
 
         internal virtual void Shutdown(StdioClient client)
         {
-            var requestId = client.SendShutdown();
+            var requestId = client.Send.Shutdown();
             var error = client.QueryResponse(requestId) as ResponseError;
             if (error != null)
             {
                 Console.WriteLine("[Failed]Shutdown.");
                 return;
             }
-            client.SendExit();
-            client.LoggingResponseLeak();
+            client.Send.Exit();
+            client.Send.LoggingResponseLeak();
             Console.WriteLine("[Success]Shutdown.");
         }
     }

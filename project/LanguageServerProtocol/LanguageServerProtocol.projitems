@@ -21,7 +21,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Model\TextEdit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Server\Capabilities\TextDocumentSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\AsyncStreamReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\ClientEvents.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\NullLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\Sender.cs" />
     <Compile Include="..\LanguageServerProtocol\Client\ILogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\RequestIdGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\StdioClient.cs" />

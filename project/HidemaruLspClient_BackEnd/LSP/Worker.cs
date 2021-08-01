@@ -2,21 +2,15 @@
 using LSP.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NLog;
 using System;
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace HidemaruLspClient
-{	
-	class Worker: IWorker
+{
+	sealed class Worker: IWorker
 	{
 		public class Option
 		{
@@ -44,7 +38,7 @@ namespace HidemaruLspClient
 		static LspClientLogger	lspLogger_   = null;
 
 
-		public LspKey key { get; }
+		internal LspKey key { get; }
 		StdioClient				client_		 = null;
 		Option					options_	 = null;
 		//List<string>			tempFilename = new List<string>();
@@ -132,14 +126,14 @@ namespace HidemaruLspClient
 			param.rootUri          = rootUri.AbsoluteUri;
 			param.rootPath         = rootUri.AbsolutePath;
 			param.workspaceFolders = new[] { new WorkspaceFolder { uri = rootUri.AbsoluteUri, name = "FooBarHoge" } };
-			return client_.SendInitialize(param);
+			return client_.Send.Initialize(param);
 		}
 
 		[LogMethod]
 		void InitializedClient()
 		{
 			var param = new InitializedParams();
-			client_.SendInitialized(param);			
+			client_.Send.Initialized(param);			
 		}
 
 		[LogMethod]
@@ -147,12 +141,12 @@ namespace HidemaruLspClient
 		{
 			prevCompletionTempFile_.Delete();
 			Shutdown();
-			client_.LoggingResponseLeak();
+			client_.Send.LoggingResponseLeak();
 		}
 		[LogMethod]
 		void Shutdown()
 		{
-			var requestId = client_.SendShutdown();
+			var requestId = client_.Send.Shutdown();
 			var error = client_.QueryResponse(requestId) as ResponseError;
 			if (error != null)
 			{
@@ -161,98 +155,35 @@ namespace HidemaruLspClient
 				}
 				return;
 			}
-			client_.SendExit();
-		}
-
-		[LogMethod]
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="filename"></param>
-		/// <returns></returns>
-		public void DigOpen(string filename, string text, int contentsVersion)
-		{            
-			var languageId = FileNameToLanguageId(filename);
-			var sourceUri = new Uri(filename);
-
-			var param = new DidOpenTextDocumentParams();
-			param.textDocument.uri			= sourceUri.AbsoluteUri;
-			param.textDocument.version		= contentsVersion;
-			param.textDocument.text			= text;
-			param.textDocument.languageId	= languageId;			
-			client_.SendTextDocumentDigOpen(param);
-		}
-
-		[LogMethod]
-		public void DigChange(string filename, string text, int contentsVersion)
-        {						
-			var param = new DidChangeTextDocumentParams { 
-							contentChanges = new[] { new TextDocumentContentChangeEvent { text = text } },
-			};
-			var sourceUri = new Uri(filename);
-			param.textDocument.uri		= sourceUri.AbsoluteUri;
-			param.textDocument.version	= contentsVersion;			
-			client_.SendTextDocumentDidChange(param);
-		}
-
-		[LogMethod]
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="filename"></param>
-		/// <param name="line"></param>
-		/// <param name="column"></param>
-		/// <returns>辞書の一時ファイル名(絶対パス)</returns>
-		public string Completion(string filename, long line, long column)
-		{
-			prevCompletionTempFile_.Delete();
-            if ((line < 0) || (column < 0))
+			client_.Send.Exit();
+		}				
+		static string GetCompletionWord(CompletionItem item)
+        {
+			if ((item.textEdit != null) && item.textEdit.IsTextEdit && (item.textEdit.TextEdit.newText != ""))
+			{
+				if(item.insertTextFormat == InsertTextFormat.PlainText)
+                {
+					return item.textEdit.TextEdit.newText;
+				}
+				return ParseSnippet(item.textEdit.TextEdit.newText);	
+			}
+            else if ((item.insertText != null) && (item.insertText != ""))
             {
-				return "";
+				if (item.insertTextFormat == InsertTextFormat.PlainText)
+                {
+					return item.insertText;
+				}
+				return ParseSnippet(item.insertText);
             }
-            
-			object result;
-			{
-				RequestId id;
-				{
-					var param = new CompletionParams();
-					var sourceUri = new Uri(filename);
-#if true
-					param.context.triggerKind = CompletionTriggerKind.Invoked;
-#else
-					param.context.triggerKind = CompletionTriggerKind.TriggerCharacter;
-					param.context.triggerCharacter = ;
-#endif
-					param.textDocument.uri		= sourceUri.AbsoluteUri;
-					param.position.line			= (uint)line;
-					param.position.character	= (uint)column;
-					id = client_.SendTextDocumentCompletion(param);
-				}
-
-				result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
-				if (result == null)
-				{
-					return "";
-				}
-			}
-
-			var completionList = (CompletionList)result;
-			if (completionList.items.Length == 0)
-			{
-				return "";
-			}
-
-			var fs = TempFile.Create();
-			prevCompletionTempFile_.tempFilename = fs.Name;
-			using (var sw = new StreamWriter(fs))
-			{
-				foreach (var item in completionList.items)
-				{
-					sw.WriteLine(item.label);
-				}
-			}
-			return fs.Name;
-		}
+            else {
+				return item.label;
+			}						
+        }
+		static string ParseSnippet(string input)
+        {
+			//Todo: 実装する
+			return input;
+        }
 		string FileNameToLanguageId(string filename)
         {
 			//(Ex) filename="c:/foo/bar.cpp"
@@ -271,6 +202,190 @@ namespace HidemaruLspClient
 			}
 			//(Ex) ".cpp" -> "cpp"
 			return extension.Substring(1);
-		}		
-	}
+        }
+
+        #region 実装
+        [LogMethod]
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="absFilename"></param>
+		/// <returns></returns>
+		void IWorker.DigOpen(string absFilename, string text, int contentsVersion)
+		{            
+			var languageId = FileNameToLanguageId(absFilename);
+			var sourceUri = new Uri(absFilename);
+
+			var param = new DidOpenTextDocumentParams();
+			param.textDocument.uri			= sourceUri.AbsoluteUri;
+			param.textDocument.version		= contentsVersion;
+			param.textDocument.text			= text;
+			param.textDocument.languageId	= languageId;			
+			client_.Send.TextDocumentDidOpen(param);
+		}
+
+		[LogMethod]
+		void IWorker.DigChange(string absFilename, string text, int contentsVersion)
+        {						
+			var param = new DidChangeTextDocumentParams { 
+							contentChanges = new[] { new TextDocumentContentChangeEvent { text = text } },
+			};
+			var sourceUri = new Uri(absFilename);
+			param.textDocument.uri		= sourceUri.AbsoluteUri;
+			param.textDocument.version	= contentsVersion;			
+			client_.Send.TextDocumentDidChange(param);
+		}
+
+		[LogMethod]
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="absFilename"></param>
+		/// <param name="line"></param>
+		/// <param name="column"></param>
+		/// <returns>辞書の一時ファイル名(絶対パス)</returns>
+		string IWorker.Completion(string absFilename, long line, long column)
+		{
+			prevCompletionTempFile_.Delete();
+            if ((line < 0) || (column < 0))
+            {
+				return "";
+            }
+
+			CompletionList completionList;			
+			{
+				object result;
+				RequestId id;
+				{
+					var param = new CompletionParams();
+					var sourceUri = new Uri(absFilename);
+#if true
+					param.context.triggerKind = CompletionTriggerKind.Invoked;
+#else
+					param.context.triggerKind = CompletionTriggerKind.TriggerCharacter;
+					param.context.triggerCharacter = ;
+#endif
+					param.textDocument.uri		= sourceUri.AbsoluteUri;
+					param.position.line			= (uint)line;
+					param.position.character	= (uint)column;
+					id = client_.Send.TextDocumentCompletion(param);
+				}
+
+				result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
+				if (result == null)
+				{
+					return "";
+				}
+				completionList = result as CompletionList;
+			}			
+			if (completionList.items.Length == 0)
+			{
+				return "";
+			}
+
+			var fs = TempFile.Create();
+			prevCompletionTempFile_.tempFilename = fs.Name;
+			using (var sw = new StreamWriter(fs))
+			{
+				foreach (var item in completionList.items)
+				{
+					sw.WriteLine(GetCompletionWord(item));
+				}
+			}
+			return fs.Name;
+		}
+		#region Diagnostics
+		[LogMethod]
+		IPublishDiagnosticsParams IWorker.Diagnostics(string absFilename)
+		{			
+			var notification=client_.PullTextDocumentPublishDiagnostics(new Uri(absFilename).AbsoluteUri);
+			test_= new PublishDiagnosticsParamsImpl(notification);
+			return test_;
+		}
+		PublishDiagnosticsParamsImpl test_;
+		sealed class PublishDiagnosticsParamsImpl : IPublishDiagnosticsParams
+        {
+			PublishDiagnosticsParams param_;
+			DiagnosticImpl[] diagnostics_;
+			public PublishDiagnosticsParamsImpl(PublishDiagnosticsParams param)
+            {
+				param_ = param;
+			}
+            string IPublishDiagnosticsParams.uri
+			{
+                get
+                {
+                    if (param_ == null)
+                    {
+						return "";
+                    }
+					return param_.uri;
+				}
+			}
+            long IPublishDiagnosticsParams.version
+			{
+                get
+                {
+                    if (param_ == null)
+                    {
+						return 0;
+                    }
+					return param_.version;
+				} 
+			}
+			void initializeDiagnostics()
+            {
+				if (diagnostics_ != null)
+				{
+					return;
+				}
+				if ((param_ == null) || (param_.diagnostics == null))
+				{
+					diagnostics_ = new DiagnosticImpl[0];
+					return;
+				}
+				
+				diagnostics_ = new DiagnosticImpl[param_.diagnostics.Length];
+				int i = 0;
+				foreach (var item in param_.diagnostics)
+				{
+					diagnostics_[i].Initialize(item.range);
+					++i;
+				}
+			}
+			long IPublishDiagnosticsParams.getDiagnosticsLength()
+			{
+				initializeDiagnostics();
+				return diagnostics_.Length;
+			}
+			IDiagnostic IPublishDiagnosticsParams.getDiagnostics(long index)
+            {
+				initializeDiagnostics();
+				return diagnostics_[index];
+            }
+        }
+		sealed class DiagnosticImpl : IDiagnostic
+        {
+			LSP.Model.IRange param_;
+			public void Initialize(LSP.Model.IRange range) {
+				param_ = range;
+			}
+            IRange IDiagnostic.range => throw new NotImplementedException();
+        }
+		
+        sealed class RangeImpl : IRange
+        {
+            IPosition IRange.start => throw new NotImplementedException();
+
+            IPosition IRange.end => throw new NotImplementedException();
+        }
+        sealed class PositionImpl : IPosition
+        {
+            public long character => throw new NotImplementedException();
+
+            public long line => throw new NotImplementedException();
+        }
+        #endregion
+        #endregion
+    }
 }

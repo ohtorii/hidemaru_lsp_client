@@ -32,18 +32,70 @@ interface ILspClientLogger :IDispatch {
     HRESULT Fatal([in]BSTR message);
 };
 
+///////////////////////////////////////////////////////////////////////////
+/// IPublishDiagnosticsParams
+///////////////////////////////////////////////////////////////////////////
+[
+    object,
+    oleautomation,
+    uuid(53A84500-EAF3-4248-B167-D9921EE8AB51)
+]
+interface IPosition:IDispatch
+{
+    [propget] HRESULT character([out,retval]hyper*ret);
+    [propget] HRESULT line([out, retval]hyper* ret);
+};
+
+[
+    object,
+    oleautomation,
+    uuid(D3E64D92-3ABB-494B-A26F-A856DFE54D54)
+]
+interface IRange :IDispatch
+{
+    [propget] HRESULT start([out, retval]IPosition** ret);
+    [propget] HRESULT end([out, retval]IPosition** ret);
+};
+
+[
+    object,
+    oleautomation,
+    uuid(5DC500BE-636F-4886-8FF5-6359D46B3342)
+]
+interface IDiagnostic :IDispatch
+{
+    [propget] HRESULT range([out, retval]IRange** ret);
+};
+
+[
+    object,
+    oleautomation,
+    uuid(C5E68A27-29AD-4D35-8E12-7C5712D781D3)
+]
+interface IPublishDiagnosticsParams :IDispatch
+{
+    [propget] HRESULT uri([out, retval]BSTR* ret);
+    [propget] HRESULT version([out, retval]hyper* ret);    
+    HRESULT getDiagnosticsLength([out,retval]hyper*length);
+    HRESULT getDiagnostics([in]hyper index, [out,retval]IDiagnostic**ret);
+};
+
+
+///////////////////////////////////////////////////////////////////////////
+/// IWorker
+///////////////////////////////////////////////////////////////////////////
 [
     object,
     oleautomation,
     uuid(E8153825-63C2-4C50-9889-0DEB4CFB4033)
 ]
-interface IWorker :IDispatch
+interface IWorker :IDispatch 
 {
     HRESULT DigOpen([in]BSTR filename, [in]BSTR text, [in]int contentsVersion);
     HRESULT DigChange([in]BSTR filename, [in]BSTR text, [in]int contentsVersion);
     HRESULT Completion([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out,retval]BSTR*retval);
+    HRESULT Diagnostics([in]BSTR absFilename, [out,retval]IPublishDiagnosticsParams**retval);
 }
-
 
 [
     object,
@@ -60,7 +112,7 @@ interface IHidemaruLspBackEndServer : IDispatch
                   [in]BSTR Arguments,
                   [in]BSTR RootUri,
                   [in]BSTR WorkspaceConfig,
-                  [out] IWorker** worker);
+                  [out,retval] IWorker** worker);
     HRESULT DestroyWorker([in]IWorker *worker);
 };
 

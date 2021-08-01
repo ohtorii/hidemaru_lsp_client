@@ -30,7 +30,7 @@ namespace LanguageServerProcess
         /// rootUriを取得する
         /// </summary>
         /// <returns></returns>
-        public virtual string GetRootUri() { return ""; }
+        public virtual string GetRootUri() { return LanguageServerProcess.Environment.FindRootUriAsAdhoc(); }
         /// <summary>
         /// workspaceConfigを取得する
         /// </summary>

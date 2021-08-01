@@ -15,9 +15,6 @@ namespace LanguageServerProcess {
             var serverCmd = System.Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\sumneko-lua-language-server\sumneko-lua-language-server.cmd");
             return String.Format(@"/c ""{0}""", serverCmd);
         }
-        public override string GetRootUri(){
-            return LSP.Environment.FindRootUriAsAdhoc();
-        }
         public override string GetWorkspaceConfig() { 
             return 
 @" {

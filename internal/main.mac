@@ -25,7 +25,7 @@ call GetAbsolutePathName $iniServerConfig;
 $iniServerConfig=$$return;
 
 $comObjectName="lsp.client.obj";
-#comObjectShare=0;
+#comObjectShareMode=0;
 
 /////////////////////////////////////////////////////////////////////////////
 //    メイン処理
@@ -46,7 +46,7 @@ main:
     }
 
     debuginfo 1;
-    $$obj = getstaticvariable($comObjectName,#comObjectShare);
+    $$obj = getstaticvariable($comObjectName,#comObjectShareMode);
     if($$obj!=""){
         ##obj = val($$obj);
     }else{
@@ -55,9 +55,6 @@ main:
             message "COMのロードに失敗しました";
             return false;
         }
-        setstaticvariable $comObjectName,str(##obj),#comObjectShare;
-        keepobject ##obj, 2;
-
         setcomdetachmethod ##obj,"Finalizer";
         ##n=callmethod_returnnum(##obj,"Initialize",$logFileName);
         if(##n==false){
@@ -66,10 +63,20 @@ main:
         }
         ##n=callmethod_returnnum(##obj,"CreateWorker",$$absConfigFileName,directory2);
         if(##n==false){
-            message "Start に失敗";
+            message "CreateWorker に失敗";
             return false;
         }
+
+        setstaticvariable $comObjectName,str(##obj),#comObjectShareMode;
+        keepobject ##obj, 2;
     }
+
+
+    $$diagnostics=callmethod_returnstr(##obj, "Diagnostics",filename2);
+    message $$diagnostics;
+    return true;
+
+
 
     //Memo: -1して0始まりにする
     $$dictionalyFileName=callmethod_returnstr(##obj, "Completion",filename2,lineno-1,column_wcs);
@@ -82,7 +89,6 @@ main:
     autocomplete 0, 0x00000002|0x00000004,0x00008020,$$dictionalyFileName;
     //Memo: マクロはこの行に到達しない
 
-    //deletefile $$dictionalyFileName;
     return true;
 
 

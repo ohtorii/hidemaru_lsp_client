@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace HidemaruLspClient_FrontEnd
 {    
+    /// <summary>
+    /// 秀丸エディタへ公開するクラス
+    /// </summary>
     [ComVisible(true)]
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
     public class Service
@@ -37,6 +42,10 @@ namespace HidemaruLspClient_FrontEnd
             /// ファイールはオープン済み
             /// </summary>
             AlreadyOpened,
+            /// <summary>
+            /// 失敗
+            /// </summary>
+            Failed,
         }
         enum DigChangeStatus
         {
@@ -48,6 +57,10 @@ namespace HidemaruLspClient_FrontEnd
             /// 変更無し
             /// </summary>
             NoChanged,
+            /// <summary>
+            /// 失敗
+            /// </summary>
+            Failed,
         }
 
         public bool Initialize(string logFilename)
@@ -106,8 +119,8 @@ namespace HidemaruLspClient_FrontEnd
         public void Finalizer(int reason)
         {
             try
-            {                
-                if (server_ != null)
+            {
+                if ((server_ != null) && (worker_ != null))
                 {
                     server_.DestroyWorker(worker_);
                 }
@@ -127,9 +140,10 @@ namespace HidemaruLspClient_FrontEnd
         }
         public bool CreateWorker(string serverConfigFilename, string currentSourceCodeDirectory)
         {
-            Debug.Assert(worker_ == null);
             try
             {
+                Debug.Assert(worker_ == null);
+
                 var options = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
                 if (options == null)
                 {
@@ -155,49 +169,89 @@ namespace HidemaruLspClient_FrontEnd
         }
         private DigOpenStatus DigOpen(string absFilename)
         {
-            Debug.Assert(worker_ != null);
-
-            if (openedFile.Filename == absFilename)
+            try
             {
-                return DigOpenStatus.AlreadyOpened;
-            }            
-            var text = Hidemaru.GetTotalTextUnicode();
-            var contentsVersion   = 1;
-            worker_.DigOpen(absFilename,text, contentsVersion);
+                Debug.Assert(worker_ != null);
 
-            var sourceUri = new Uri(absFilename);            
-            openedFile.Filename         = absFilename;
-            openedFile.Uri              = sourceUri;
-            openedFile.ContentsVersion  = contentsVersion;
-            openedFile.ContentsHash     = text.GetHashCode();            
-            return DigOpenStatus.Opened;
+                if (openedFile.Filename == absFilename)
+                {
+                    return DigOpenStatus.AlreadyOpened;
+                }
+                var text = Hidemaru.GetTotalTextUnicode();
+                var contentsVersion = 1;
+                worker_.DigOpen(absFilename, text, contentsVersion);
+
+                var sourceUri = new Uri(absFilename);
+                openedFile.Filename = absFilename;
+                openedFile.Uri = sourceUri;
+                openedFile.ContentsVersion = contentsVersion;
+                openedFile.ContentsHash = text.GetHashCode();
+                return DigOpenStatus.Opened;
+            }
+            catch (Exception e)
+            {
+                if (logger_ != null)
+                {
+                    logger_.Error(e.ToString());
+                }
+            }
+            return DigOpenStatus.Failed;
         }
         private DigChangeStatus DigChange(string absFilename)
         {
-            Debug.Assert(worker_ != null);
-            Debug.Assert(openedFile.Filename == absFilename);
-            var text = Hidemaru.GetTotalTextUnicode();
+            try
             {
-                var currentHash = text.GetHashCode();
-                var prevHash    = openedFile.ContentsHash;
-                if (currentHash == prevHash)
+                Debug.Assert(worker_ != null);
+                Debug.Assert(openedFile.Filename == absFilename);
+                var text = Hidemaru.GetTotalTextUnicode();
                 {
-                    return DigChangeStatus.NoChanged;
+                    var currentHash = text.GetHashCode();
+                    var prevHash = openedFile.ContentsHash;
+                    if (currentHash == prevHash)
+                    {
+                        return DigChangeStatus.NoChanged;
+                    }
+                }
+                ++openedFile.ContentsVersion;
+                worker_.DigChange(absFilename, text, openedFile.ContentsVersion);
+                return DigChangeStatus.Changed;
+            }catch(Exception e)
+            {
+                if (logger_ != null)
+                {
+                    logger_.Error(e.ToString());
                 }
             }
-            ++openedFile.ContentsVersion;
-            worker_.DigChange(absFilename,text,openedFile.ContentsVersion);
-            return DigChangeStatus.Changed;
+            return DigChangeStatus.Failed;
         }
+        /// <summary>
+        /// textDocument/completion
+        /// </summary>
+        /// <param name="absFilename"></param>
+        /// <param name="line"></param>
+        /// <param name="column"></param>
+        /// <returns>辞書ファイル名</returns>
         public string Completion(string absFilename, long line, long column)
         {
             Debug.Assert(worker_ != null);
             try
             {
-                if (DigOpen(absFilename) == DigOpenStatus.AlreadyOpened)
+                switch (DigOpen(absFilename))
                 {
-                    DigChange(absFilename);
-                }            
+                    case DigOpenStatus.Opened:
+                        //pass
+                        break;
+                    case DigOpenStatus.AlreadyOpened:
+                        if (DigChange(absFilename) == DigChangeStatus.Failed)
+                        {
+                            return "";
+                        }
+                        break;
+                    case DigOpenStatus.Failed:
+                        return "";
+                    default:
+                        return "";
+                }
                 return worker_.Completion(absFilename, line, column);
             }catch(Exception e)
             {
@@ -205,7 +259,32 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
-        
+        /// <summary>
+        /// textDocument/publishDiagnostics
+        /// </summary>
+        /// <param name="absFilename"></param>
+        /// <returns>改行区切りの文字列</returns>
+        public string Diagnostics(string absFilename)
+        {
+            Debug.Assert(worker_ != null);
+            try
+            {
+                var notification = worker_.Diagnostics(absFilename);
+                if (notification == null)
+                {
+                    return "";
+                }
+                var length = notification.getDiagnosticsLength();
+                for (long i = 0; i < length; ++i)
+                {
+                    var diagnostic=notification.getDiagnostics(i);
+                    //diagnostic.range.
+                }
+            }catch(Exception e)
+            {
+                return "";
+            }
+        }
 
 
 
