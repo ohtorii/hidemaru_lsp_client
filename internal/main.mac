@@ -70,35 +70,54 @@ main:
         setstaticvariable $comObjectName,str(##obj),#comObjectShareMode;
         keepobject ##obj, 2;
     }
-
-    if(false){
-        $$diagnostics=callmethod_returnstr(##obj, "Diagnostics");
-        message $$diagnostics;
-        ##outputHandle=loaddll("HmOutputPane.dll");
-        if($$diagnostics==""){
-            ##h=dllfunc(##outputHandle,"GetWindowHandle",hidemaruhandle(0));
-            ##ret=sendmessage(##h,0x111/*WM_COMMAND*/,1009,0);//1009=クリア
-        }else{
-            ##ret=dllfunc(##outputHandle,"Output",hidemaruhandle(0),$$diagnostics);
-        }
-        freedll(##outputHandle);
-        return true;
+    menu    "ファイル内容を同期する（開発用）",
+            "Completion",
+            "Lint";
+    if(result==0){
+        return;
+    }else if(result==1){
+        call LspSync ##obj;
+    }else if(result==2){
+        call LspCompletion ##obj;
+    }else if(result==3){
+        call LspLint ##obj;
     }
+    return true;
 
+LspSync:
+    ##obj=##1;
 
-    if(true){
-        //Memo: -1して0始まりにする
-        $$dictionalyFileName=callmethod_returnstr(##obj, "Completion",lineno-1,column_wcs);
-        if($$dictionalyFileName==""){
-            message "Completion に失敗";
-            return false;
-        }
+    return true;
 
-        //Memo: マクロは中断される
-        autocomplete 0, 0x00000002|0x00000004,0x00008050,$$dictionalyFileName;
-        //Memo: マクロはこの行に到達しない
+LspCompletion:
+    ##obj=##1;
+    //Memo: -1して0始まりにする
+    $$dictionalyFileName=callmethod_returnstr(##obj, "Completion",lineno-1,column_wcs);
+    if($$dictionalyFileName==""){
+        message "Completion に失敗";
+        return false;
     }
+    //Memo: マクロは中断される
+    autocomplete 0, 0x00000002|0x00000004,0x00008050,$$dictionalyFileName;
 
+    //Memo: マクロはこの行に到達しない
+    return true;
+
+
+LspLint:
+    ##obj=##1;
+    $$diagnostics=callmethod_returnstr(##obj, "Diagnostics");
+    //message $$diagnostics;
+    ##outputHandle=loaddll("HmOutputPane.dll");
+
+    //アウトプット枠の内容をクリア
+    ##h=dllfunc(##outputHandle,"GetWindowHandle",hidemaruhandle(0));
+    ##ret=sendmessage(##h,0x111/*WM_COMMAND*/,1009,0);//1009=クリア
+
+    if($$diagnostics!=""){
+        ##ret=dllfunc(##outputHandle,"Output",hidemaruhandle(0),$$diagnostics);
+    }
+    freedll(##outputHandle);
     return true;
 
 

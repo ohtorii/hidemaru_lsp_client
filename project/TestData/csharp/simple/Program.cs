@@ -10,7 +10,7 @@ namespace simple
     {
         static void Main(string[] args)
         {
-            System.Console.;
+            //System.Console. ;
             var h=new Hoge();
 /*a𐐀b*/Hoge.;
             int x=1;

@@ -90,125 +90,7 @@ namespace HidemaruLspClient_FrontEnd
             /// </summary>
             Failed,
         }
-
-        public bool Initialize(string logFilename)
-        {
-            try
-            {
-                Hidemaru.Initialize();
-
-                if (server_ == null)
-                {
-                    //事前にBackEndをspawnしたほうが良いと思う
-                    var ServerClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
-                    object obj;
-                    int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
-                    if (hr < 0)
-                    {
-                        Marshal.ThrowExceptionForHR(hr);
-                    }
-                    server_ = (IHidemaruLspBackEndServer)obj;
-                    var ret = Convert.ToBoolean(server_.Initialize(logFilename));
-                    if (ret)
-                    {                     
-                        logger_     = server_.GetLogger();
-                        Configuration.Initialize(logger_);
-                    }
-                    else
-                    {
-                        server_ = null;
-                    }
-                    return ret;
-                }
-                return true;
-            }
-            catch(Exception e)
-            {
-                server_ = null;
-            }
-            return false;
-        }
-        /// <summary>
-        /// テスト用のメソッド
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        public int Add(int x, int y)
-        {
-            try
-            {
-                return server_.Add(x, y);
-            }
-            catch (System.Exception )
-            {
-                return -1;
-            }
-        }
-        public void Finalizer(int reason)
-        {
-            try
-            {
-                if ((server_ != null) && (worker_ != null))
-                {
-                    if (string.IsNullOrEmpty(openedFile_.Filename) == false)
-                    {
-                        DidClose();
-                    }
-                    server_.DestroyWorker(worker_);
-                }
-                worker_     = null;
-                server_     = null;
-                dasmr_      = null;
-                openedFile_ = null;
-            }
-            catch (Exception e)
-            {
-                if (logger_ != null)
-                {
-                    logger_.Error(e.ToString());
-                }
-            }
-            logger_ = null;
-            return;
-        }
-        public bool CreateWorker(string serverConfigFilename, string currentSourceCodeDirectory)
-        {
-            try
-            {
-                logger_.Trace("CreateWorker@enter");
-                Debug.Assert(worker_ == null);
-
-                logger_.Trace("CreateWorker@1");
-                var options = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
-                if (options == null)
-                {
-                    return false;
-                }
-                var hidemaruProcess = System.Diagnostics.Process.GetCurrentProcess();
-                logger_.Trace("CreateWorker@2");
-                worker_ =server_.CreateWorker(
-                            options.ServerName,
-                            options.ExcutablePath, 
-                            options.Arguments,
-                            options.RootUri,
-                            options.WorkspaceConfig,
-                            hidemaruProcess.Id);
-                logger_.Trace("CreateWorker@3");
-                if (worker_ == null)
-                {
-                    return false;
-                }
-                logger_.Trace("CreateWorker@4");
-                return true;
-            }
-            catch (Exception e)
-            {
-                logger_.Error(e.ToString());
-            }
-            logger_.Trace("CreateWorker@exit");
-            return false;
-        }
+        
         DigOpenStatus DigOpen(string absFilename)
         {
             try
@@ -339,7 +221,150 @@ namespace HidemaruLspClient_FrontEnd
             DidClose();
             return fncDidOpen(currentHidemaruFilePath);
         }
+        static void FormatDiagnostics(StringBuilder sb, IPublishDiagnosticsParams diagnosticsParams)
+        {
+            var uri = new Uri(diagnosticsParams.uri);
+            var filename = uri.LocalPath;
+            for (long i = 0; i < diagnosticsParams.Length; ++i)
+            {
+                var diagnostic = diagnosticsParams.Item(i);
+                var severity = diagnostic.severity;
+                if (severity <= /*DiagnosticSeverity.Error*/ DiagnosticSeverity.Warning)
+                {
+                    //+1して秀丸エディタの行番号(1開始)にする
+                    var line = diagnostic.range.start.line + 1;
+                    var code = diagnostic.code;
+                    var message = diagnostic.message;
 
+                    //Memo: 秀丸エディタのアウトプット枠へ出力するには \r\n が必要。
+                    sb.Append($"{filename}({line}):  {code} {message}\r\n");
+                }
+            }
+        }
+
+        #region Public methods
+        public bool Initialize(string logFilename)
+        {
+            try
+            {
+                Hidemaru.Initialize();
+
+                if (server_ == null)
+                {
+                    //事前にBackEndをspawnしたほうが良いと思う
+                    var ServerClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
+                    object obj;
+                    int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
+                    if (hr < 0)
+                    {
+                        Marshal.ThrowExceptionForHR(hr);
+                    }
+                    server_ = (IHidemaruLspBackEndServer)obj;
+                    var ret = Convert.ToBoolean(server_.Initialize(logFilename));
+                    if (ret)
+                    {
+                        logger_ = server_.GetLogger();
+                        Configuration.Initialize(logger_);
+                    }
+                    else
+                    {
+                        server_ = null;
+                    }
+                    return ret;
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                server_ = null;
+                if (logger_ != null)
+                {
+                    logger_.Error(e.ToString());
+                }
+            }
+            return false;
+        }
+        /// <summary>
+        /// テスト用のメソッド
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public int Add(int x, int y)
+        {
+            try
+            {
+                return server_.Add(x, y);
+            }
+            catch (System.Exception)
+            {
+                return -1;
+            }
+        }
+        public void Finalizer(int reason)
+        {
+            try
+            {
+                if ((server_ != null) && (worker_ != null))
+                {
+                    if (string.IsNullOrEmpty(openedFile_.Filename) == false)
+                    {
+                        DidClose();
+                    }
+                    server_.DestroyWorker(worker_);
+                }
+                worker_ = null;
+                server_ = null;
+                dasmr_ = null;
+                openedFile_ = null;
+            }
+            catch (Exception e)
+            {
+                if (logger_ != null)
+                {
+                    logger_.Error(e.ToString());
+                }
+            }
+            logger_ = null;
+            return;
+        }
+        public bool CreateWorker(string serverConfigFilename, string currentSourceCodeDirectory)
+        {
+            try
+            {
+                logger_.Trace("CreateWorker@enter");
+                Debug.Assert(worker_ == null);
+
+                logger_.Trace("CreateWorker@1");
+                var options = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
+                if (options == null)
+                {
+                    return false;
+                }
+                var hidemaruProcess = System.Diagnostics.Process.GetCurrentProcess();
+                logger_.Trace("CreateWorker@2");
+                worker_ = server_.CreateWorker(
+                            options.ServerName,
+                            options.ExcutablePath,
+                            options.Arguments,
+                            options.RootUri,
+                            options.WorkspaceConfig,
+                            hidemaruProcess.Id);
+                logger_.Trace("CreateWorker@3");
+                if (worker_ == null)
+                {
+                    return false;
+                }
+                logger_.Trace("CreateWorker@4");
+                return true;
+            }
+            catch (Exception e)
+            {
+                logger_.Error(e.ToString());
+            }
+            logger_.Trace("CreateWorker@exit");
+            return false;
+        }
         /// <summary>
         /// textDocument/completion
         /// </summary>
@@ -391,45 +416,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
-        static void FormatDiagnostics(StringBuilder sb, IPublishDiagnosticsParams diagnosticsParams)
-        {
-            var uri      = new Uri(diagnosticsParams.uri);
-            var filename = uri.LocalPath;
-            for (long i = 0; i < diagnosticsParams.Length; ++i)
-            {
-                var diagnostic = diagnosticsParams.Item(i);
-                var severity   = diagnostic.severity;
-                if (severity <= /*DiagnosticSeverity.Error*/ DiagnosticSeverity.Warning)
-                {
-                    //+1して秀丸エディタの行番号(1開始)にする
-                    var line    = diagnostic.range.start.line + 1;
-                    var code    = diagnostic.code;
-                    var message = diagnostic.message;
+        #endregion
 
-                    //Memo: 秀丸エディタのアウトプット枠へ出力するには \r\n が必要。
-                    sb.Append($"{filename}({line}):  {code} {message}\r\n");
-                }
-            }
-        }
-
-
-
-        private class Ole32
-        {
-            // https://docs.microsoft.com/windows/win32/api/wtypesbase/ne-wtypesbase-clsctx
-            public const int CLSCTX_LOCAL_SERVER = 0x4;
-
-            // https://docs.microsoft.com/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance
-            [DllImport(nameof(Ole32))]
-            public static extern int CoCreateInstance(
-                [In, MarshalAs(UnmanagedType.LPStruct)] Guid rclsid,
-                IntPtr pUnkOuter,
-                uint dwClsContext,
-                [In, MarshalAs(UnmanagedType.LPStruct)] Guid riid,
-                [MarshalAs(UnmanagedType.IUnknown)] out object ppv);
-        }
-
-    }
-
-    
+    }   
 }
