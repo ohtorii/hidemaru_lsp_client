@@ -365,6 +365,20 @@ namespace HidemaruLspClient_FrontEnd
             logger_.Trace("CreateWorker@exit");
             return false;
         }
+        public bool SyncDocument()
+        {
+            try
+            {
+                Debug.Assert(worker_ != null);
+                var _ = FileProc();
+            }catch(Exception e)
+            {
+                logger_.Error(e.ToString());
+                return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// textDocument/completion
         /// </summary>

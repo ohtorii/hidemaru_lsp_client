@@ -76,18 +76,21 @@ main:
     if(result==0){
         return;
     }else if(result==1){
-        call LspSync ##obj;
+        call LspSyncDocument ##obj;
+        return ##return;
     }else if(result==2){
         call LspCompletion ##obj;
+        return ##return;
     }else if(result==3){
         call LspLint ##obj;
+        return ##return;
     }
-    return true;
+    return false;
 
-LspSync:
+LspSyncDocument:
     ##obj=##1;
-
-    return true;
+    ##success=callmethod_returnnum(##obj, "SyncDocument");
+    return ##success;
 
 LspCompletion:
     ##obj=##1;
