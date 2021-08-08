@@ -151,12 +151,16 @@ namespace HidemaruLspClient_FrontEnd
             {
                 if ((server_ != null) && (worker_ != null))
                 {
+                    if (string.IsNullOrEmpty(openedFile_.Filename) == false)
+                    {
+                        DidClose();
+                    }
                     server_.DestroyWorker(worker_);
                 }
-                worker_ = null;
-                server_ = null;
-                dasmr_ = null;
-                logger_ = null;                
+                worker_     = null;
+                server_     = null;
+                dasmr_      = null;
+                openedFile_ = null;
             }
             catch (Exception e)
             {
@@ -165,6 +169,7 @@ namespace HidemaruLspClient_FrontEnd
                     logger_.Error(e.ToString());
                 }
             }
+            logger_ = null;
             return;
         }
         public bool CreateWorker(string serverConfigFilename, string currentSourceCodeDirectory)

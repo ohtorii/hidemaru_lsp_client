@@ -22,32 +22,36 @@ namespace HidemaruLspClient
 
         class WorkerPair
         {
+            Worker worker_ = null;
+            int referenceCounter_ = 0;
+
+
             public WorkerPair(Worker w)
             {
-                worker = w;
+                worker_ = w;
                 Used();
             }            
-            Worker worker =null;
             public Worker GetWorker()
             {
-                return worker;
+                return worker_;
             }
             public void Used()
             {
-                referenceCounter += 1;
+                referenceCounter_ += 1;
             }
             public bool UnUsed()
             {
-                referenceCounter -= 1;
-                if (referenceCounter == 0)
+                referenceCounter_ -= 1;
+                if (referenceCounter_ == 0)
                 {
-                    //worker.Destroy();
-                    //worker = null;
                     return true;
                 }
                 return false;
-            }
-            int referenceCounter = 0;
+            }                        
+            /// <summary>
+            /// デバッグ用途
+            /// </summary>
+            public int referenceCounter { get { return referenceCounter_; } }
         }
         static Dictionary<LspKey, WorkerPair> workerHolder_ = new Dictionary<LspKey, WorkerPair>();
 
@@ -124,15 +128,17 @@ namespace HidemaruLspClient
             var logger = LogManager.GetCurrentClassLogger();
             try
             {
-                var target = new LspKey(ServerName, RootUri);                
-                if (workerHolder_.ContainsKey(target))
+                var holderKey = new LspKey(ServerName, RootUri);                
+                if (workerHolder_.ContainsKey(holderKey))
                 {
-                    var w = workerHolder_[target];
+                    var w = workerHolder_[holderKey];
                     w.Used();
+                    logger.Debug("w.referenceCounter={0}", w.referenceCounter);
                     return w.GetWorker();
                 }
-                var ins = new Worker(target);
-                var ret = ins.Start(  ServerName,
+
+                var ins = new Worker(holderKey);
+                var ret = ins.Start(ServerName,
                                     ExcutablePath,
                                     Arguments,
                                     RootUri,
@@ -141,7 +147,9 @@ namespace HidemaruLspClient
                 {
                     return null;
                 }
-                workerHolder_[target] = new WorkerPair(ins);
+                var value = new WorkerPair(ins);
+                logger.Debug("value.referenceCounter={0}", value.referenceCounter);
+                workerHolder_[holderKey] = value;
                 return ins;
             }catch(Exception e)
             {
@@ -153,19 +161,26 @@ namespace HidemaruLspClient
         [LogMethod]
         void IHidemaruLspBackEndServer.DestroyWorker(IWorker worker)
         {
-            var ins = worker as Worker;
-            Debug.Assert(ins != null);
-            
-            var key = ins.key;
-            var value = workerHolder_[key];
-            //Debug.Assert(value.worker.key == key);
-
-            if (value.UnUsed())
+            var logger = LogManager.GetCurrentClassLogger();
+            try
             {
-                var ret = workerHolder_.Remove(key);
-                Debug.Assert(ret == true);
+                var ins = worker as Worker;
+                Debug.Assert(ins != null);
 
-                ins.Stop();
+                var holderKey = ins.key;
+                var value = workerHolder_[holderKey];
+
+                logger.Debug("value.referenceCounter={0}",value.referenceCounter);
+                if (value.UnUsed())
+                {
+                    var ret = workerHolder_.Remove(holderKey);
+                    Debug.Assert(ret == true);
+
+                    ins.Stop();
+                }
+            }catch(Exception e)
+            {
+                logger.Error(e);
             }
         }
     }

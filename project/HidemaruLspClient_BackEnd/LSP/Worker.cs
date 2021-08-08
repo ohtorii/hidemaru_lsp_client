@@ -32,8 +32,11 @@ namespace HidemaruLspClient
 				}
             }
         }
-
-		const int defaultTimeout = 6000;
+		/// <summary>
+		/// 通信のタイムアウト値(単位は㎳)
+		/// (Memo)6000では短いため現在は12000で運用中
+		/// </summary>
+		const int defaultTimeout = 12000;
 		static bool				initialized_ = false;
 		static LspClientLogger	lspLogger_   = null;
 
