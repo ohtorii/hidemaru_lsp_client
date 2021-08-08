@@ -22,8 +22,9 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{b6dab53d-b2ec-4d57-afe7-649c54554d4d}</ProjectGuid>
-    <RootNamespace>HidemaruLspClientIDL</RootNamespace>
+    <RootNamespace>HidemaruLspClient_BackEndContract</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>HidemaruLspClient_BackEndContract</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,15 +73,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)Output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)Intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)Output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)Intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)Output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)Intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)Output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)Intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -93,9 +102,14 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Midl />
     <Midl>
-      <TypeLibraryName>$(IntDir)HidemaruLspClient_BackEnd.tlb</TypeLibraryName>
+      <TypeLibraryName>$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\$(ProjectName).tlb</TypeLibraryName>
+      <OutputDirectory>$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\</OutputDirectory>
     </Midl>
+    <PostBuildEvent>
+      <Command>"$(ProjectDir)..\HidemaruLspClient_Contract\bin\tlb2dll.bat" "$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\$(ProjectName).tlb"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -112,9 +126,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Midl />
     <Midl>
-      <TypeLibraryName>$(IntDir)HidemaruLspClient_BackEnd.tlb</TypeLibraryName>
+      <TypeLibraryName>$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\$(ProjectName).tlb</TypeLibraryName>
+      <OutputDirectory>$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\</OutputDirectory>
     </Midl>
+    <PostBuildEvent>
+      <Command>"$(ProjectDir)..\HidemaruLspClient_Contract\bin\tlb2dll.bat" "$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\$(ProjectName).tlb"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -127,9 +146,14 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Midl />
     <Midl>
-      <TypeLibraryName>$(IntDir)HidemaruLspClient_BackEnd.tlb</TypeLibraryName>
+      <TypeLibraryName>$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\$(ProjectName).tlb</TypeLibraryName>
+      <OutputDirectory>$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\</OutputDirectory>
     </Midl>
+    <PostBuildEvent>
+      <Command>"$(ProjectDir)..\HidemaruLspClient_Contract\bin\tlb2dll.bat" "$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\$(ProjectName).tlb"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -146,12 +170,17 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Midl />
     <Midl>
-      <TypeLibraryName>$(IntDir)HidemaruLspClient_BackEnd.tlb</TypeLibraryName>
+      <TypeLibraryName>$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\$(ProjectName).tlb</TypeLibraryName>
+      <OutputDirectory>$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\</OutputDirectory>
     </Midl>
+    <PostBuildEvent>
+      <Command>"$(ProjectDir)..\HidemaruLspClient_Contract\bin\tlb2dll.bat" "$(ProjectDir)..\HidemaruLspClient_Contract\bin\$(PlatformTarget)\$(ProjectName).tlb"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Midl Include="BackEnd.idl" />
+    <Midl Include="BackEndContract.idl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

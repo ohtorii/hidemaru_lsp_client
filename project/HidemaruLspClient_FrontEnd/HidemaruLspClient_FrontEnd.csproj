@@ -31,6 +31,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'AnyCPU'">
+      <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'x64'">
+      <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'x86'">
+      <HintPath>..\HidemaruLspClient_Contract\bin\x86\HidemaruLspClient_BackEndContract.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,13 +53,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\HidemaruLspClient_Contract\Contract.cs">
-      <Link>Contract.cs</Link>
-    </Compile>
-    <Compile Include="..\HidemaruLspClient_Contract\IServer.cs">
-      <Link>IServer.cs</Link>
-    </Compile>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Dll.cs" />
     <Compile Include="DllAssemblyResolver.cs" />
     <Compile Include="Hidemaru.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

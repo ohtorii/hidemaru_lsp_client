@@ -5,12 +5,12 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using HidemaruLspClient_BackEndContract;
+using System.Runtime.CompilerServices;
 
 namespace HidemaruLspClient
 {
-	sealed class Worker: IWorker
+	sealed class Worker: HidemaruLspClient_BackEndContract.IWorker
 	{
 		public class Option
 		{
@@ -211,7 +211,7 @@ namespace HidemaruLspClient
 		/// </summary>
 		/// <param name="absFilename"></param>
 		/// <returns></returns>
-		void IWorker.DigOpen(string absFilename, string text, int contentsVersion)
+		void IWorker.DidOpen(string absFilename, string text, int contentsVersion)
 		{            
 			var languageId = FileNameToLanguageId(absFilename);
 			var sourceUri = new Uri(absFilename);
@@ -225,7 +225,7 @@ namespace HidemaruLspClient
 		}
 
 		[LogMethod]
-		void IWorker.DigChange(string absFilename, string text, int contentsVersion)
+		void IWorker.DidChange(string absFilename, string text, int contentsVersion)
         {						
 			var param = new DidChangeTextDocumentParams { 
 							contentChanges = new[] { new TextDocumentContentChangeEvent { text = text } },
@@ -235,7 +235,15 @@ namespace HidemaruLspClient
 			param.textDocument.version	= contentsVersion;			
 			client_.Send.TextDocumentDidChange(param);
 		}
-
+		
+		[LogMethod]
+		void IWorker.DidClose(string absFilename)
+        {
+			var sourceUri = new Uri(absFilename);
+			var param = new DidCloseTextDocumentParams();
+			param.textDocument.uri = sourceUri.AbsoluteUri;
+			client_.Send.TextDocumentDidClose(param);
+		}
 		[LogMethod]
 		/// <summary>
 		/// 
@@ -294,23 +302,62 @@ namespace HidemaruLspClient
 			}
 			return fs.Name;
 		}
-		#region Diagnostics
-		[LogMethod]
-		IPublishDiagnosticsParams IWorker.Diagnostics(string absFilename)
-		{			
-			var notification=client_.PullTextDocumentPublishDiagnostics(new Uri(absFilename).AbsoluteUri);
-			test_= new PublishDiagnosticsParamsImpl(notification);
-			return test_;
+		#region Diagnostics		
+
+		[LogMethod]		
+		IPublishDiagnosticsParamsContainer IWorker.PullDiagnosticsParams()
+		{
+			var diagnostics = client_.PullTextDocumentPublishDiagnostics();
+			PublishDiagnosticsParamsImpl[] dst = new PublishDiagnosticsParamsImpl[diagnostics.Length];
+			
+			int i = 0;
+			foreach(var item in diagnostics)
+            {
+				dst[i] = new PublishDiagnosticsParamsImpl(item);
+				++i;
+            }
+			return new PublishDiagnosticsParamsContainerImpl(dst);
 		}
-		PublishDiagnosticsParamsImpl test_;
-		sealed class PublishDiagnosticsParamsImpl : IPublishDiagnosticsParams
+
+		sealed class PublishDiagnosticsParamsContainerImpl: IPublishDiagnosticsParamsContainer
         {
-			PublishDiagnosticsParams param_;
-			DiagnosticImpl[] diagnostics_;
+			readonly PublishDiagnosticsParamsImpl[] diagnosticsParams_;
+			public PublishDiagnosticsParamsContainerImpl(PublishDiagnosticsParamsImpl[] diagnosticsParams)
+            {
+				diagnosticsParams_ = diagnosticsParams;
+			}
+			#region implement
+			long IPublishDiagnosticsParamsContainer.Length => diagnosticsParams_.Length;
+
+            IPublishDiagnosticsParams IPublishDiagnosticsParamsContainer.Item(long index)
+            {
+				return diagnosticsParams_[index];
+			}
+			#endregion
+		}
+		sealed class PublishDiagnosticsParamsImpl : HidemaruLspClient_BackEndContract.IPublishDiagnosticsParams
+		{
+			readonly PublishDiagnosticsParams	param_;
+			readonly DiagnosticImpl[]			diagnostics_;
 			public PublishDiagnosticsParamsImpl(PublishDiagnosticsParams param)
             {
 				param_ = param;
-			}
+
+				if ((param_ == null) || (param_.diagnostics == null))
+				{
+					diagnostics_ = new DiagnosticImpl[0];
+					return;
+				}
+
+				diagnostics_ = new DiagnosticImpl[param_.diagnostics.Length];
+				int i = 0;
+				foreach (var item in param_.diagnostics)
+				{
+					diagnostics_[i] = new DiagnosticImpl(item);
+					++i;
+				}
+			}			
+            #region implement
             string IPublishDiagnosticsParams.uri
 			{
                 get
@@ -333,58 +380,101 @@ namespace HidemaruLspClient
 					return param_.version;
 				} 
 			}
-			void initializeDiagnostics()
-            {
-				if (diagnostics_ != null)
-				{
-					return;
-				}
-				if ((param_ == null) || (param_.diagnostics == null))
-				{
-					diagnostics_ = new DiagnosticImpl[0];
-					return;
-				}
-				
-				diagnostics_ = new DiagnosticImpl[param_.diagnostics.Length];
-				int i = 0;
-				foreach (var item in param_.diagnostics)
-				{
-					diagnostics_[i].Initialize(item.range);
-					++i;
-				}
-			}
-			long IPublishDiagnosticsParams.getDiagnosticsLength()
+			
+            long IPublishDiagnosticsParams.Length
 			{
-				initializeDiagnostics();
-				return diagnostics_.Length;
+				get
+				{
+					return diagnostics_.Length;
+				}
 			}
-			IDiagnostic IPublishDiagnosticsParams.getDiagnostics(long index)
+
+            IDiagnostic IPublishDiagnosticsParams.Item(long index)
             {
-				initializeDiagnostics();
 				return diagnostics_[index];
-            }
-        }
-		sealed class DiagnosticImpl : IDiagnostic
-        {
-			LSP.Model.IRange param_;
-			public void Initialize(LSP.Model.IRange range) {
-				param_ = range;
 			}
-            IRange IDiagnostic.range => throw new NotImplementedException();
+            #endregion
+        }
+        sealed class DiagnosticImpl : HidemaruLspClient_BackEndContract.IDiagnostic
+		{
+			readonly LSP.Model.Diagnostic diagnostic_;
+			readonly RangeImpl range_;
+			public  DiagnosticImpl(LSP.Model.Diagnostic diagnostic) {
+				diagnostic_ = diagnostic;
+				range_ = new RangeImpl(diagnostic.range.start, diagnostic.range.end);
+			}
+			#region implement
+			HidemaruLspClient_BackEndContract.IRange HidemaruLspClient_BackEndContract.IDiagnostic.range => range_;
+
+            public HidemaruLspClient_BackEndContract.DiagnosticSeverity severity => (HidemaruLspClient_BackEndContract.DiagnosticSeverity)diagnostic_.severity;
+
+            public string code
+            {
+                get
+                {
+                    if (diagnostic_.code == null)
+                    {
+						return "";
+                    }
+                    return diagnostic_.code.ToString();
+                }
+            }
+
+            public string source
+            {
+                get
+                {
+                    if (diagnostic_.source == null)
+                    {
+						return "";
+                    }
+                    return diagnostic_.source;
+                }
+            }
+
+            public string message
+            {
+                get
+                {
+                    if (diagnostic_.message == null)
+                    {
+						return "";
+                    }
+					return diagnostic_.message;
+                }
+            }
+            #endregion
         }
 		
-        sealed class RangeImpl : IRange
+        sealed class RangeImpl : HidemaruLspClient_BackEndContract.IRange
         {
-            IPosition IRange.start => throw new NotImplementedException();
+			readonly PositionImpl start_;
+			readonly PositionImpl end_;
+			public RangeImpl(LSP.Model.IPosition start, LSP.Model.IPosition end) {
+				start_ = new PositionImpl(start);
+				end_ = new PositionImpl(end);
+			}
+			#region implement
+			HidemaruLspClient_BackEndContract.IPosition HidemaruLspClient_BackEndContract.IRange.start => start_;
 
-            IPosition IRange.end => throw new NotImplementedException();
-        }
-        sealed class PositionImpl : IPosition
+			HidemaruLspClient_BackEndContract.IPosition HidemaruLspClient_BackEndContract.IRange.end => end_;
+			#endregion
+		}
+        sealed class PositionImpl : HidemaruLspClient_BackEndContract.IPosition
         {
-            public long character => throw new NotImplementedException();
+			readonly LSP.Model.IPosition pos_;
+			public PositionImpl(LSP.Model.IPosition pos)
+            {
+				pos_ = pos;
+			}
+			#region implement
+			long HidemaruLspClient_BackEndContract.IPosition.character => pos_.character;
 
-            public long line => throw new NotImplementedException();
-        }
+            long HidemaruLspClient_BackEndContract.IPosition.line => pos_.line;
+			#endregion
+		}
+
+
         #endregion
         #endregion
     }

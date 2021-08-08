@@ -8,19 +8,21 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using COMRegistration;
+using HidemaruLspClient_BackEndContract;
 
 
 namespace HidemaruLspClient
 {
     class Program
     {
+        static DllAssemblyResolver dasmr = new DllAssemblyResolver();
+
 #if EMBEDDED_TYPE_LIBRARY
         //private static readonly string tlbPath = exePath;
         private static readonly string tlbPath="";
-#else        
-        
-        private static readonly string tlbPath_x86 = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_IDL\Debug\HidemaruLspClient_BackEnd.tlb");
-        private static readonly string tlbPath_x64 = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_IDL\x64\Debug\HidemaruLspClient_BackEnd.tlb");
+#else
+        private static readonly string tlbPath_x86 = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_Contract\bin\x86\HidemaruLspClient_BackEndContract.tlb");
+        private static readonly string tlbPath_x64 = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.tlb");
 #endif
 
         static int Main(string[] args)
@@ -41,35 +43,39 @@ namespace HidemaruLspClient
                 
                 if (!File.Exists(tlbPath))
                 {
-                    Trace.WriteLine("Not found .tlb");
+                    Trace.WriteLine($"Not found {tlbPath}");
                     return 1;
                 }
 
+                var ServerClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
                 if (args.Length == 1)
-                {
+                {                    
                     string regCommandMaybe = args[0];
                     var exePath = Process.GetCurrentProcess().MainModule.FileName;
-                    var progId = Attribute.GetCustomAttribute(typeof(HidemaruLspBackEndServer), typeof(ProgIdAttribute)) as ProgIdAttribute;
-                    
+#if false
+                    ProgIdAttribute progId = Attribute.GetCustomAttribute(typeof(HidemaruLspBackEndServer), typeof(ProgIdAttribute)) as ProgIdAttribute;
+#else
+                    ProgIdAttribute progId = null;
+#endif
                     switch (regCommandMaybe.ToLower()) {
                         case "/regserver":
                         case "-regserver":
-                            LocalServer.RegisterToLocalMachine(LspContract.Constants.ServerClassGuid, progId, exePath, tlbPath);
+                            LocalServer.RegisterToLocalMachine(ServerClassGuid, progId, exePath, tlbPath);
                             return 0;
 
                         case "/unregserver":
                         case "-unregserver":                    
-                            LocalServer.UnregisterFromLocalMachine(LspContract.Constants.ServerClassGuid, progId, tlbPath);
+                            LocalServer.UnregisterFromLocalMachine(ServerClassGuid, progId, tlbPath);
                             return 0;
 
                         case "/regserverperuser":
                         case "-regserverperuser":
-                            LocalServer.RegisterToCurrentUser(LspContract.Constants.ServerClassGuid, progId, exePath, tlbPath);
+                            LocalServer.RegisterToCurrentUser(ServerClassGuid, progId, exePath, tlbPath);
                             return 0;
 
                         case "/unregserverperuser":
                         case "-unregserverperuser":                    
-                            LocalServer.UnregisterToCurrentUser(LspContract.Constants.ServerClassGuid, progId, tlbPath);
+                            LocalServer.UnregisterToCurrentUser(ServerClassGuid, progId, tlbPath);
                             return 0;
                         
                         case "/?":
@@ -79,18 +85,19 @@ namespace HidemaruLspClient
                         case "--help":
                             Usage();
                             return 0;
-#if false
+#if true
                         default:
                             Console.WriteLine(string.Format("Unknown argument. {0}", regCommandMaybe));
                             //Trace.WriteLine("Unknown argument. {0}", );
-                            return 1;
+                            //return 1;
+                            break;
 #endif
                     }
                 }
 
                 using (var server = new LocalServer())
                 {
-                    server.RegisterClass<HidemaruLspBackEndServer>(LspContract.Constants.ServerClassGuid);
+                    server.RegisterClass<HidemaruLspBackEndServer>(ServerClassGuid);
                     server.Run();
                 }
                 Trace.WriteLine("[Finish]exe");

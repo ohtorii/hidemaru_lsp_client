@@ -13,8 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\HidemaruLspClient_Contract\Contract.cs" Link="COM\Contract.cs" />
-    <Compile Include="..\HidemaruLspClient_Contract\IServer.cs" Link="COM\IServer.cs" />
+    <Compile Include="..\HidemaruLspClient_FrontEnd\DllAssemblyResolver.cs" Link="DllAssemblyResolver.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +21,21 @@
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NLog" Version="4.7.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'AnyCPU'">
+      <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'x64'">
+      <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'x86'">
+      <HintPath>..\HidemaruLspClient_Contract\bin\x86\HidemaruLspClient_BackEndContract.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
   </ItemGroup>
 
   <Import Project="..\LanguageServerProtocol\LanguageServerProtocol.projitems" Label="Shared" />

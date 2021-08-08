@@ -71,23 +71,33 @@ main:
         keepobject ##obj, 2;
     }
 
-
-    $$diagnostics=callmethod_returnstr(##obj, "Diagnostics",filename2);
-    message $$diagnostics;
-    return true;
-
-
-
-    //Memo: -1して0始まりにする
-    $$dictionalyFileName=callmethod_returnstr(##obj, "Completion",filename2,lineno-1,column_wcs);
-    if($$dictionalyFileName==""){
-        message "Completion に失敗";
-        return false;
+    if(false){
+        $$diagnostics=callmethod_returnstr(##obj, "Diagnostics");
+        message $$diagnostics;
+        ##outputHandle=loaddll("HmOutputPane.dll");
+        if($$diagnostics==""){
+            ##h=dllfunc(##outputHandle,"GetWindowHandle",hidemaruhandle(0));
+            ##ret=sendmessage(##h,0x111/*WM_COMMAND*/,1009,0);//1009=クリア
+        }else{
+            ##ret=dllfunc(##outputHandle,"Output",hidemaruhandle(0),$$diagnostics);
+        }
+        freedll(##outputHandle);
+        return true;
     }
 
-    //Memo: マクロは中断される
-    autocomplete 0, 0x00000002|0x00000004,0x00008020,$$dictionalyFileName;
-    //Memo: マクロはこの行に到達しない
+
+    if(true){
+        //Memo: -1して0始まりにする
+        $$dictionalyFileName=callmethod_returnstr(##obj, "Completion",lineno-1,column_wcs);
+        if($$dictionalyFileName==""){
+            message "Completion に失敗";
+            return false;
+        }
+
+        //Memo: マクロは中断される
+        autocomplete 0, 0x00000002|0x00000004,0x00008050,$$dictionalyFileName;
+        //Memo: マクロはこの行に到達しない
+    }
 
     return true;
 

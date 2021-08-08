@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="BackEnd.idl">
+    <Midl Include="BackEndContract.idl">
       <Filter>ソース ファイル</Filter>
     </Midl>
   </ItemGroup>

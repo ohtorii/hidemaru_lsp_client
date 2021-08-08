@@ -134,6 +134,11 @@ namespace LSP.Client
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
 			Notification(param, "textDocument/didChange");
 		}
+		public void TextDocumentDidClose(IDidCloseTextDocumentParams param)
+        {
+			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
+			Notification(param, "textDocument/didClose");
+		}
 		public RequestId TextDocumentCompletion(ICompletionParams param)
 		{
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);

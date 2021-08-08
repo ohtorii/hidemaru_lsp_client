@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if false 
+using System;
 using System.Runtime.InteropServices;
 
 /*Memo: メンバの並び順はIDL定義ファイルと合わせること。
@@ -70,12 +71,18 @@ public interface IWorker
     /// <param name="column"></param>
     /// <returns>単語一覧のファイル名</returns>
     string Completion(string absFilename, long line, long column);
+    
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="absFilename"></param>
     /// <returns></returns>
-    IPublishDiagnosticsParams Diagnostics(string absFilename);
+    long GetDiagnosticsParamsLength();
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    IPublishDiagnosticsParams GetDiagnosticsParams(long index);
 }
 
 [ComVisible(true)]
@@ -96,3 +103,4 @@ public interface IHidemaruLspBackEndServer
     void DestroyWorker(IWorker worker);
 }
 
+#endif

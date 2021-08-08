@@ -111,7 +111,7 @@ namespace LSP.Model
 	}
 	class TextDocumentIdentifier : ITextDocumentIdentifier
 	{
-		public string uri { get; set; }
+		public DocumentUri uri { get; set; }
 	}
 	interface IVersionedTextDocumentIdentifier : ITextDocumentIdentifier
 	{

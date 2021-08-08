@@ -129,9 +129,9 @@ namespace LSP.Client
         {
 			return Send.QueryResponse(id, millisecondsTimeout);
         }
-		public PublishDiagnosticsParams PullTextDocumentPublishDiagnostics(string textDocumentUri)
+		public PublishDiagnosticsParams[] PullTextDocumentPublishDiagnostics()
         {
-			return clientEvents_.PullTextDocumentPublishDiagnostics(textDocumentUri);
+			return clientEvents_.PullTextDocumentPublishDiagnostics();
 		}
 	}
 }

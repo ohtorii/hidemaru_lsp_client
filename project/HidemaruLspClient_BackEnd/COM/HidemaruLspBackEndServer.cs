@@ -6,13 +6,15 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using HidemaruLspClient_BackEndContract;
+
 
 namespace HidemaruLspClient
 {
-    [ComVisible(true)]
+    /*[ComVisible(true)]
     [Guid(LspContract.Constants.ServerClass)]
     [ProgId(LspContract.Constants.ProgId)]
-    [ComDefaultInterface(typeof(IHidemaruLspBackEndServer))]
+    [ComDefaultInterface(typeof(IHidemaruLspBackEndServer))]*/
     public sealed partial class HidemaruLspBackEndServer : IHidemaruLspBackEndServer
     {
         static LspClientLogger lspClientLogger_ = null;
@@ -76,7 +78,7 @@ namespace HidemaruLspClient
         /// コンストラクタ
         /// (Memo)アウトプロセスサーバなので createobject するたびに呼ばれる
         /// </summary>        
-        bool IHidemaruLspBackEndServer.Initialize(string logFileName)
+        sbyte IHidemaruLspBackEndServer.Initialize(string logFileName)
         {
             if (lspClientLogger_ == null)
             {
@@ -91,9 +93,9 @@ namespace HidemaruLspClient
             catch (Exception e)
             {
                 logger.Error(e);
-                return false;
+                return Convert.ToSByte(false);
             }
-            return true;
+            return Convert.ToSByte(true);
         }
         ILspClientLogger IHidemaruLspBackEndServer.GetLogger()
         {

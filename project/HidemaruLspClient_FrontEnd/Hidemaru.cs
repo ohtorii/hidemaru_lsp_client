@@ -11,28 +11,32 @@ namespace HidemaruLspClient_FrontEnd
     class Hidemaru
     {
 		static bool initialized_ = false;
-		[DllImport("kernel32.dll")]
-		public static extern IntPtr GetModuleHandle(string lpFileName);
+
 		
-		[DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
-		static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
 
-		[DllImport("kernel32.dll")]
-		static extern IntPtr GlobalLock(IntPtr hMem);
-		[DllImport("kernel32.dll")]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool GlobalUnlock(IntPtr hMem);
-		[DllImport("kernel32.dll")]
-		static extern IntPtr GlobalFree(IntPtr hMem);
 
-		[DllImport("kernel32.dll", SetLastError = true)]
-		private static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, uint dwProcessId);
-		[DllImport("kernel32.dll")]
-		private static extern bool CloseHandle(IntPtr handle);
-
-		const uint PROCESS_ALL_ACCESS = 0x1F0FFF;
-		delegate IntPtr Delegate_Hidemaru_GetTotalTextUnicode();
+        //const uint PROCESS_ALL_ACCESS = 0x1F0FFF;
+        #region Hidemaru-API
+        delegate IntPtr Delegate_Hidemaru_GetTotalTextUnicode();
 		static Delegate_Hidemaru_GetTotalTextUnicode Hidemaru_GetTotalTextUnicode;
+		
+		delegate IntPtr Delegate_Hidemaru_GetCurrentWindowHandle();
+		static Delegate_Hidemaru_GetCurrentWindowHandle Hidemaru_GetCurrentWindowHandle;
+
+		#endregion
+
+
+		class Constant
+        {
+			public const int WM_USER = 0x400;
+			public const int WM_HIDEMARUINFO = WM_USER + 181;			
+
+			public const int HIDEMARUINFO_GETTABWIDTH = 0;
+			public const int HIDEMARUINFO_GETSTARTCOLUMN = 1;
+			public const int HIDEMARUINFO_GETSPACETAB = 2;
+			public const int HIDEMARUINFO_GETMANUALTAB = 3;
+			public const int HIDEMARUINFO_GETFILEFULLPATH = 4;
+		}
 
 		static public void Initialize()
         {
@@ -40,10 +44,11 @@ namespace HidemaruLspClient_FrontEnd
             {
 				return;
             }
-			IntPtr hmod = GetModuleHandle(null); //hidemaru.exe自身
-			IntPtr pfnHidemaru_GetCurrentWindowHandle = GetProcAddress(hmod, "Hidemaru_GetTotalTextUnicode");
-			//Debug.Assert(pfnHidemaru_GetCurrentWindowHandle != IntPtr.Zero);
-            Hidemaru_GetTotalTextUnicode = (Delegate_Hidemaru_GetTotalTextUnicode)Marshal.GetDelegateForFunctionPointer(pfnHidemaru_GetCurrentWindowHandle, typeof(Delegate_Hidemaru_GetTotalTextUnicode));
+			IntPtr hmod = Dll.GetModuleHandle(null); //hidemaru.exe自身
+			
+            Hidemaru_GetTotalTextUnicode   = (Delegate_Hidemaru_GetTotalTextUnicode)Marshal.GetDelegateForFunctionPointer(Dll.GetProcAddress(hmod, "Hidemaru_GetTotalTextUnicode"), typeof(Delegate_Hidemaru_GetTotalTextUnicode));			
+			Hidemaru_GetCurrentWindowHandle= (Delegate_Hidemaru_GetCurrentWindowHandle)Marshal.GetDelegateForFunctionPointer(Dll.GetProcAddress(hmod, "Hidemaru_GetCurrentWindowHandle"), typeof(Delegate_Hidemaru_GetCurrentWindowHandle));
+
 			initialized_ = true;
 		}
         public static string GetTotalTextUnicode()
@@ -52,15 +57,22 @@ namespace HidemaruLspClient_FrontEnd
 			var hGlobal = Hidemaru_GetTotalTextUnicode();
 			if (hGlobal != IntPtr.Zero)
 			{
-				var pwsz = GlobalLock(hGlobal);
+				var pwsz = Dll.GlobalLock(hGlobal);
 				if (pwsz != IntPtr.Zero)
 				{
 					result = Marshal.PtrToStringUni(pwsz);
-					GlobalUnlock(hGlobal);
+					Dll.GlobalUnlock(hGlobal);
 				}
-				GlobalFree(hGlobal);
+				Dll.GlobalFree(hGlobal);
 			}
 			return result;
+		}
+		public static string GetFileFullPath()
+        {
+			var hwndHidemaru = Hidemaru_GetCurrentWindowHandle();
+			var sb = new StringBuilder(512);
+			var cwch = Dll.SendMessage(hwndHidemaru, Constant.WM_HIDEMARUINFO, new IntPtr(Constant.HIDEMARUINFO_GETFILEFULLPATH), sb);
+			return sb.ToString();
 		}
 	}
 }

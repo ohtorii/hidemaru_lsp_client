@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Client\ClientEvents.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\NullLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\Sender.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\DidCloseTextDocument.cs" />
     <Compile Include="..\LanguageServerProtocol\Client\ILogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\RequestIdGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\StdioClient.cs" />

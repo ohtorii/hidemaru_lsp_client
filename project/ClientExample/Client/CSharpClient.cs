@@ -31,6 +31,9 @@ namespace ClientExample
             var FileName = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\AppData\Local\vim-lsp-settings\servers\omnisharp-lsp\OmniSharp.exe");
             var Arguments = string.Format(@"-lsp -v --source ""{0}"" --hostPID {1} --encoding utf-8", solutionFileName, System.Diagnostics.Process.GetCurrentProcess().Id);
             var WorkingDirectory = @"";
+#elif false
+            //Todo 後で動作確認を行う(OmniSharp)
+            Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\\.vscode\extensions\ms-dotnettools.csharp-1.23.14\.omnisharp\1.37.14\OmniSharp.exe");
 #endif
 
             var client = new LSP.Client.StdioClient();

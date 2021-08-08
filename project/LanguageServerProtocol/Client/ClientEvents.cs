@@ -95,23 +95,30 @@ namespace LSP.Client
             {
 				return;
             }
-			publishDiagnostics_[makePublishDiagnosticsKey(param.uri)] = param;
+			lock (publishDiagnostics_)
+			{
+				publishDiagnostics_[makePublishDiagnosticsKey(param.uri)] = param;
+			}
 		}
 		/// <summary>
 		/// ‘textDocument/publishDiagnostics’通知を取得する
-		/// </summary>
-		/// <param name="textDocumentUri">ドキュメントのURI</param>
+		/// </summary>		
 		/// <returns>対応するドキュメントURIが存在していればnull以外、存在しなければnull</returns>
-		public PublishDiagnosticsParams PullTextDocumentPublishDiagnostics(string textDocumentUri)
+		public PublishDiagnosticsParams[] PullTextDocumentPublishDiagnostics()
         {
-			var key = makePublishDiagnosticsKey(textDocumentUri);
-            if (publishDiagnostics_.ContainsKey(key) == false)
-            {
-				return null;
-            }
-			var value = publishDiagnostics_[key];
-			publishDiagnostics_.Remove(key);
-			return value;
+			PublishDiagnosticsParams[] result;
+			int index = 0;
+			lock (publishDiagnostics_)
+			{
+				result = new PublishDiagnosticsParams[publishDiagnostics_.Count];
+				foreach (var item in publishDiagnostics_)
+				{
+					result[index] = item.Value;
+					++index;
+				}
+				publishDiagnostics_.Clear();
+			}
+			return result;
         }
         #endregion
     }

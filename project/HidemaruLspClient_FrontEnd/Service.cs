@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using System.Threading.Tasks;
+using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient_FrontEnd
 {    
@@ -21,16 +17,48 @@ namespace HidemaruLspClient_FrontEnd
 
         IHidemaruLspBackEndServer server_ = null;
         IWorker worker_ = null;
-        ILspClientLogger logger_ = null;                
+        ILspClientLogger logger_ = null;        
 
         class Document
         {
-            public string Filename { get; set; } = "";
-            public Uri Uri { get; set; } = null;
-            public int ContentsVersion { get; set; } = 1;
-            public int ContentsHash { get; set; } = 0;
+            string Filename_;
+            Uri Uri_;
+            int ContentsVersion_;
+            int ContentsHash_;
+
+            public string Filename { get { return this.Filename_; } }
+            public Uri Uri { get { return this.Uri_; } }
+            public int ContentsVersion { get { return this.ContentsVersion_; } }
+            public int ContentsHash { get { return this.ContentsHash_; } }
+
+            public Document()
+            {
+                Initialize();
+            }
+            public void Setup(string filename, Uri uri, int contentsVersion, int contentsHash)
+            {
+                this.Filename_ = filename;
+                this.Uri_ = uri;
+                this.ContentsVersion_ = contentsVersion;
+                this.ContentsHash_ = contentsHash;
+            }
+            public void Clear()
+            {
+                Initialize();
+            }
+            public void IncrementContentsVersion(){
+                ++this.ContentsVersion_;
+            }
+
+
+            void Initialize() {
+                Filename_ = "";
+                Uri_ = null;
+                ContentsVersion_ = 1;
+                ContentsHash_ = 0;
+            }
         }
-        Document openedFile = new Document();
+        Document openedFile_ = new Document();
 
         enum DigOpenStatus
         {
@@ -72,14 +100,15 @@ namespace HidemaruLspClient_FrontEnd
                 if (server_ == null)
                 {
                     //事前にBackEndをspawnしたほうが良いと思う
+                    var ServerClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
                     object obj;
-                    int hr = Ole32.CoCreateInstance(LspContract.Constants.ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
+                    int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
                     if (hr < 0)
                     {
                         Marshal.ThrowExceptionForHR(hr);
                     }
                     server_ = (IHidemaruLspBackEndServer)obj;
-                    var ret = server_.Initialize(logFilename);
+                    var ret = Convert.ToBoolean(server_.Initialize(logFilename));
                     if (ret)
                     {                     
                         logger_     = server_.GetLogger();
@@ -142,50 +171,54 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
+                logger_.Trace("CreateWorker@enter");
                 Debug.Assert(worker_ == null);
 
+                logger_.Trace("CreateWorker@1");
                 var options = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
                 if (options == null)
                 {
                     return false;
-                }                
-                worker_=server_.CreateWorker(
+                }
+                logger_.Trace("CreateWorker@2");
+                worker_ =server_.CreateWorker(
                             options.ServerName,
                             options.ExcutablePath, 
                             options.Arguments,
                             options.RootUri,
                             options.WorkspaceConfig);
+                logger_.Trace("CreateWorker@3");
                 if (worker_ == null)
                 {
                     return false;
                 }
+                logger_.Trace("CreateWorker@4");
                 return true;
             }
             catch (Exception e)
             {
                 logger_.Error(e.ToString());
             }
+            logger_.Trace("CreateWorker@exit");
             return false;
         }
-        private DigOpenStatus DigOpen(string absFilename)
+        DigOpenStatus DigOpen(string absFilename)
         {
             try
             {
                 Debug.Assert(worker_ != null);
 
-                if (openedFile.Filename == absFilename)
+                if (openedFile_.Filename == absFilename)
                 {
                     return DigOpenStatus.AlreadyOpened;
                 }
                 var text = Hidemaru.GetTotalTextUnicode();
-                var contentsVersion = 1;
-                worker_.DigOpen(absFilename, text, contentsVersion);
-
-                var sourceUri = new Uri(absFilename);
-                openedFile.Filename = absFilename;
-                openedFile.Uri = sourceUri;
-                openedFile.ContentsVersion = contentsVersion;
-                openedFile.ContentsHash = text.GetHashCode();
+                const int contentsVersion = 1;
+                worker_.DidOpen(absFilename, text, contentsVersion);                
+                openedFile_.Setup(absFilename,
+                                 new Uri(absFilename),
+                                 contentsVersion,
+                                 text.GetHashCode());
                 return DigOpenStatus.Opened;
             }
             catch (Exception e)
@@ -197,23 +230,24 @@ namespace HidemaruLspClient_FrontEnd
             }
             return DigOpenStatus.Failed;
         }
-        private DigChangeStatus DigChange(string absFilename)
+        DigChangeStatus DigChange()
         {
             try
             {
                 Debug.Assert(worker_ != null);
-                Debug.Assert(openedFile.Filename == absFilename);
+                Debug.Assert(string.IsNullOrEmpty(openedFile_.Filename) == false);
+
                 var text = Hidemaru.GetTotalTextUnicode();
                 {
                     var currentHash = text.GetHashCode();
-                    var prevHash = openedFile.ContentsHash;
+                    var prevHash = openedFile_.ContentsHash;
                     if (currentHash == prevHash)
                     {
                         return DigChangeStatus.NoChanged;
                     }
                 }
-                ++openedFile.ContentsVersion;
-                worker_.DigChange(absFilename, text, openedFile.ContentsVersion);
+                openedFile_.IncrementContentsVersion();
+                worker_.DidChange(openedFile_.Filename, text, openedFile_.ContentsVersion);
                 return DigChangeStatus.Changed;
             }catch(Exception e)
             {
@@ -224,36 +258,102 @@ namespace HidemaruLspClient_FrontEnd
             }
             return DigChangeStatus.Failed;
         }
+        void DidClose()
+        {
+            Debug.Assert(worker_ != null);
+            Debug.Assert(string.IsNullOrEmpty(openedFile_.Filename) == false);
+
+            worker_.DidClose(openedFile_.Filename);
+            openedFile_.Clear();
+        }
+        /// <summary>
+        /// ファイルの処理
+        /// </summary>
+        /// <returns>現在、秀丸エディタで開いているファイルの絶対パス</returns>
+        string FileProc()
+        {
+            const string fileNotFound = "";
+            Func<string, string> fncDidOpen = (absFileName) =>
+            {                
+                switch (DigOpen(absFileName))
+                {
+                    case DigOpenStatus.Opened:
+                        return absFileName;
+                    
+                    case DigOpenStatus.AlreadyOpened:
+                        return absFileName;
+                    
+                    case DigOpenStatus.Failed:
+                        logger_.Warn("DigOpenStatus.Failed");
+                        return fileNotFound;
+
+                    default:
+                        logger_.Warn("DigOpenStatus.???");
+                        break;
+                }
+                return fileNotFound;
+            };
+
+            string currentHidemaruFilePath;
+            if (String.IsNullOrEmpty(openedFile_.Filename))
+            {
+                //初めてファイルを開く場合
+                currentHidemaruFilePath = Hidemaru.GetFileFullPath();
+                if (String.IsNullOrEmpty(currentHidemaruFilePath))
+                {
+                    return fileNotFound;
+                }
+                return fncDidOpen(currentHidemaruFilePath);
+            }
+            
+            //
+            //2回目以降にファイルを開く場合
+            //
+            currentHidemaruFilePath = Hidemaru.GetFileFullPath();
+            if (string.IsNullOrEmpty(currentHidemaruFilePath))
+            {
+                //秀丸エディタのファイルが閉じた場合
+                DidClose();
+                return fileNotFound;
+            }            
+
+            if (openedFile_.Filename == currentHidemaruFilePath)
+            {
+                //秀丸エディタで前回と同じファイルを開いている場合
+                if (DigChange() == DigChangeStatus.Failed)
+                {
+                    logger_.Warn("DigChangeStatus.Failed");
+                    return fileNotFound;
+                }
+                return currentHidemaruFilePath;
+            }
+            
+            //秀丸エディタで前回と異なるファイルを開いた場合
+            DidClose();
+            return fncDidOpen(currentHidemaruFilePath);
+        }
+
         /// <summary>
         /// textDocument/completion
         /// </summary>
         /// <param name="absFilename"></param>
         /// <param name="line"></param>
         /// <param name="column"></param>
-        /// <returns>辞書ファイル名</returns>
-        public string Completion(string absFilename, long line, long column)
+        /// <returns>一時的な辞書ファイル名（ファイルはCOM側で一定時間後に削除します）</returns>
+        public string Completion(long line, long column)
         {
-            Debug.Assert(worker_ != null);
             try
             {
-                switch (DigOpen(absFilename))
+                Debug.Assert(worker_ != null);
+
+                var absFileName=FileProc();
+                if (String.IsNullOrEmpty(absFileName))
                 {
-                    case DigOpenStatus.Opened:
-                        //pass
-                        break;
-                    case DigOpenStatus.AlreadyOpened:
-                        if (DigChange(absFilename) == DigChangeStatus.Failed)
-                        {
-                            return "";
-                        }
-                        break;
-                    case DigOpenStatus.Failed:
-                        return "";
-                    default:
-                        return "";
+                    return "";
                 }
-                return worker_.Completion(absFilename, line, column);
-            }catch(Exception e)
+                return worker_.Completion(absFileName, line, column);
+            }
+            catch(Exception e)
             {
                 logger_.Error(e.ToString());
             }
@@ -261,31 +361,49 @@ namespace HidemaruLspClient_FrontEnd
         }
         /// <summary>
         /// textDocument/publishDiagnostics
-        /// </summary>
-        /// <param name="absFilename"></param>
-        /// <returns>改行区切りの文字列</returns>
-        public string Diagnostics(string absFilename)
+        /// </summary>        
+        /// <returns>秀丸エディタのアウトプット枠へ出力する文字列</returns>
+        public string Diagnostics()
         {
-            Debug.Assert(worker_ != null);
+            //Todo: COMサーバから「秀丸エディタのアウトプット枠へ出力する文字列」を返すようにする（もっと単純にする）
             try
             {
-                var notification = worker_.Diagnostics(absFilename);
-                if (notification == null)
+                Debug.Assert(worker_ != null);
+
+                var sb        = new StringBuilder();
+                var container = worker_.PullDiagnosticsParams();
+                for(long i=0; i< container.Length; ++i)
                 {
-                    return "";
+                    FormatDiagnostics(sb,container.Item(i));
                 }
-                var length = notification.getDiagnosticsLength();
-                for (long i = 0; i < length; ++i)
-                {
-                    var diagnostic=notification.getDiagnostics(i);
-                    //diagnostic.range.
-                }
-            }catch(Exception e)
+                return sb.ToString();
+            }
+            catch(Exception e)
             {
-                return "";
+                logger_.Error(e.ToString());
+            }
+            return "";
+        }
+        static void FormatDiagnostics(StringBuilder sb, IPublishDiagnosticsParams diagnosticsParams)
+        {
+            var uri      = new Uri(diagnosticsParams.uri);
+            var filename = uri.LocalPath;
+            for (long i = 0; i < diagnosticsParams.Length; ++i)
+            {
+                var diagnostic = diagnosticsParams.Item(i);
+                var severity   = diagnostic.severity;
+                if (severity <= /*DiagnosticSeverity.Error*/ DiagnosticSeverity.Warning)
+                {
+                    //+1して秀丸エディタの行番号(1開始)にする
+                    var line    = diagnostic.range.start.line + 1;
+                    var code    = diagnostic.code;
+                    var message = diagnostic.message;
+
+                    //Memo: 秀丸エディタのアウトプット枠へ出力するには \r\n が必要。
+                    sb.Append($"{filename}({line}):  {code} {message}\r\n");
+                }
             }
         }
-
 
 
 

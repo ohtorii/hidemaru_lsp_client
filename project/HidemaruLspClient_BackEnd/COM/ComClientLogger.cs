@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient
 {
-    [ComVisible(true)]
+    /*[ComVisible(true)]
     [Guid("733283BC-3011-434F-A93C-B517DAD1B8B4")]
-    [ComDefaultInterface(typeof(ILspClientLogger))]
+    [ComDefaultInterface(typeof(ILspClientLogger))]*/
     public sealed class ComClientLogger : ILspClientLogger
     {
 		LSP.Client.ILogger logger_ = null;
@@ -14,44 +15,44 @@ namespace HidemaruLspClient
 			logger_ = logger;
 
 		}
-		public bool IsFatalEnabled { get { return logger_.IsFatalEnabled; } }
+        sbyte ILspClientLogger.IsFatalEnabled => Convert.ToSByte(logger_.IsFatalEnabled);
 
-        public bool IsErrorEnabled { get { return logger_.IsErrorEnabled; } }
+        sbyte ILspClientLogger.IsErrorEnabled => Convert.ToSByte(logger_.IsErrorEnabled);
 
-		public bool IsWarnEnabled { get { return logger_.IsWarnEnabled; } }
+        sbyte ILspClientLogger.IsWarnEnabled => Convert.ToSByte(logger_.IsWarnEnabled);
 
-		public bool IsInfoEnabled { get { return logger_.IsInfoEnabled; } }
+        sbyte ILspClientLogger.IsInfoEnabled => Convert.ToSByte(logger_.IsInfoEnabled);
 
-		public bool IsDebugEnabled { get { return logger_.IsDebugEnabled; } }
+        sbyte ILspClientLogger.IsDebugEnabled => Convert.ToSByte(logger_.IsDebugEnabled);
 
-		public bool IsTraceEnabled { get { return logger_.IsTraceEnabled; } }
+        sbyte ILspClientLogger.IsTraceEnabled => Convert.ToSByte(logger_.IsTraceEnabled);
 
-		public void Debug(string message)
+        void ILspClientLogger.Debug(string message)
         {
 			logger_.Debug(message);
         }
 
-        public void Error(string message)
+        void ILspClientLogger.Error(string message)
         {
 			logger_.Error(message);
         }
 
-        public void Fatal(string message)
+        void ILspClientLogger.Fatal(string message)
         {
 			logger_.Fatal(message);
         }
 
-        public void Info(string message)
+        void ILspClientLogger.Info(string message)
         {
 			logger_.Info(message);
         }
 
-        public void Trace(string message)
+        void ILspClientLogger.Trace(string message)
         {
 			logger_.Trace(message);
         }
 
-        public void Warn(string message)
+        void ILspClientLogger.Warn(string message)
         {
 			logger_.Warn(message);
         }

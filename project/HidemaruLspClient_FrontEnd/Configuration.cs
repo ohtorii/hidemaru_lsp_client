@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -72,7 +72,7 @@ namespace HidemaruLspClient_FrontEnd
                     };
                     logger_.Debug(string.Format("CompilerOptions={0}", compileParameters.CompilerOptions));
                     compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);
-                    if (logger_.IsDebugEnabled)
+                    if (Convert.ToBoolean(logger_.IsDebugEnabled))
                     {
                         logger_.Debug(string.Format("compileParameters.ReferencedAssemblies[]={0}", ReferencedAssemblies.ToList()));
                     }

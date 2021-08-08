@@ -58,6 +58,9 @@ namespace ClientExample
             Console.WriteLine("==== textDocument/publishDiagnostics ====");
             publishDiagnostics(client);
 
+            Console.WriteLine("==== textDFocument/DidClose ====");
+            DigClose(client);
+
             Console.WriteLine("==== Shutdown ====");
             Shutdown(client);
 
@@ -67,13 +70,15 @@ namespace ClientExample
 
         internal virtual void publishDiagnostics(StdioClient client)
         {
-            var diagnostics = client.PullTextDocumentPublishDiagnostics(sourceUri.AbsoluteUri);
+            //Todo: あとで実装
+            /*var diagnostics = client.PullTextDocumentPublishDiagnostics(sourceUri.AbsoluteUri);
             if (diagnostics == null)
             {
                 Console.WriteLine("diagnostics==null");
                 return;
             }
             Console.WriteLine(string.Format("diagnostics.diagnostics.Length={0}", diagnostics.diagnostics.Length));
+            */
         }
         internal virtual void Completion(StdioClient client)
         {
@@ -136,7 +141,12 @@ namespace ClientExample
             param.textDocument.languageId = languageId;
             client.Send.TextDocumentDidOpen(param);
         }
-
+        internal virtual void DigClose(LSP.Client.StdioClient client)
+        {
+            var param = new DidCloseTextDocumentParams();
+            param.textDocument.uri = sourceUri.AbsoluteUri;
+            client.Send.TextDocumentDidClose(param);
+        }
         internal virtual void InitializedClient(LSP.Client.StdioClient client)
         {
             var param = new InitializedParams();
