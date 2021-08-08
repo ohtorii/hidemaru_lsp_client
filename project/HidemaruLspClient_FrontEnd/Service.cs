@@ -31,6 +31,10 @@ namespace HidemaruLspClient_FrontEnd
             public int ContentsVersion { get { return this.ContentsVersion_; } }
             public int ContentsHash { get { return this.ContentsHash_; } }
 
+            public static int CalcTextHash(string text)
+            {
+                return text.GetHashCode();
+            }
             public Document()
             {
                 Initialize();
@@ -49,7 +53,10 @@ namespace HidemaruLspClient_FrontEnd
             public void IncrementContentsVersion(){
                 ++this.ContentsVersion_;
             }
-
+            public void SetContentsHash(int hash)
+            {
+                this.ContentsHash_ = hash;
+            }
 
             void Initialize() {
                 Filename_ = "";
@@ -107,7 +114,7 @@ namespace HidemaruLspClient_FrontEnd
                 openedFile_.Setup(absFilename,
                                  new Uri(absFilename),
                                  contentsVersion,
-                                 text.GetHashCode());
+                                 Document.CalcTextHash(text));
                 return DigOpenStatus.Opened;
             }
             catch (Exception e)
@@ -119,24 +126,24 @@ namespace HidemaruLspClient_FrontEnd
             }
             return DigOpenStatus.Failed;
         }
-        DigChangeStatus DigChange()
+        DigChangeStatus TryDigChange()
         {
             try
             {
                 Debug.Assert(worker_ != null);
                 Debug.Assert(string.IsNullOrEmpty(openedFile_.Filename) == false);
 
-                var text = Hidemaru.GetTotalTextUnicode();
+                var text        = Hidemaru.GetTotalTextUnicode();                
+                var currentHash = Document.CalcTextHash(text);
+                var prevHash    = openedFile_.ContentsHash;
+                if (currentHash == prevHash)
                 {
-                    var currentHash = text.GetHashCode();
-                    var prevHash = openedFile_.ContentsHash;
-                    if (currentHash == prevHash)
-                    {
-                        return DigChangeStatus.NoChanged;
-                    }
+                    return DigChangeStatus.NoChanged;
                 }
-                openedFile_.IncrementContentsVersion();
                 worker_.DidChange(openedFile_.Filename, text, openedFile_.ContentsVersion);
+
+                openedFile_.SetContentsHash(currentHash);
+                openedFile_.IncrementContentsVersion();
                 return DigChangeStatus.Changed;
             }catch(Exception e)
             {
@@ -209,7 +216,7 @@ namespace HidemaruLspClient_FrontEnd
             if (openedFile_.Filename == currentHidemaruFilePath)
             {
                 //秀丸エディタで前回と同じファイルを開いている場合
-                if (DigChange() == DigChangeStatus.Failed)
+                if (TryDigChange() == DigChangeStatus.Failed)
                 {
                     logger_.Warn("DigChangeStatus.Failed");
                     return fileNotFound;
