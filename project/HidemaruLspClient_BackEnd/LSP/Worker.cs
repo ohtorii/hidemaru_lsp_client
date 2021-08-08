@@ -50,7 +50,12 @@ namespace HidemaruLspClient
 		/// completionで返した一時ファイル名
 		/// </summary>
 		TempFileOne prevCompletionTempFile_ =new TempFileOne();
-		
+
+		/// <summary>
+		/// 秀丸エディタのProcessId
+		/// </summary>
+		long hidemaruProcessId_;
+
 		public Worker(LspKey key)
         {
 			this.key = key;
@@ -71,7 +76,8 @@ namespace HidemaruLspClient
 				string ExcutablePath,
 				string Arguments,
 				string RootUri,
-				string WorkspaceConfig)
+				string WorkspaceConfig,
+				long   HidemaruProcessId)
 		{			
 			if (client_ != null)
 			{//起動済み
@@ -85,7 +91,7 @@ namespace HidemaruLspClient
 				RootUri			= RootUri,
                 WorkspaceConfig = WorkspaceConfig,
 			};
-
+			hidemaruProcessId_ = HidemaruProcessId;
 			if (!InitializeClient())
 			{
 				return false;

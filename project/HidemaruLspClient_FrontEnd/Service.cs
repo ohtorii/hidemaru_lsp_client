@@ -185,13 +185,15 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     return false;
                 }
+                var hidemaruProcess = System.Diagnostics.Process.GetCurrentProcess();
                 logger_.Trace("CreateWorker@2");
                 worker_ =server_.CreateWorker(
                             options.ServerName,
                             options.ExcutablePath, 
                             options.Arguments,
                             options.RootUri,
-                            options.WorkspaceConfig);
+                            options.WorkspaceConfig,
+                            hidemaruProcess.Id);
                 logger_.Trace("CreateWorker@3");
                 if (worker_ == null)
                 {

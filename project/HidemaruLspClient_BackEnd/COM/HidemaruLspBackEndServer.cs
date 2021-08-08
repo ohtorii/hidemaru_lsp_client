@@ -123,7 +123,8 @@ namespace HidemaruLspClient
             string ExcutablePath,
             string Arguments,
             string RootUri,
-            string WorkspaceConfig)
+            string WorkspaceConfig,
+            long   HidemaruProcessId)
         {
             var logger = LogManager.GetCurrentClassLogger();
             try
@@ -142,7 +143,8 @@ namespace HidemaruLspClient
                                     ExcutablePath,
                                     Arguments,
                                     RootUri,
-                                    WorkspaceConfig);
+                                    WorkspaceConfig,
+                                    HidemaruProcessId);
                 if (ret == false)
                 {
                     return null;

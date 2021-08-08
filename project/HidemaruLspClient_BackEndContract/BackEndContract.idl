@@ -136,6 +136,7 @@ interface IHidemaruLspBackEndServer : IDispatch
                   [in]BSTR Arguments,
                   [in]BSTR RootUri,
                   [in]BSTR WorkspaceConfig,
+                  [in]hyper HidemaruProcessId,
                   [out,retval] IWorker** worker);
     HRESULT DestroyWorker([in]IWorker *worker);
 };
