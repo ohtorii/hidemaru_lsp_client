@@ -54,7 +54,7 @@ namespace HidemaruLspClient
 		/// <summary>
 		/// 秀丸エディタのProcessId
 		/// </summary>
-		long hidemaruProcessId_;
+		long hidemaruProcessId_;		
 
 		public Worker(LspKey key)
         {
@@ -91,7 +91,9 @@ namespace HidemaruLspClient
 				RootUri			= RootUri,
                 WorkspaceConfig = WorkspaceConfig,
 			};
+			
 			hidemaruProcessId_ = HidemaruProcessId;
+
 			if (!InitializeClient())
 			{
 				return false;
@@ -313,7 +315,7 @@ namespace HidemaruLspClient
 		}
 		#region Diagnostics		
 
-		[LogMethod]		
+		//[LogMethod]		
 		IPublishDiagnosticsParamsContainer IWorker.PullDiagnosticsParams()
 		{
 			var diagnostics = client_.PullTextDocumentPublishDiagnostics();

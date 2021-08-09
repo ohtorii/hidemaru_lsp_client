@@ -56,23 +56,22 @@ main:
             return false;
         }
         setcomdetachmethod ##obj,"Finalizer";
-        ##n=callmethod_returnnum(##obj,"Initialize",$logFileName);
+        ##n=callmethod_returnnum(##obj,"Initialize",$logFileName,$$absConfigFileName,directory2);
         if(##n==false){
             message "Initializeに失敗";
             return false;
         }
-        ##n=callmethod_returnnum(##obj,"CreateWorker",$$absConfigFileName,directory2);
+        /*##n=callmethod_returnnum(##obj,"CreateWorker",$$absConfigFileName,directory2);
         if(##n==false){
             message "CreateWorker に失敗";
             return false;
-        }
+        }*/
 
         setstaticvariable $comObjectName,str(##obj),#comObjectShareMode;
         keepobject ##obj, 2;
     }
     menu    "ファイル内容を同期する（開発用）",
-            "Completion",
-            "Lint";
+            "Completion";
     if(result==0){
         return;
     }else if(result==1){
@@ -80,9 +79,6 @@ main:
         return ##return;
     }else if(result==2){
         call LspCompletion ##obj;
-        return ##return;
-    }else if(result==3){
-        call LspLint ##obj;
         return ##return;
     }
     return false;
@@ -107,6 +103,8 @@ LspCompletion:
     return true;
 
 
+
+/*
 LspLint:
     ##obj=##1;
     $$diagnostics=callmethod_returnstr(##obj, "Diagnostics");
@@ -115,13 +113,14 @@ LspLint:
 
     //アウトプット枠の内容をクリア
     ##h=dllfunc(##outputHandle,"GetWindowHandle",hidemaruhandle(0));
-    ##ret=sendmessage(##h,0x111/*WM_COMMAND*/,1009,0);//1009=クリア
+    ##ret=sendmessage(##h,0x111,1009,0); //0x111==WM_COMMAND , 1009=クリア
 
     if($$diagnostics!=""){
         ##ret=dllfunc(##outputHandle,"Output",hidemaruhandle(0),$$diagnostics);
     }
     freedll(##outputHandle);
     return true;
+*/
 
 
 FindServerConfigFile:

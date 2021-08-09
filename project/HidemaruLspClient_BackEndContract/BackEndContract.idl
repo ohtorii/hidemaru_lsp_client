@@ -1,5 +1,6 @@
 import "oaidl.idl";
 import "ocidl.idl";
+import "basetsd.h";
 
 /*typedef enum
 {

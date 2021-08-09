@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient_FrontEnd
@@ -228,58 +230,35 @@ namespace HidemaruLspClient_FrontEnd
             DidClose();
             return fncDidOpen(currentHidemaruFilePath);
         }
-        static void FormatDiagnostics(StringBuilder sb, IPublishDiagnosticsParams diagnosticsParams)
+        
+        bool CreateComServer(string logFilename)
         {
-            var uri = new Uri(diagnosticsParams.uri);
-            var filename = uri.LocalPath;
-            for (long i = 0; i < diagnosticsParams.Length; ++i)
+            if (server_ != null)
             {
-                var diagnostic = diagnosticsParams.Item(i);
-                var severity = diagnostic.severity;
-                if (severity <= /*DiagnosticSeverity.Error*/ DiagnosticSeverity.Warning)
-                {
-                    //+1して秀丸エディタの行番号(1開始)にする
-                    var line = diagnostic.range.start.line + 1;
-                    var code = diagnostic.code;
-                    var message = diagnostic.message;
-
-                    //Memo: 秀丸エディタのアウトプット枠へ出力するには \r\n が必要。
-                    sb.Append($"{filename}({line}):  {code} {message}\r\n");
-                }
-            }
-        }
-
-        #region Public methods
-        public bool Initialize(string logFilename)
-        {
-            try
-            {
-                Hidemaru.Initialize();
-
-                if (server_ == null)
-                {
-                    //事前にBackEndをspawnしたほうが良いと思う
-                    var ServerClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
-                    object obj;
-                    int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
-                    if (hr < 0)
-                    {
-                        Marshal.ThrowExceptionForHR(hr);
-                    }
-                    server_ = (IHidemaruLspBackEndServer)obj;
-                    var ret = Convert.ToBoolean(server_.Initialize(logFilename));
-                    if (ret)
-                    {
-                        logger_ = server_.GetLogger();
-                        Configuration.Initialize(logger_);
-                    }
-                    else
-                    {
-                        server_ = null;
-                    }
-                    return ret;
-                }
                 return true;
+            }
+
+            try
+            {            
+                var ServerClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
+                object obj;
+                int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
+                if (hr < 0)
+                {
+                    Marshal.ThrowExceptionForHR(hr);
+                }
+                server_ = (IHidemaruLspBackEndServer)obj;
+                var ret = Convert.ToBoolean(server_.Initialize(logFilename));
+                if (ret)
+                {
+                    logger_ = server_.GetLogger();
+                    Configuration.Initialize(logger_);
+                }
+                else
+                {
+                    server_ = null;
+                }
+                return ret;
             }
             catch (Exception e)
             {
@@ -291,51 +270,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             return false;
         }
-        /// <summary>
-        /// テスト用のメソッド
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        public int Add(int x, int y)
-        {
-            try
-            {
-                return server_.Add(x, y);
-            }
-            catch (System.Exception)
-            {
-                return -1;
-            }
-        }
-        public void Finalizer(int reason)
-        {
-            try
-            {
-                if ((server_ != null) && (worker_ != null))
-                {
-                    if (string.IsNullOrEmpty(openedFile_.Filename) == false)
-                    {
-                        DidClose();
-                    }
-                    server_.DestroyWorker(worker_);
-                }
-                worker_ = null;
-                server_ = null;
-                dasmr_ = null;
-                openedFile_ = null;
-            }
-            catch (Exception e)
-            {
-                if (logger_ != null)
-                {
-                    logger_.Error(e.ToString());
-                }
-            }
-            logger_ = null;
-            return;
-        }
-        public bool CreateWorker(string serverConfigFilename, string currentSourceCodeDirectory)
+        bool CreateWorker(string serverConfigFilename, string currentSourceCodeDirectory)
         {
             try
             {
@@ -372,6 +307,205 @@ namespace HidemaruLspClient_FrontEnd
             logger_.Trace("CreateWorker@exit");
             return false;
         }
+
+        
+        CancellationTokenSource tokenSource_=null;
+        Diagnostics diagnostics_ = null;
+
+        /// <summary>
+        /// 定期的な処理
+        /// </summary>
+        void RoutineTask(CancellationToken  cancellationToken)
+        {
+            while (true)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+                Thread.Sleep(200);
+            }
+        }
+
+        /// <summary>
+        /// textDocument/publishDiagnostics
+        /// </summary>        
+        class Diagnostics
+        {
+            Task task_;
+            IWorker worker_;
+            CancellationToken cancellationToken_;
+
+            /// <summary>
+            /// 秀丸エディタのウインドウハンドル
+            /// </summary>
+            IntPtr hwndHidemaru_;
+
+            /// <summary>
+            /// アウトプット枠をクリアしたかどうか
+            /// 繰り返しクリアしてウインドウがちらつくのを防止する。
+            /// </summary>
+            bool outputPaneCleard_;
+
+            public Diagnostics(IWorker worker, CancellationToken cancellationToken)
+            {
+                hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+                outputPaneCleard_ = false;
+
+                worker_ = worker;
+                cancellationToken_ = cancellationToken;                
+                task_ =Task.Run(MainLoop, cancellationToken_);
+            }
+            void MainLoop()
+            {
+                while (true)
+                {
+                    if (cancellationToken_.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    Process();
+                    Thread.Sleep(500);
+                }
+            }
+            void Process()
+            {                
+                var container = worker_.PullDiagnosticsParams();
+                bool hasEvent = container.Length == 0 ? false : true;
+
+                if (hasEvent == false)
+                {
+                    return;
+                }
+
+                var sb = new StringBuilder();
+                for (long i = 0; i < container.Length; ++i)
+                {
+                    FormatDiagnostics(sb, container.Item(i));
+                }
+
+                if (sb.Length == 0)
+                {
+                    if (outputPaneCleard_ == false)
+                    {
+                        HmOutputPane.Clear(hwndHidemaru_);
+                        outputPaneCleard_ = true;
+                    }
+                }
+                else
+                {
+                    HmOutputPane.Clear(hwndHidemaru_);
+                    HmOutputPane.OutputW(hwndHidemaru_, sb.ToString());
+
+                    outputPaneCleard_ = false;
+                }
+            }
+
+            static void FormatDiagnostics(StringBuilder sb, IPublishDiagnosticsParams diagnosticsParams)
+            {
+                var uri = new Uri(diagnosticsParams.uri);
+                var filename = uri.LocalPath;
+                for (long i = 0; i < diagnosticsParams.Length; ++i)
+                {
+                    var diagnostic = diagnosticsParams.Item(i);
+                    var severity = diagnostic.severity;
+                    if (severity <= /*DiagnosticSeverity.Error*/ DiagnosticSeverity.Warning)
+                    {
+                        //+1して秀丸エディタの行番号(1開始)にする
+                        var line    = diagnostic.range.start.line + 1;
+                        var code    = diagnostic.code;
+                        var message = diagnostic.message;
+                        var source  = diagnostic.source;
+
+                        //Memo: 秀丸エディタのアウトプット枠へ出力するには \r\n が必要。
+                        sb.Append($"{filename}({line}):  {source}({code}) {message}\r\n");
+                    }
+                }
+            }
+        }
+
+        #region Public methods
+        public bool Initialize(string logFilename, string serverConfigFilename, string currentSourceCodeDirectory)
+        {
+            Hidemaru.Initialize();
+
+            if (!CreateComServer(logFilename))
+            {
+                Finalizer();
+                return false;
+            }
+            if (!CreateWorker(serverConfigFilename, currentSourceCodeDirectory))
+            {
+                Finalizer();
+                return false;
+            }
+            if(tokenSource_==null)
+            {
+                tokenSource_ = new CancellationTokenSource();
+            }
+
+            if (diagnostics_ == null)
+            {
+                diagnostics_ = new Diagnostics(worker_, tokenSource_.Token);
+            }
+            
+            return true;
+        }
+        
+        /// <summary>
+        /// テスト用のメソッド
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public int Add(int x, int y)
+        {
+            try
+            {
+                return server_.Add(x, y);
+            }
+            catch (System.Exception)
+            {
+                return -1;
+            }
+        }
+        public void Finalizer(int reason=0)
+        {
+            try
+            {
+                if (tokenSource_ != null)
+                {
+                    tokenSource_.Cancel();
+                }
+
+                if ((server_ != null) && (worker_ != null))
+                {
+                    if (string.IsNullOrEmpty(openedFile_.Filename) == false)
+                    {
+                        DidClose();
+                    }
+                    server_.DestroyWorker(worker_);
+                }
+            }
+            catch (Exception e)
+            {
+                if (logger_ != null)
+                {
+                    logger_.Error(e.ToString());
+                }
+            }
+            logger_      = null;
+
+            tokenSource_ = null;
+            diagnostics_ = null;
+            worker_      = null;
+            server_      = null;
+            dasmr_       = null;
+            openedFile_  = null;
+
+            return;
+        }
+        
         public bool SyncDocument()
         {
             try
@@ -412,31 +546,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
-        /// <summary>
-        /// textDocument/publishDiagnostics
-        /// </summary>        
-        /// <returns>秀丸エディタのアウトプット枠へ出力する文字列</returns>
-        public string Diagnostics()
-        {
-            //Todo: COMサーバから「秀丸エディタのアウトプット枠へ出力する文字列」を返すようにする（もっと単純にする）
-            try
-            {
-                Debug.Assert(worker_ != null);
-
-                var sb        = new StringBuilder();
-                var container = worker_.PullDiagnosticsParams();
-                for(long i=0; i< container.Length; ++i)
-                {
-                    FormatDiagnostics(sb,container.Item(i));
-                }
-                return sb.ToString();
-            }
-            catch(Exception e)
-            {
-                logger_.Error(e.ToString());
-            }
-            return "";
-        }
+        
         #endregion
 
     }   

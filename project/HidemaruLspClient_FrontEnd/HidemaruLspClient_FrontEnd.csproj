@@ -56,7 +56,8 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="Dll.cs" />
     <Compile Include="DllAssemblyResolver.cs" />
-    <Compile Include="Hidemaru.cs" />
+    <Compile Include="Hidemaru\Hidemaru.cs" />
+    <Compile Include="Hidemaru\HmOutputPane.cs" />
     <Compile Include="Ole32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service.cs" />

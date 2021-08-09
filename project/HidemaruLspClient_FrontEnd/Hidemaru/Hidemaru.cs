@@ -17,11 +17,11 @@ namespace HidemaruLspClient_FrontEnd
 
         //const uint PROCESS_ALL_ACCESS = 0x1F0FFF;
         #region Hidemaru-API
-        delegate IntPtr Delegate_Hidemaru_GetTotalTextUnicode();
-		static Delegate_Hidemaru_GetTotalTextUnicode Hidemaru_GetTotalTextUnicode;
+        public delegate IntPtr Delegate_Hidemaru_GetTotalTextUnicode();
+        public static Delegate_Hidemaru_GetTotalTextUnicode Hidemaru_GetTotalTextUnicode;
 		
-		delegate IntPtr Delegate_Hidemaru_GetCurrentWindowHandle();
-		static Delegate_Hidemaru_GetCurrentWindowHandle Hidemaru_GetCurrentWindowHandle;
+		public delegate  IntPtr Delegate_Hidemaru_GetCurrentWindowHandle();
+        public static Delegate_Hidemaru_GetCurrentWindowHandle Hidemaru_GetCurrentWindowHandle;
 
 		#endregion
 
