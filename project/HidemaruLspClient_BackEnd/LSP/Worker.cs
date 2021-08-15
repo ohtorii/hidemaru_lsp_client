@@ -100,7 +100,7 @@ namespace HidemaruLspClient
 			}
 			
 			var reqId=InitializeServer();
-			var response = client_.QueryResponse(reqId, millisecondsTimeout: defaultTimeout) as InitializeResult;
+			var response = client_.QueryResponse(reqId, millisecondsTimeout: defaultTimeout).item as InitializeResult;
             if (response == null)
             {
 				return false;
@@ -158,7 +158,7 @@ namespace HidemaruLspClient
 		void Shutdown()
 		{
 			var requestId = client_.Send.Shutdown();
-			var error = client_.QueryResponse(requestId) as ResponseError;
+			var error = client_.QueryResponse(requestId).item as ResponseError;
 			if (error != null)
 			{
 				if (lspLogger_.IsErrorEnabled) {
@@ -167,55 +167,10 @@ namespace HidemaruLspClient
 				return;
 			}
 			client_.Send.Exit();
-		}				
-		static string GetCompletionWord(CompletionItem item)
-        {
-			if ((item.textEdit != null) && item.textEdit.IsTextEdit && (item.textEdit.TextEdit.newText != ""))
-			{
-				if(item.insertTextFormat == InsertTextFormat.PlainText)
-                {
-					return item.textEdit.TextEdit.newText;
-				}
-				return ParseSnippet(item.textEdit.TextEdit.newText);	
-			}
-            else if ((item.insertText != null) && (item.insertText != ""))
-            {
-				if (item.insertTextFormat == InsertTextFormat.PlainText)
-                {
-					return item.insertText;
-				}
-				return ParseSnippet(item.insertText);
-            }
-            else {
-				return item.label;
-			}						
-        }
-		static string ParseSnippet(string input)
-        {
-			//Todo: 実装する
-			return input;
-        }
-		string FileNameToLanguageId(string filename)
-        {
-			//(Ex) filename="c:/foo/bar.cpp"
-			var extension = Path.GetExtension(filename);
-            if (extension == null)
-            {
-				return "";
-            }
-            if (extension.Length==0)
-            {
-				return "";
-            }
-            if (extension.Length == 1)
-            {
-				return extension;
-			}
-			//(Ex) ".cpp" -> "cpp"
-			return extension.Substring(1);
-        }
+		}
 
         #region 実装
+        #region DidOpen
         [LogMethod]
 		/// <summary>
 		/// 
@@ -234,8 +189,27 @@ namespace HidemaruLspClient
 			param.textDocument.languageId	= languageId;			
 			client_.Send.TextDocumentDidOpen(param);
 		}
-
-		[LogMethod]
+		static string FileNameToLanguageId(string filename)
+		{
+			//(Ex) filename="c:/foo/bar.cpp"
+			var extension = Path.GetExtension(filename);
+			if (extension == null)
+			{
+				return "";
+			}
+			if (extension.Length == 0)
+			{
+				return "";
+			}
+			if (extension.Length == 1)
+			{
+				return extension;
+			}
+			//(Ex) ".cpp" -> "cpp"
+			return extension.Substring(1);
+		}
+        #endregion
+        [LogMethod]
 		void IWorker.DidChange(string absFilename, string text, int contentsVersion)
         {						
 			var param = new DidChangeTextDocumentParams { 
@@ -255,7 +229,9 @@ namespace HidemaruLspClient
 			param.textDocument.uri = sourceUri.AbsoluteUri;
 			client_.Send.TextDocumentDidClose(param);
 		}
-		[LogMethod]
+        
+		#region Completion
+        [LogMethod]
 		/// <summary>
 		/// 
 		/// </summary>
@@ -313,6 +289,36 @@ namespace HidemaruLspClient
 			}
 			return fs.Name;
 		}
+		static string GetCompletionWord(CompletionItem item)
+		{
+			if ((item.textEdit != null) && item.textEdit.IsTextEdit && (item.textEdit.TextEdit.newText != ""))
+			{
+				if (item.insertTextFormat == InsertTextFormat.PlainText)
+				{
+					return item.textEdit.TextEdit.newText;
+				}
+				return ParseSnippet(item.textEdit.TextEdit.newText);
+			}
+			else if ((item.insertText != null) && (item.insertText != ""))
+			{
+				if (item.insertTextFormat == InsertTextFormat.PlainText)
+				{
+					return item.insertText;
+				}
+				return ParseSnippet(item.insertText);
+			}
+			else
+			{
+				return item.label;
+			}
+		}
+		static string ParseSnippet(string input)
+		{
+			//Todo: 実装する
+			return input;
+		}
+		#endregion
+
 		#region Diagnostics		
 
 		//[LogMethod]		
@@ -484,9 +490,28 @@ namespace HidemaruLspClient
             long HidemaruLspClient_BackEndContract.IPosition.line => pos_.line;
 			#endregion
 		}
+		#endregion
 
+		[LogMethod]
+		void IWorker.Declaration(string absFilename, long line, long column)
+		{
+			if ((line < 0) || (column < 0))
+			{
+				return;
+			}
+			var sourceUri = new Uri(absFilename);
+			var param = new DeclarationParams();
+			param.position.line = (uint)line;
+			param.position.character = (uint)column;
+			param.textDocument.uri = sourceUri.AbsoluteUri;
 
-        #endregion
-        #endregion
-    }
+			var id = client_.Send.TextDocumentDeclaration(param);
+			var result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
+			if (result == null)
+			{
+				return ;
+			}
+		}
+		#endregion
+	}
 }

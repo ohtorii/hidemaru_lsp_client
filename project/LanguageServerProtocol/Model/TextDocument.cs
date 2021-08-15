@@ -146,8 +146,8 @@ namespace LSP.Model
 	
 	interface ITextDocumentPositionParams
 	{
-		ITextDocumentIdentifier textDocument  { get;set; }
-		IPosition position  { get; set; }
+		ITextDocumentIdentifier textDocument  { get; }
+		IPosition position  { get;  }
 	}
 
 	class DocumentFilter

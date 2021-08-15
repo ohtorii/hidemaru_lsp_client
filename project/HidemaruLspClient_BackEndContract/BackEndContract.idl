@@ -120,6 +120,7 @@ interface IWorker :IDispatch
     HRESULT DidClose([in]BSTR absFilename);
     HRESULT Completion([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out,retval]BSTR*retval);
     HRESULT PullDiagnosticsParams([out, retval] IPublishDiagnosticsParamsContainer** ret);
+    HRESULT Declaration([in]BSTR absFilename, [in]hyper line, [in]hyper column);
 }
 
 [

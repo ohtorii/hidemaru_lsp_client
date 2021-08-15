@@ -83,7 +83,7 @@ namespace LSP.Client
 				Protocol.OnTextDocumentPublishDiagnostics += this.clientEvents_.OnTextDocumentPublishDiagnostics;
 			}
 			server_ = new ServerProcess(param.exeFileName, param.exeArguments, param.exeWorkingDirectory);
-			Send = new Sender(param, mediator_.StoreResponse, Status_Get, Status_Set, server_.WriteStandardInput);
+			Send = new Sender(param, mediator_.StoreResponseCallback, Status_Get, Status_Set, server_.WriteStandardInput);
 
 			server_.StartProcess();
 			server_.standardErrorReceived  += Client_standardErrorReceived;
@@ -125,7 +125,8 @@ namespace LSP.Client
 			Debug.Assert(Status == Mode.ClientInitializeFinish);
 			Send.Response(any, request_id, NullValueHandling.Include);
 		}
-		public object QueryResponse(RequestId id, int millisecondsTimeout = -1)
+		
+		public Sender.ResponseResult QueryResponse(RequestId id, int millisecondsTimeout = -1)
         {
 			return Send.QueryResponse(id, millisecondsTimeout);
         }

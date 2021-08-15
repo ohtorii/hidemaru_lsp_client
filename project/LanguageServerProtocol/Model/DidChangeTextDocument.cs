@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -58,7 +59,7 @@ namespace LSP.Model
 		}
 		public ITextDocumentContentChangeEvent[] contentChanges { get; set; } = null;
 
-		VersionedTextDocumentIdentifier m_textDocument = null;
+		[JsonIgnore] VersionedTextDocumentIdentifier m_textDocument = null;
 	}
 
 	/**

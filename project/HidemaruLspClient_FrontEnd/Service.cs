@@ -349,15 +349,16 @@ namespace HidemaruLspClient_FrontEnd
 
             public Diagnostics(IWorker worker, CancellationToken cancellationToken)
             {
-                hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+                hwndHidemaru_     = Hidemaru.Hidemaru_GetCurrentWindowHandle();
                 outputPaneCleard_ = false;
 
-                worker_ = worker;
+                worker_            = worker;
                 cancellationToken_ = cancellationToken;                
-                task_ =Task.Run(MainLoop, cancellationToken_);
+                task_              =Task.Run(MainLoop, cancellationToken_);
             }
             void MainLoop()
             {
+                //Todoポーリングではなくイベント通知にする
                 while (true)
                 {
                     if (cancellationToken_.IsCancellationRequested)
@@ -403,12 +404,12 @@ namespace HidemaruLspClient_FrontEnd
 
             static void FormatDiagnostics(StringBuilder sb, IPublishDiagnosticsParams diagnosticsParams)
             {
-                var uri = new Uri(diagnosticsParams.uri);
+                var uri      = new Uri(diagnosticsParams.uri);
                 var filename = uri.LocalPath;
                 for (long i = 0; i < diagnosticsParams.Length; ++i)
                 {
                     var diagnostic = diagnosticsParams.Item(i);
-                    var severity = diagnostic.severity;
+                    var severity   = diagnostic.severity;
                     if (severity <= /*DiagnosticSeverity.Error*/ DiagnosticSeverity.Warning)
                     {
                         //+1して秀丸エディタの行番号(1開始)にする
@@ -505,7 +506,11 @@ namespace HidemaruLspClient_FrontEnd
 
             return;
         }
-        
+
+        /// <summary>
+        /// 秀丸エディタのテキストとサーバ側のテキストを同期する（デバッグ用途）
+        /// </summary>
+        /// <returns></returns>
         public bool SyncDocument()
         {
             try
@@ -546,7 +551,25 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
-        
+        public int Declaration(long line, long column)
+        {
+            try
+            {
+                Debug.Assert(worker_ != null);
+
+                var absFileName = FileProc();
+                if (String.IsNullOrEmpty(absFileName))
+                {
+                    return 0;
+                }
+                worker_.Declaration(absFileName, line, column);
+            }
+            catch (Exception e)
+            {
+                logger_.Error(e.ToString());
+            }
+            return 0;
+        }
         #endregion
 
     }   

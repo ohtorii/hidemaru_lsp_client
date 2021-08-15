@@ -16,28 +16,35 @@ namespace LSP.Client
 
 		class ResponseObject
 		{
-			public object Item { get; set; } = null;
-			public bool Exist { get; set; } = false;
+			public ResponseObject(ResponseError error=null, object item=null, bool exist=false)
+            {
+				Error = error;
+				Item = item;
+				Exist = exist;
+            }
+			public readonly object Item;
+			public readonly bool Exist;
+			public readonly ResponseError Error;
 		}
 		Dictionary<RequestId, ResponseObject> response_ = new Dictionary<RequestId, ResponseObject>();
 		
-        Action<RequestId, Action<ResponseMessage>> storeResponse_;
+        Action<RequestId, Action<ResponseMessage>> responseCallback_;
 		StdioClient.LspParameter param_;
 		Func<StdioClient.Mode> GetStatus_;
 		Action<StdioClient.Mode> SetStatus_;
 		Action<byte[]> WriteStandardInput_;
 
 		public Sender(StdioClient.LspParameter param,
-                Action<RequestId, Action<ResponseMessage>> StoreResponse,
-                Func<StdioClient.Mode> GetStatus,
-                Action<StdioClient.Mode> SetStatus,
-				Action<byte[]> WriteStandardInput)
+                Action<RequestId, Action<ResponseMessage>> responseCallback,
+                Func<StdioClient.Mode>		getStatus,
+                Action<StdioClient.Mode>	setStatus,
+				Action<byte[]>				writeStandardInput)
         {
-			storeResponse_      = StoreResponse;
+			responseCallback_      = responseCallback;
 			param_              = param;
-			GetStatus_          = GetStatus;
-			SetStatus_          = SetStatus;
-			WriteStandardInput_ = WriteStandardInput;
+			GetStatus_          = getStatus;
+			SetStatus_          = setStatus;
+			WriteStandardInput_ = writeStandardInput;
 		}
 		public RequestId Initialize(IInitializeParams param)
 		{
@@ -49,20 +56,12 @@ namespace LSP.Client
 		void ActionInitialize(ResponseMessage response)
 		{
 			var arg = (JToken)response.result;
-			var id = new RequestId(response.id);
-			var value = new ResponseObject
-			{
-				Item = arg.ToObject<InitializeResult>(),
-				Exist = true
-			};
-			lock (response_)
-			{
-				Debug.Assert(response_.ContainsKey(id));
-
-				//Memo: response_[]とStatusは一緒に設定する。
-				response_[id] = value;
-				SetStatus_(Mode.ServerInitializeFinish);
-			}
+			StoreResponse(
+				response.id, 
+				response.error,
+				arg.ToObject<InitializeResult>(),
+				//Memo: response_[]とStatusは同時に設定する。
+				() => SetStatus_(Mode.ServerInitializeFinish));
 		}
 		public void Initialized(IInitializedParams param)
 		{
@@ -71,6 +70,7 @@ namespace LSP.Client
 			Notification(param, "initialized");
 			SetStatus_(Mode.ClientInitializeFinish);
 		}
+# region Shutdown
 		public RequestId Shutdown()
 		{
 			Debug.Assert(GetStatus_()==Mode.ClientInitializeFinish);
@@ -90,19 +90,9 @@ namespace LSP.Client
 			{
 				SetStatus_(Mode.ClientInitializeFinish);
 			}
-
-			var id = new RequestId(response.id);
-			var value = new ResponseObject
-			{
-				Item = response.error,
-				Exist = true
-			};
-			lock (response_)
-			{
-				Debug.Assert(response_.ContainsKey(id));
-				response_[id] = value;
-			}
+			StoreResponse(response.id, response.error, response.error, null);			
 		}
+#endregion
 		public void LoggingResponseLeak()
 		{
 			if (param_.logger.IsErrorEnabled == false)
@@ -139,19 +129,14 @@ namespace LSP.Client
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
 			Notification(param, "textDocument/didClose");
 		}
-		public RequestId TextDocumentCompletion(ICompletionParams param)
+        #region Completion
+        public RequestId TextDocumentCompletion(ICompletionParams param)
 		{
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
 			return Request(param, "textDocument/completion", ActionTextDocumentCompletion);
 		}
 		void ActionTextDocumentCompletion(ResponseMessage response)
-		{
-			if (response.error != null)
-			{
-				//エラーあり
-				return;
-			}
-
+		{			
 			CompletionList f(JToken arg)
 			{
 				if (arg == null)
@@ -173,18 +158,22 @@ namespace LSP.Client
 				}
 				return null;
 			}
-
-			var id = new RequestId(response.id);
-			var value = new ResponseObject
-			{
-				Item = f((JToken)response.result),
-				Exist = true
-			};
-			lock (response_)
-			{
-				Debug.Assert(response_.ContainsKey(id));
-				response_[id] = value;
-			}
+			StoreResponse(response.id, response.error, f((JToken)response.result), null);
+		}
+		#endregion
+		public RequestId TextDocumentDeclaration(IDeclarationParams param)
+        {
+			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
+			return Request(param, "textDocument/declaration", ActionTextDocumentDeclaration);
+		}
+		void ActionTextDocumentDeclaration(ResponseMessage response)
+        {            
+			var arg = (JToken)response.result;
+			StoreResponse(
+			response.id,
+			response.error,
+			arg,/*Todo: とりあえず、このまま格納してコンパイルを通す。後で修正*/
+			null);
 		}
 
 		public void WorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)
@@ -192,19 +181,26 @@ namespace LSP.Client
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
 			Notification(param, "workspace/didChangeConfiguration");
 		}
-		/// <summary>
-		/// clientEvents_で発生したイベントを送信する
-		/// </summary>
-		/// <param name="request_id"></param>
-		/// <param name="any"></param>
+
 		#region  リクエストの返信
+		public class ResponseResult
+		{
+			public ResponseResult(ResponseError responseError, object responseItem)
+			{
+				error = responseError;
+				item = responseItem;
+			}
+			readonly public ResponseError error;
+			readonly public object item;
+		}
+
 		/// <summary>
 		/// リクエストの返信を取得する
 		/// </summary>
 		/// <param name="id"></param>
 		/// <param name="timeout"></param>
 		/// <returns></returns>
-		public object QueryResponse(RequestId id, int millisecondsTimeout = -1)
+		public ResponseResult QueryResponse(RequestId id, int millisecondsTimeout = -1)
 		{
 			//Todo: ポーリングをやめる(System.Collections.ObjectModel.KeyedCollection<TKey,TItem> クラスを利用できると思う)
 			var sw = new Stopwatch();
@@ -219,7 +215,7 @@ namespace LSP.Client
 						if ((item != null) && item.Exist)
 						{
 							response_.Remove(id);
-							return item.Item;
+							return new ResponseResult(item.Error,item.Item);
 						}
 					}
 				}
@@ -251,14 +247,14 @@ namespace LSP.Client
 		}
 		#endregion
 
-		#region 低レイヤー
+		#region 低レイヤ
 		//
 		//低レイヤー
 		//
 		RequestId Request(object param, string method, Action<ResponseMessage> callback)
 		{
 			var id = requestIdGenerator_.NextId();
-			storeResponse_(id, callback);
+			responseCallback_(id, callback);
 			Request(param, method, id);
 			return id;
 		}
@@ -321,7 +317,7 @@ namespace LSP.Client
 		/// <param name="callback"></param>
 		void SendRaw(string jsonRpc, RequestId id, Action<ResponseMessage> callback)
 		{
-			storeResponse_(id, callback);
+			responseCallback_(id, callback);
 			var payload = CreatePayLoad(jsonRpc);
 			WriteStandardInput(payload);
 		}
@@ -364,6 +360,20 @@ namespace LSP.Client
 			{
 				Debug.Assert(response_.ContainsKey(id) == false);
 				response_[id] = new ResponseObject();
+			}
+		}
+		void StoreResponse(int responseId, ResponseError error, object responseItem, Action postAction)
+        {
+			var id    = new RequestId(responseId);
+			var value = new ResponseObject(error, responseItem, true);
+			lock (response_)
+			{
+				Debug.Assert(response_.ContainsKey(id));				
+				response_[id] = value;
+                if (postAction != null)
+                {
+					postAction();
+				}				
 			}
 		}
 		#endregion

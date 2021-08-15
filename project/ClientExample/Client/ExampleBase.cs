@@ -35,7 +35,7 @@ namespace ClientExample
             Console.WriteLine("==== InitializeServer ====");
             {
                 var initializeId = InitializeServer(client);
-                var result = (InitializeResult)client.QueryResponse(initializeId);
+                var result = (InitializeResult)client.QueryResponse(initializeId).item;
                 Debug.Assert(client.Status == LSP.Client.StdioClient.Mode.ServerInitializeFinish);
             }
 
@@ -100,7 +100,7 @@ namespace ClientExample
             }
             var millisecondsTimeout = 1000;
             Console.WriteLine(string.Format("millisecondsTimeout={0}", millisecondsTimeout));
-            var completion = (CompletionList)client.QueryResponse(requestId, millisecondsTimeout);
+            var completion = (CompletionList)client.QueryResponse(requestId, millisecondsTimeout).item;
             if (completion == null)
             {
                 Console.WriteLine("Compilation is failed or timeout.");
@@ -166,7 +166,7 @@ namespace ClientExample
         internal virtual void Shutdown(StdioClient client)
         {
             var requestId = client.Send.Shutdown();
-            var error = client.QueryResponse(requestId) as ResponseError;
+            var error = client.QueryResponse(requestId).item as ResponseError;
             if (error != null)
             {
                 Console.WriteLine("[Failed]Shutdown.");

@@ -37,9 +37,9 @@ namespace LSP.Client
                 runner_ = Task.Run(() => protocol_.Parse());
             }
         }
-        public void StoreResponse(RequestId id, Action<ResponseMessage> callback)
+        public void StoreResponseCallback(RequestId id, Action<ResponseMessage> callback)
 		{
-            protocol_.StoreJob(id, callback);
+            protocol_.StoreResponseCallback(id, callback);
 		}
         
     }

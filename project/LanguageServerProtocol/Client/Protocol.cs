@@ -91,9 +91,8 @@ namespace LSP.Client
                 return true;
             }
         }        
-        public void StoreJob(RequestId id, Action<ResponseMessage> callback)
+        public void StoreResponseCallback(RequestId id, Action<ResponseMessage> callback)
 		{
-            //var id_ = id.id;
             lock (responseCallback_)
             {
                 Debug.Assert(responseCallback_.ContainsKey(id) == false);

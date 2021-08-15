@@ -41,7 +41,7 @@ namespace LSP.Model
 				return m_symbolKind;
 			}
 		}
-		_symbolKind m_symbolKind=null;
+		[JsonIgnore] _symbolKind m_symbolKind=null;
 		/**
 		 * The client supports hierarchical document symbols.
 		 */

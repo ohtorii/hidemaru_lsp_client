@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -44,7 +45,7 @@ namespace LSP.Model
 					return m_codeActionKind;
 				}
 			}
-			_codeActionKind m_codeActionKind = null;
+			[JsonIgnore] _codeActionKind m_codeActionKind = null;
 		}
 		public _codeActionLiteralSupport codeActionLiteralSupport
 		{
@@ -57,7 +58,7 @@ namespace LSP.Model
 				return m_codeActionLiteralSupport;
 			}
 		}
-		_codeActionLiteralSupport m_codeActionLiteralSupport=null;
+		[JsonIgnore] _codeActionLiteralSupport m_codeActionLiteralSupport=null;
 		/**
 		 * Whether code action supports the `isPreferred` property.
 		 *

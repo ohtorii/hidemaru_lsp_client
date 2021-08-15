@@ -70,8 +70,10 @@ main:
         setstaticvariable $comObjectName,str(##obj),#comObjectShareMode;
         keepobject ##obj, 2;
     }
-    menu    "ファイル内容を同期する（開発用）",
-            "Completion";
+    menu      "ファイル内容を同期する（開発用）"
+            , "Completion"
+            , "Declaration"
+            ;
     if(result==0){
         return;
     }else if(result==1){
@@ -79,6 +81,9 @@ main:
         return ##return;
     }else if(result==2){
         call LspCompletion ##obj;
+        return ##return;
+    }else if(result==3){
+        call LspDeclaration ##obj;
         return ##return;
     }
     return false;
@@ -102,7 +107,10 @@ LspCompletion:
     //Memo: マクロはこの行に到達しない
     return true;
 
-
+LspDeclaration:
+    ##obj=##1;
+    ##foo=callmethod_returnnum(##obj, "Declaration",lineno-1,column_wcs);
+    return ;
 
 /*
 LspLint:

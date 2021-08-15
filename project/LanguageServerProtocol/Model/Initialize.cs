@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,9 +42,6 @@ namespace LSP.Model
 				if (m_clientInfo == null) { m_clientInfo = new ClientInfo_(); };
 				return m_clientInfo;
 			}
-			/*set {
-				m_clientInfo = value;
-			}*/
 		}
 		public string rootUri { get; set; }
 		public object initializationOptions { get; set; }
@@ -55,7 +53,7 @@ namespace LSP.Model
 		public string rootPath { get; set; }
 		ProgressToken IWorkDoneProgressParams.workDoneToken { get; set; }
 
-		ClientInfo_ m_clientInfo = null;
+		[JsonIgnore] ClientInfo_ m_clientInfo = null;
 	}
 
 	interface IInitializeResult
@@ -314,7 +312,7 @@ namespace LSP.Model
 					m_fileOperations = value;
 				} 
 			}
-			_fileOperations m_fileOperations=null;
+			[JsonIgnore] _fileOperations m_fileOperations=null;
 		}
 		public _workspace workspace;
 
