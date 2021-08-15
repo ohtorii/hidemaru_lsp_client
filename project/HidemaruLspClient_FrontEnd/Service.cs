@@ -570,6 +570,25 @@ namespace HidemaruLspClient_FrontEnd
             }
             return 0;
         }
+        public int Definition(long line, long column)
+        {
+            try
+            {
+                Debug.Assert(worker_ != null);
+
+                var absFileName = FileProc();
+                if (String.IsNullOrEmpty(absFileName))
+                {
+                    return 0;
+                }
+                worker_.Definition(absFileName, line, column);
+            }
+            catch (Exception e)
+            {
+                logger_.Error(e.ToString());
+            }
+            return 0;
+        }
         #endregion
 
     }   

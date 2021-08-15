@@ -170,12 +170,25 @@ namespace LSP.Implementation
         {            
 			var arg = (JToken)response.result;
 			StoreResponse(
-			response.id,
-			response.error,
-			arg,/*Todo: とりあえず、このまま格納してコンパイルを通す。後で修正*/
-			null);
+				response.id,
+				response.error,
+				arg,/*Todo: とりあえず、このまま格納してコンパイルを通す。後で修正*/
+				null);
 		}
-
+		public RequestId TextDocumentDefinition(IDefinitionParams param)
+        {
+			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
+			return Request(param, "textDocument/definition", ActionTextDocumentDefinition);
+		}
+		void ActionTextDocumentDefinition(ResponseMessage response)
+        {
+			var arg = (JToken)response.result;
+			StoreResponse(
+				response.id,
+				response.error,
+				arg,/*Todo: とりあえず、このまま格納してコンパイルを通す。後で修正*/
+				null);
+		}
 		public void WorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)
 		{
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);

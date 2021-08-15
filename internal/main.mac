@@ -73,6 +73,7 @@ main:
     menu      "ファイル内容を同期する（開発用）"
             , "Completion"
             , "Declaration"
+            , "Definition"
             ;
     if(result==0){
         return;
@@ -84,6 +85,9 @@ main:
         return ##return;
     }else if(result==3){
         call LspDeclaration ##obj;
+        return ##return;
+    }else if(result==4){
+        call LspDefinition ##obj;
         return ##return;
     }
     return false;
@@ -112,6 +116,9 @@ LspDeclaration:
     ##foo=callmethod_returnnum(##obj, "Declaration",lineno-1,column_wcs);
     return ;
 
+LspDefinition:
+    ##obj=##1;
+    ##foo=callmethod_returnnum(##obj, "Definition",lineno-1,column_wcs);
 /*
 LspLint:
     ##obj=##1;

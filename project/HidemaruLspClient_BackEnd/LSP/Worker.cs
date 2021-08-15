@@ -512,6 +512,26 @@ namespace HidemaruLspClient
 				return ;
 			}
 		}
-		#endregion
-	}
+
+        public void Definition(string absFilename, long line, long column)
+        {
+			if ((line < 0) || (column < 0))
+			{
+				return;
+			}
+			var sourceUri = new Uri(absFilename);
+			var param = new DefinitionParams();
+			param.position.line = (uint)line;
+			param.position.character = (uint)column;
+			param.textDocument.uri = sourceUri.AbsoluteUri;
+
+			var id = client_.Send.TextDocumentDefinition(param);
+			var result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
+			if (result == null)
+			{
+				return;
+			}
+		}
+        #endregion
+    }
 }

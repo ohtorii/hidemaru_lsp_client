@@ -41,7 +41,7 @@ namespace LSP.Model
 	class DeclarationParams : IDeclarationParams
 	{
         public ITextDocumentIdentifier textDocument
-        {
+		{
             get
             {
                 if (m_textDocumentIdentifier == null)
@@ -54,7 +54,7 @@ namespace LSP.Model
 			} 
 		}
         public IPosition position
-        {
+		{
             get
             {
                 if (m_position == null)
