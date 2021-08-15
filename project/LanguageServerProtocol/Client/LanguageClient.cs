@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace LSP.Client
+namespace LSP.Implementation
 {
-	class StdioClient
+	class LanguageClient
 	{
 		ServerProcess server_;
 		Mediator mediator_;
@@ -56,11 +56,11 @@ namespace LSP.Client
 
         public Sender Send { get; private set; }
 
-        public StdioClient()
+        public LanguageClient()
         {
 			Status = Mode.Init;
 		}
-		public void StartLspProcess(LspParameter param)
+		public void Start(LspParameter param)
 		{            
 			Debug.Assert(Status == Mode.Init);
 			if (param.logger == null)

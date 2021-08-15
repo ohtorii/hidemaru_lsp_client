@@ -1,4 +1,4 @@
-﻿using LSP.Client;
+﻿using LSP.Implementation;
 using NLog;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HidemaruLspClient
 {
-    class LspClientLogger : LSP.Client.ILogger
+    class LspClientLogger : LSP.Implementation.ILogger
 	{
 		NLog.Logger logger = null;
 		public NLog.Logger GetLogger()

@@ -1,4 +1,4 @@
-﻿using LSP.Client;
+﻿using LSP.Implementation;
 using LSP.Model;
 using System;
 using System.Diagnostics;
@@ -22,7 +22,7 @@ namespace ClientExample
 
         internal abstract CompilationPosition compilationPosition { get; }
 
-        internal abstract StdioClient CreateClient();
+        internal abstract LanguageClient CreateClient();
 
         internal virtual object serverInitializationOptions { get; } = null;
 
@@ -36,7 +36,7 @@ namespace ClientExample
             {
                 var initializeId = InitializeServer(client);
                 var result = (InitializeResult)client.QueryResponse(initializeId).item;
-                Debug.Assert(client.Status == LSP.Client.StdioClient.Mode.ServerInitializeFinish);
+                Debug.Assert(client.Status == LSP.Implementation.LanguageClient.Mode.ServerInitializeFinish);
             }
 
             Console.WriteLine("==== InitializedClient ====");
@@ -68,7 +68,7 @@ namespace ClientExample
             //Console.ReadKey();
         }
 
-        internal virtual void publishDiagnostics(StdioClient client)
+        internal virtual void publishDiagnostics(LanguageClient client)
         {
             //Todo: あとで実装
             /*var diagnostics = client.PullTextDocumentPublishDiagnostics(sourceUri.AbsoluteUri);
@@ -80,7 +80,7 @@ namespace ClientExample
             Console.WriteLine(string.Format("diagnostics.diagnostics.Length={0}", diagnostics.diagnostics.Length));
             */
         }
-        internal virtual void Completion(StdioClient client)
+        internal virtual void Completion(LanguageClient client)
         {
             RequestId requestId;
             {
@@ -112,7 +112,7 @@ namespace ClientExample
             }
         }
 
-        internal virtual void DidChange(LSP.Client.StdioClient client)
+        internal virtual void DidChange(LSP.Implementation.LanguageClient client)
         {
             var text = File.ReadAllText(sourceUri.AbsolutePath, System.Text.Encoding.UTF8);
             ++sourceVersion;//ソースを更新したので+1する
@@ -123,14 +123,14 @@ namespace ClientExample
             param.textDocument.version = sourceVersion;
         }
 
-        internal virtual void DidChangeConfiguration(LSP.Client.StdioClient client)
+        internal virtual void DidChangeConfiguration(LSP.Implementation.LanguageClient client)
         {
             var param = new DidChangeConfigurationParams();
             param.settings = new object();
             client.Send.WorkspaceDidChangeConfiguration(param);
         }
 
-        internal virtual void DigOpen(LSP.Client.StdioClient client)
+        internal virtual void DigOpen(LSP.Implementation.LanguageClient client)
         {
             sourceVersion = 1;//Openしたのでとりあえず1にする。
 
@@ -141,19 +141,19 @@ namespace ClientExample
             param.textDocument.languageId = languageId;
             client.Send.TextDocumentDidOpen(param);
         }
-        internal virtual void DigClose(LSP.Client.StdioClient client)
+        internal virtual void DigClose(LSP.Implementation.LanguageClient client)
         {
             var param = new DidCloseTextDocumentParams();
             param.textDocument.uri = sourceUri.AbsoluteUri;
             client.Send.TextDocumentDidClose(param);
         }
-        internal virtual void InitializedClient(LSP.Client.StdioClient client)
+        internal virtual void InitializedClient(LSP.Implementation.LanguageClient client)
         {
             var param = new InitializedParams();
             client.Send.Initialized(param);
         }
 
-        internal virtual RequestId InitializeServer(LSP.Client.StdioClient client)
+        internal virtual RequestId InitializeServer(LSP.Implementation.LanguageClient client)
         {
             var param = UtilInitializeParams.Initialzie();
             param.rootUri = rootUri.AbsoluteUri;
@@ -163,7 +163,7 @@ namespace ClientExample
             return client.Send.Initialize(param);
         }
 
-        internal virtual void Shutdown(StdioClient client)
+        internal virtual void Shutdown(LanguageClient client)
         {
             var requestId = client.Send.Shutdown();
             var error = client.QueryResponse(requestId).item as ResponseError;

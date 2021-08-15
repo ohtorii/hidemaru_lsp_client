@@ -1,4 +1,4 @@
-﻿namespace LSP.Client
+﻿namespace LSP.Implementation
 {
     /// <summary>
     /// ログのインターフェース

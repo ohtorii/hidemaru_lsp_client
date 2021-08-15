@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LSP.Client
+namespace LSP.Implementation
 {
 	class Mediator
 	{

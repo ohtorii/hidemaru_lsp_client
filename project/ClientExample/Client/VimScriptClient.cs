@@ -13,7 +13,7 @@ namespace ClientExample
         internal override CompilationPosition compilationPosition => new CompilationPosition { line = 9, character = 6 };
         internal override object serverInitializationOptions { get { return CreateInitializationOptions(); } }
 
-        internal override LSP.Client.StdioClient CreateClient()
+        internal override LSP.Implementation.LanguageClient CreateClient()
         {
             string logFilename = Environment.ExpandEnvironmentVariables(@"D:\temp\LSP-Server\lsp_server_response_vim.txt");
 
@@ -23,9 +23,9 @@ namespace ClientExample
             var Arguments = string.Format("/c\"{0}\" --stdio", vimLanguageServerCmd);
             var WorkingDirectory = rootUri.AbsolutePath;
 
-            var client = new LSP.Client.StdioClient();
-            client.StartLspProcess(
-                new LSP.Client.StdioClient.LspParameter
+            var client = new LSP.Implementation.LanguageClient();
+            client.Start(
+                new LSP.Implementation.LanguageClient.LspParameter
                 {
                     exeFileName = FileName,
                     exeArguments = Arguments,
@@ -60,7 +60,7 @@ namespace ClientExample
             return string.Format(initializationOptions, vimruntime, runtimepath, isNeovim);
         }
 
-        internal override void DigOpen(LSP.Client.StdioClient client)
+        internal override void DigOpen(LSP.Implementation.LanguageClient client)
         {
             base.DigOpen(client);
             //Todo: サーバが準備できるまで正攻法でまつ

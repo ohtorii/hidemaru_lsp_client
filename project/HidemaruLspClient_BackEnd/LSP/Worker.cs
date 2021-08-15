@@ -1,4 +1,4 @@
-﻿using LSP.Client;
+﻿using LSP.Implementation;
 using LSP.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -42,7 +42,7 @@ namespace HidemaruLspClient
 
 
 		internal LspKey key { get; }
-		StdioClient				client_		 = null;
+		LanguageClient				client_		 = null;
 		Option					options_	 = null;
 		//List<string>			tempFilename = new List<string>();
 
@@ -116,9 +116,9 @@ namespace HidemaruLspClient
 			if (options_.WorkspaceConfig!="") {
 				WorkspaceConfiguration = (JObject)JsonConvert.DeserializeObject(options_.WorkspaceConfig);
 			}
-			client_ = new LSP.Client.StdioClient();
-			client_.StartLspProcess(
-				new LSP.Client.StdioClient.LspParameter
+			client_ = new LSP.Implementation.LanguageClient();
+			client_.Start(
+				new LSP.Implementation.LanguageClient.LspParameter
 				{
                     logger						= lspLogger_,
                     exeFileName					= options_.ExcutablePath,

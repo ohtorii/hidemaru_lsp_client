@@ -1,4 +1,4 @@
-﻿using LSP.Client;
+﻿using LSP.Implementation;
 using System;
 using System.IO;
 
@@ -19,7 +19,7 @@ namespace ClientExample
 
         internal override string languageId => "csharp";
 
-        internal override StdioClient CreateClient()
+        internal override LanguageClient CreateClient()
         {
 #if false
             //OK
@@ -36,9 +36,9 @@ namespace ClientExample
             Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\\.vscode\extensions\ms-dotnettools.csharp-1.23.14\.omnisharp\1.37.14\OmniSharp.exe");
 #endif
 
-            var client = new LSP.Client.StdioClient();
-            client.StartLspProcess(
-                new LSP.Client.StdioClient.LspParameter
+            var client = new LSP.Implementation.LanguageClient();
+            client.Start(
+                new LSP.Implementation.LanguageClient.LspParameter
                 {
                     exeFileName = FileName,
                     exeArguments = Arguments,

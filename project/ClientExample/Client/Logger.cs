@@ -2,7 +2,7 @@
 
 namespace ClientExample
 {
-    internal class Logger : LSP.Client.ILogger
+    internal class Logger : LSP.Implementation.ILogger
     {
         private static NLog.Logger logger = null;
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace LSP.Client
+namespace LSP.Implementation
 {
 	public class RequestId
 	{

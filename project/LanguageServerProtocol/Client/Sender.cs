@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
-using static LSP.Client.StdioClient;
+using static LSP.Implementation.LanguageClient;
 
-namespace LSP.Client
+namespace LSP.Implementation
 {
     class Sender
     {
@@ -29,15 +29,15 @@ namespace LSP.Client
 		Dictionary<RequestId, ResponseObject> response_ = new Dictionary<RequestId, ResponseObject>();
 		
         Action<RequestId, Action<ResponseMessage>> responseCallback_;
-		StdioClient.LspParameter param_;
-		Func<StdioClient.Mode> GetStatus_;
-		Action<StdioClient.Mode> SetStatus_;
+		LanguageClient.LspParameter param_;
+		Func<LanguageClient.Mode> GetStatus_;
+		Action<LanguageClient.Mode> SetStatus_;
 		Action<byte[]> WriteStandardInput_;
 
-		public Sender(StdioClient.LspParameter param,
+		public Sender(LanguageClient.LspParameter param,
                 Action<RequestId, Action<ResponseMessage>> responseCallback,
-                Func<StdioClient.Mode>		getStatus,
-                Action<StdioClient.Mode>	setStatus,
+                Func<LanguageClient.Mode>		getStatus,
+                Action<LanguageClient.Mode>	setStatus,
 				Action<byte[]>				writeStandardInput)
         {
 			responseCallback_      = responseCallback;

@@ -27,7 +27,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\DidCloseTextDocument.cs" />
     <Compile Include="..\LanguageServerProtocol\Client\ILogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\RequestIdGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Client\StdioClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\LanguageClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\Mediator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\Protocol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\ServerProcess.cs" />

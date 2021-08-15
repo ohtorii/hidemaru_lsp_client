@@ -3,15 +3,15 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 
-namespace LSP.Client
+namespace LSP.Implementation
 {
     class ClientEvents
     {
-		StdioClient.LspParameter param_;
+		LanguageClient.LspParameter param_;
 		Action<int, JArray> sendResponse_;
 		Dictionary<string, PublishDiagnosticsParams> publishDiagnostics_ = new Dictionary<string, PublishDiagnosticsParams>();
 
-		public ClientEvents(StdioClient.LspParameter param, Action<int, JArray> sendResponse)
+		public ClientEvents(LanguageClient.LspParameter param, Action<int, JArray> sendResponse)
         {
 			param_ = param;
 			sendResponse_ = sendResponse;

@@ -9,8 +9,8 @@ namespace HidemaruLspClient
     [ComDefaultInterface(typeof(ILspClientLogger))]*/
     public sealed class ComClientLogger : ILspClientLogger
     {
-		LSP.Client.ILogger logger_ = null;
-		public ComClientLogger(LSP.Client.ILogger logger)
+		LSP.Implementation.ILogger logger_ = null;
+		public ComClientLogger(LSP.Implementation.ILogger logger)
         {
 			logger_ = logger;
 

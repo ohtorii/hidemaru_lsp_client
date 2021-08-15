@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 
 
-namespace LSP.Client
+namespace LSP.Implementation
 {
     
 

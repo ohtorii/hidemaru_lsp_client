@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Threading;
 
 
-namespace LSP.Client
+namespace LSP.Implementation
 {
 	class ServerProcess
 	{
