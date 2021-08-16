@@ -529,10 +529,10 @@ namespace HidemaruLspClient_FrontEnd
         /// textDocument/completion
         /// </summary>
         /// <param name="absFilename"></param>
-        /// <param name="line"></param>
-        /// <param name="column"></param>
+        /// <param name="hidemaruLine"></param>
+        /// <param name="hidemaruColumn"></param>
         /// <returns>一時的な辞書ファイル名（ファイルはCOM側で一定時間後に削除します）</returns>
-        public string Completion(long line, long column)
+        public string Completion(long hidemaruLine, long hidemaruColumn)
         {
             try
             {
@@ -543,7 +543,9 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     return "";
                 }
-                return worker_.Completion(absFileName, line, column);
+                long line, character;
+                Hidemaru.HidemaruToZeroBase(out line, out character, hidemaruLine, hidemaruColumn);
+                return worker_.Completion(absFileName, line, character);
             }
             catch(Exception e)
             {
@@ -551,7 +553,8 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
-        public int Declaration(long line, long column)
+        //Todo: 後で実装
+        public int Declaration(long hidemaruLine, long hidemaruColumn)
         {
             try
             {
@@ -562,7 +565,9 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     return 0;
                 }
-                worker_.Declaration(absFileName, line, column);
+                long line, character;
+                Hidemaru.HidemaruToZeroBase(out line, out character, hidemaruLine, hidemaruColumn);
+                worker_.Declaration(absFileName, line, character);
             }
             catch (Exception e)
             {
@@ -570,7 +575,8 @@ namespace HidemaruLspClient_FrontEnd
             }
             return 0;
         }
-        public int Definition(long line, long column)
+        #region Definition
+        public LocationContainerImpl Definition(long hidemaruLine, long hidemaruColumn)
         {
             try
             {
@@ -579,16 +585,125 @@ namespace HidemaruLspClient_FrontEnd
                 var absFileName = FileProc();
                 if (String.IsNullOrEmpty(absFileName))
                 {
-                    return 0;
+                    return null;
                 }
-                worker_.Definition(absFileName, line, column);
+                long line, character;
+                Hidemaru.HidemaruToZeroBase(out line, out character, hidemaruLine, hidemaruColumn);
+                var locations = worker_.Definition(absFileName, line, character);
+                return new LocationContainerImpl(locations);
             }
             catch (Exception e)
             {
                 logger_.Error(e.ToString());
             }
-            return 0;
+            return null;
         }
+        public sealed class PositionImpl
+        {
+            public PositionImpl(HidemaruLspClient_BackEndContract.IPosition position)
+            {
+                if (position == null)
+                {
+                    hidemaruCharacter_ = -1;
+                    hidemaruLine_ = -1;
+                    return;
+                }
+                Hidemaru.ZeroBaseToHidemaru(out hidemaruLine_,
+                                            out hidemaruCharacter_,
+                                            position.line,
+                                            position.character);
+            }
+            public long character => hidemaruCharacter_;
+            public long line => hidemaruLine_;
+            
+            readonly long hidemaruCharacter_;
+            readonly long hidemaruLine_;
+        }
+        public sealed class RangeImpl
+        {
+            public RangeImpl(HidemaruLspClient_BackEndContract.IRange range)
+            {
+                range_ = range;
+            }
+            public PositionImpl start { 
+                get {
+                    if (range_ == null)
+                    {
+                        return null;
+                    }
+                    return new PositionImpl(range_.start);
+                } 
+            }
+            public PositionImpl end { 
+                get {
+                    if (range_ == null)
+                    {
+                        return null;
+                    }
+                    return new PositionImpl(range_.end);
+                } 
+            }
+            readonly HidemaruLspClient_BackEndContract.IRange range_;
+        }
+        public sealed class LocationImpl
+        {
+            public LocationImpl(HidemaruLspClient_BackEndContract.ILocation location)
+            {
+                location_ = location;
+            }
+            public string AbsFilename { 
+                get {
+                    if (location_ == null)
+                    {
+                        return "";
+                    }
+                    var uri = new Uri(location_.uri);
+                    return uri.AbsolutePath;
+                } 
+            }
+            public RangeImpl range { 
+                get {
+                    if (location_ == null)
+                    {
+                        return null;
+                    }
+                    return new RangeImpl(location_.range);
+                } 
+            }
+            readonly HidemaruLspClient_BackEndContract.ILocation location_;
+        }
+    
+        public sealed class LocationContainerImpl 
+        {
+            public LocationContainerImpl(HidemaruLspClient_BackEndContract.ILocationContainer locations)
+            {
+                locations_ = locations;
+            }
+            public LocationImpl Item(long index)
+            {
+                if (locations_ == null)
+                {
+                    return null;
+                }
+                return new LocationImpl(locations_.Item(index));
+            }
+
+            public long Length
+            {
+                get
+                {
+                    if (locations_ == null)
+                    {
+                        return 0;
+                    }
+                    return locations_.Length;
+                }
+            }
+
+            readonly HidemaruLspClient_BackEndContract.ILocationContainer locations_;
+        }
+        #endregion
+
         #endregion
 
     }   

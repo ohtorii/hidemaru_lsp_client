@@ -45,7 +45,6 @@ main:
         return false;
     }
 
-    debuginfo 1;
     $$obj = getstaticvariable($comObjectName,#comObjectShareMode);
     if($$obj!=""){
         ##obj = val($$obj);
@@ -99,8 +98,7 @@ LspSyncDocument:
 
 LspCompletion:
     ##obj=##1;
-    //Memo: -1して0始まりにする
-    $$dictionalyFileName=callmethod_returnstr(##obj, "Completion",lineno-1,column_wcs);
+    $$dictionalyFileName=callmethod_returnstr(##obj, "Completion",lineno,column_wcs);
     if($$dictionalyFileName==""){
         message "Completion に失敗";
         return false;
@@ -113,13 +111,77 @@ LspCompletion:
 
 LspDeclaration:
     ##obj=##1;
-    ##foo=callmethod_returnnum(##obj, "Declaration",lineno-1,column_wcs);
+    ##foo=callmethod_returnnum(##obj, "Declaration",lineno,column_wcs);
     return ;
 
 LspDefinition:
     ##obj=##1;
-    ##foo=callmethod_returnnum(##obj, "Definition",lineno-1,column_wcs);
-/*
+    ##LocationContainer=member(##obj, "Definition",lineno,column_wcs);
+    if(##LocationContainer==0){
+        return false;
+    }
+    call ForeachDefinitionContainer, ##LocationContainer, "DefinitionCallback";
+    if(#g_definitionNum==0){
+        return;
+    }
+    if(#g_definitionNum==1){
+        call GotoDefinition $g_definitionAbsFilename[0], #g_definitionLine[0], #g_definitionCharacter[0];
+        return ##return;
+    }
+    //あとで実装する
+    return true;
+
+#g_definitionNum         =0;
+$g_definitionAbsFilename[0] ="";
+#g_definitionLine[0]     =0;
+#g_definitionCharacter[0]=0;
+
+GotoDefinition:
+    $$absFilename=$$1;
+    ##startLine=##2;
+    ##startCharacter=##3;
+    debuginfo 1;
+    debuginfo "$$absFilename="+$$absFilename;
+    debuginfo "##startLine="+str(##startLine);
+    debuginfo "##startCharacter="+str(##startCharacter);
+    return ;
+
+DefinitionCallback:
+    ##i=#g_definitionNum;
+
+    $g_definitionAbsFilename[##i] =$$1;
+    #g_definitionLine[##i]     =##2;
+    #g_definitionCharacter[##i]=##3;
+
+    #g_definitionNum = #g_definitionNum + 1;
+    return ;
+
+ForeachDefinitionContainer:
+    ##LocationContainer=##1;
+    $$callback=$$2;
+
+    ##Length=member(##LocationContainer,"Length");
+    ##i=0;
+    while(##i < ##Length){
+        ##Location      =member(##LocationContainer,"Item", ##i);
+        $$absFilename   =member(##Location         ,"AbsFilename");
+        ##Range         =member(##Location         ,"range");
+        debuginfo "##Range="+str(##Range);
+        ##PositionStart =member(##Range            ,"start");
+        debuginfo "##PositionStart="+str(##PositionStart);
+        ##PositionEnd   =member(##Range            ,"end");
+
+        ##startLine     =member(##PositionStart    ,"line");
+        debuginfo"@@##startLine="+str(##startLine);
+        ##startCharacter=member(##PositionStart    ,"character");
+
+        call $$callback, $$absFilename, ##startLine, ##startCharacter;
+
+        ##i = ##i + 1;
+    }
+    return ;
+
+    /*
 LspLint:
     ##obj=##1;
     $$diagnostics=callmethod_returnstr(##obj, "Diagnostics");

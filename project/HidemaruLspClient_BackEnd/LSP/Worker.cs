@@ -169,9 +169,35 @@ namespace HidemaruLspClient
 			client_.Send.Exit();
 		}
 
-        #region 実装
-        #region DidOpen
-        [LogMethod]
+		#region 実装
+
+		sealed class PositionImpl : HidemaruLspClient_BackEndContract.IPosition
+		{
+			public PositionImpl(LSP.Model.IPosition pos)
+			{
+				pos_ = pos;
+			}			
+			long HidemaruLspClient_BackEndContract.IPosition.character => pos_.character;
+			long HidemaruLspClient_BackEndContract.IPosition.line => pos_.line;			
+			readonly LSP.Model.IPosition pos_;
+		}
+		sealed class RangeImpl : HidemaruLspClient_BackEndContract.IRange
+		{
+			public RangeImpl(LSP.Model.IPosition start, LSP.Model.IPosition end)
+			{
+				start_ = new PositionImpl(start);
+				end_ = new PositionImpl(end);
+			}		
+			HidemaruLspClient_BackEndContract.IPosition HidemaruLspClient_BackEndContract.IRange.start => start_;
+			HidemaruLspClient_BackEndContract.IPosition HidemaruLspClient_BackEndContract.IRange.end => end_;
+			readonly PositionImpl start_;
+			readonly PositionImpl end_;
+		}
+		
+
+
+		#region DidOpen
+		[LogMethod]
 		/// <summary>
 		/// 
 		/// </summary>
@@ -463,33 +489,7 @@ namespace HidemaruLspClient
             #endregion
         }
 		
-        sealed class RangeImpl : HidemaruLspClient_BackEndContract.IRange
-        {
-			readonly PositionImpl start_;
-			readonly PositionImpl end_;
-			public RangeImpl(LSP.Model.IPosition start, LSP.Model.IPosition end) {
-				start_ = new PositionImpl(start);
-				end_ = new PositionImpl(end);
-			}
-			#region implement
-			HidemaruLspClient_BackEndContract.IPosition HidemaruLspClient_BackEndContract.IRange.start => start_;
-
-			HidemaruLspClient_BackEndContract.IPosition HidemaruLspClient_BackEndContract.IRange.end => end_;
-			#endregion
-		}
-        sealed class PositionImpl : HidemaruLspClient_BackEndContract.IPosition
-        {
-			readonly LSP.Model.IPosition pos_;
-			public PositionImpl(LSP.Model.IPosition pos)
-            {
-				pos_ = pos;
-			}
-			#region implement
-			long HidemaruLspClient_BackEndContract.IPosition.character => pos_.character;
-
-            long HidemaruLspClient_BackEndContract.IPosition.line => pos_.line;
-			#endregion
-		}
+        
 		#endregion
 
 		[LogMethod]
@@ -513,25 +513,97 @@ namespace HidemaruLspClient
 			}
 		}
 
-        public void Definition(string absFilename, long line, long column)
+		ILocationContainer IWorker.Definition(string absFilename, long line, long column)
         {
+			var empty = new LocationContainerImpl(null);
 			if ((line < 0) || (column < 0))
 			{
-				return;
+				return empty;
 			}
-			var sourceUri = new Uri(absFilename);
-			var param = new DefinitionParams();
-			param.position.line = (uint)line;
-			param.position.character = (uint)column;
-			param.textDocument.uri = sourceUri.AbsoluteUri;
-
-			var id = client_.Send.TextDocumentDefinition(param);
-			var result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
-			if (result == null)
+			Location[] result;
 			{
-				return;
-			}
+				var sourceUri = new Uri(absFilename);
+				var param = new DefinitionParams();
+				param.position.line = (uint)line;
+				param.position.character = (uint)column;
+				param.textDocument.uri = sourceUri.AbsoluteUri;
+
+				var id = client_.Send.TextDocumentDefinition(param);
+				var response = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
+				if ((response == null) || (response.error != null))
+				{
+					return empty;
+				}
+				result = response.item as Location[];
+			}            
+			return new LocationContainerImpl(result);
 		}
-        #endregion
-    }
+
+		class LocationImpl : HidemaruLspClient_BackEndContract.ILocation
+		{
+			public LocationImpl(LSP.Model.ILocation location)
+            {
+				location_ = location;
+			}
+            public string uri
+            {
+                get
+                {
+                    if (location_ == null)
+                    {
+						return "";
+                    }
+					return location_.uri;
+				}
+            }
+            public HidemaruLspClient_BackEndContract.IRange range
+            {
+                get
+                {
+                    if (location_ == null)
+                    {
+						return null;
+                    }
+                    if (location_.range == null)
+                    {
+						return null;
+                    }
+					return new RangeImpl(location_.range.start, location_.range.end);
+                }
+            }
+
+            readonly LSP.Model.ILocation location_; 
+		}
+		class LocationContainerImpl: HidemaruLspClient_BackEndContract.ILocationContainer
+		{
+			public LocationContainerImpl(Location[] location)
+            {
+				location_ = location;
+			}
+			public HidemaruLspClient_BackEndContract.ILocation Item(long index)
+            {
+                if (location_ == null)
+                {
+					return null;
+                }
+				return new LocationImpl(location_[index]);
+
+			}
+
+            public long Length {
+                get
+                {
+                    if (location_ == null)
+                    {
+						return 0;
+                    }
+                    return location_.LongLength;
+                } 
+			}
+
+            readonly Location[] location_;
+
+		}
+		#endregion
+	}
 }

@@ -74,5 +74,15 @@ namespace HidemaruLspClient_FrontEnd
 			var cwch = Dll.SendMessage(hwndHidemaru, Constant.WM_HIDEMARUINFO, new IntPtr(Constant.HIDEMARUINFO_GETFILEFULLPATH), sb);
 			return sb.ToString();
 		}
+		public static void HidemaruToZeroBase(out long zerobaseLine, out long zerobaseCharacter, long hidemaruLine,  long hidemaruColumn)
+        {
+			zerobaseLine      = hidemaruLine	- 1;
+			zerobaseCharacter = hidemaruColumn	- 1;
+        }
+		public static void ZeroBaseToHidemaru(out long hidemaruLine, out long hidemaruColumn, long zerobaseLine,long zerobaseCharacter)
+		{
+			hidemaruLine   =zerobaseLine		+ 1;
+			hidemaruColumn =zerobaseCharacter	+ 1;
+		}
 	}
 }

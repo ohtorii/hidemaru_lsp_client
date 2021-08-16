@@ -182,11 +182,23 @@ namespace LSP.Implementation
 		}
 		void ActionTextDocumentDefinition(ResponseMessage response)
         {
-			var arg = (JToken)response.result;
+			Location[] f(JToken arg)
+			{
+				if (arg == null)
+				{
+					return null;
+				}
+				if (arg is JArray)
+				{
+					//CompletionItem[]の場合
+					return arg.ToObject<Location[]>();
+				}
+				return new Location[] { arg.ToObject<Location>() };				
+			}
 			StoreResponse(
 				response.id,
 				response.error,
-				arg,/*Todo: とりあえず、このまま格納してコンパイルを通す。後で修正*/
+				f((JToken)response.result),
 				null);
 		}
 		public void WorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)

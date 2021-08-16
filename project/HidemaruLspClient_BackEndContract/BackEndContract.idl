@@ -33,25 +33,14 @@ interface ILspClientLogger :IDispatch {
     HRESULT Fatal([in]BSTR message);
 };
 
-///////////////////////////////////////////////////////////////////////////
-/// IPublishDiagnosticsParams
-///////////////////////////////////////////////////////////////////////////
- enum DiagnosticSeverity
-{
-    Error = 1,
-    Warning = 2,
-    Information = 3,
-    Hint = 4
-};
-
 [
     object,
     oleautomation,
     uuid(53A84500-EAF3-4248-B167-D9921EE8AB51)
 ]
-interface IPosition:IDispatch
+interface IPosition :IDispatch
 {
-    [propget] HRESULT character([out,retval]hyper*ret);
+    [propget] HRESULT character([out, retval]hyper* ret);
     [propget] HRESULT line([out, retval]hyper* ret);
 };
 
@@ -64,6 +53,17 @@ interface IRange :IDispatch
 {
     [propget] HRESULT start([out, retval]IPosition** ret);
     [propget] HRESULT end([out, retval]IPosition** ret);
+};
+
+///////////////////////////////////////////////////////////////////////////
+/// IPublishDiagnosticsParams
+///////////////////////////////////////////////////////////////////////////
+ enum DiagnosticSeverity
+{
+    Error = 1,
+    Warning = 2,
+    Information = 3,
+    Hint = 4
 };
 
 [
@@ -104,6 +104,28 @@ interface IPublishDiagnosticsParamsContainer :IDispatch {
 };
 
 
+///////////////////////////////////////////////////////////////////////////
+/// Definition
+///////////////////////////////////////////////////////////////////////////
+[
+    object,
+    oleautomation,
+    uuid(53607e16-3217-42ac-85e1-15fa73ea4443)
+]
+interface ILocation : IDispatch {
+    [propget] HRESULT uri([out, retval]BSTR* ret);
+    [propget] HRESULT range([out,retval]IRange**ret);
+};
+
+[
+    object,
+    oleautomation,
+    uuid(9eb0d011-b352-4972-830b-b48ac560471e)
+]
+interface ILocationContainer : IDispatch{
+    [propget] HRESULT Length([out, retval]hyper* length);
+    HRESULT Item([in]hyper index, [out, retval]ILocation** ret);
+};
 
 ///////////////////////////////////////////////////////////////////////////
 /// IWorker
@@ -121,7 +143,7 @@ interface IWorker :IDispatch
     HRESULT Completion([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out,retval]BSTR*retval);
     HRESULT PullDiagnosticsParams([out, retval] IPublishDiagnosticsParamsContainer** ret);
     HRESULT Declaration([in]BSTR absFilename, [in]hyper line, [in]hyper column);
-    HRESULT Definition([in]BSTR absFilename, [in]hyper line, [in]hyper column);
+    HRESULT Definition([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out,retval]ILocationContainer**ret);
 }
 
 [
