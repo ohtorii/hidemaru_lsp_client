@@ -128,6 +128,7 @@ LspDefinition:
         call GotoDefinition $g_definitionAbsFilename[0], #g_definitionLine[0], #g_definitionCharacter[0];
         return ##return;
     }
+    message "【未実装】Goto Definition の複数選択"
     //あとで実装する
     return true;
 
@@ -140,18 +141,21 @@ GotoDefinition:
     $$absFilename=$$1;
     ##startLine=##2;
     ##startCharacter=##3;
-    debuginfo 1;
+    $$position=sprintf(R"(/j%d,%d)",##startLine,##startCharacter);
+    openfile $$position + " " + $$absFilename;
+    /*debuginfo 1;
     debuginfo "$$absFilename="+$$absFilename;
     debuginfo "##startLine="+str(##startLine);
-    debuginfo "##startCharacter="+str(##startCharacter);
+    debuginfo "##startCharacter="+str(##startCharacter);*/
+
     return ;
 
 DefinitionCallback:
     ##i=#g_definitionNum;
 
-    $g_definitionAbsFilename[##i] =$$1;
-    #g_definitionLine[##i]     =##2;
-    #g_definitionCharacter[##i]=##3;
+    $g_definitionAbsFilename[##i]  =$$1;
+    #g_definitionLine[##i]         =##2;
+    #g_definitionCharacter[##i]    =##3;
 
     #g_definitionNum = #g_definitionNum + 1;
     return ;
@@ -166,14 +170,13 @@ ForeachDefinitionContainer:
         ##Location      =member(##LocationContainer,"Item", ##i);
         $$absFilename   =member(##Location         ,"AbsFilename");
         ##Range         =member(##Location         ,"range");
-        debuginfo "##Range="+str(##Range);
         ##PositionStart =member(##Range            ,"start");
-        debuginfo "##PositionStart="+str(##PositionStart);
         ##PositionEnd   =member(##Range            ,"end");
 
         ##startLine     =member(##PositionStart    ,"line");
-        debuginfo"@@##startLine="+str(##startLine);
         ##startCharacter=member(##PositionStart    ,"character");
+        ##endLine       =member(##PositionEnd      ,"line");
+        ##endCharacter  =member(##PositionEnd      ,"character");
 
         call $$callback, $$absFilename, ##startLine, ##startCharacter;
 
