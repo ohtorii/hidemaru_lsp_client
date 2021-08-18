@@ -18,8 +18,8 @@ namespace HidemaruLspClient_FrontEnd
         static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
 
         IHidemaruLspBackEndServer server_ = null;
-        IWorker worker_ = null;
-        ILspClientLogger logger_ = null;        
+        IWorker worker_                   = null;
+        ILspClientLogger logger_          = null;        
 
         class Document
         {
@@ -334,6 +334,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             Task task_;
             IWorker worker_;
+            ILspClientLogger logger_;
             CancellationToken cancellationToken_;
 
             /// <summary>
@@ -347,26 +348,34 @@ namespace HidemaruLspClient_FrontEnd
             /// </summary>
             bool outputPaneCleard_;
 
-            public Diagnostics(IWorker worker, CancellationToken cancellationToken)
+            public Diagnostics(IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
             {
                 hwndHidemaru_     = Hidemaru.Hidemaru_GetCurrentWindowHandle();
                 outputPaneCleard_ = false;
 
                 worker_            = worker;
+                logger_ = logger;
                 cancellationToken_ = cancellationToken;                
                 task_              =Task.Run(MainLoop, cancellationToken_);
             }
             void MainLoop()
             {
                 //Todoポーリングではなくイベント通知にする
-                while (true)
+                try
                 {
-                    if (cancellationToken_.IsCancellationRequested)
+                    while (true)
                     {
-                        return;
+                        if (cancellationToken_.IsCancellationRequested)
+                        {
+                            return;
+                        }
+                        Process();
+                        Thread.Sleep(500);
                     }
-                    Process();
-                    Thread.Sleep(500);
+                }catch(System.Runtime.InteropServices.COMException e)
+                {
+                    //COMサーバ(.exe)が終了したため、ログ出力してからポーリング動作を終了させる。
+                    logger_.Error(e.ToString());
                 }
             }
             void Process()
@@ -447,7 +456,7 @@ namespace HidemaruLspClient_FrontEnd
 
             if (diagnostics_ == null)
             {
-                diagnostics_ = new Diagnostics(worker_, tokenSource_.Token);
+                diagnostics_ = new Diagnostics(worker_, logger_, tokenSource_.Token);
             }
             
             return true;
@@ -553,30 +562,10 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
-        //Todo: 後で実装
-        public int Declaration(long hidemaruLine, long hidemaruColumn)
-        {
-            try
-            {
-                Debug.Assert(worker_ != null);
 
-                var absFileName = FileProc();
-                if (String.IsNullOrEmpty(absFileName))
-                {
-                    return 0;
-                }
-                long line, character;
-                Hidemaru.HidemaruToZeroBase(out line, out character, hidemaruLine, hidemaruColumn);
-                worker_.Declaration(absFileName, line, character);
-            }
-            catch (Exception e)
-            {
-                logger_.Error(e.ToString());
-            }
-            return 0;
-        }
-        #region Definition
-        public LocationContainerImpl Definition(long hidemaruLine, long hidemaruColumn)
+        #region Impl
+        delegate ILocationContainer InvokeWorker(string absFilename, long line, long character);
+        LocationContainerImpl CommonImplementationsOfGoto(long hidemaruLine, long hidemaruColumn, InvokeWorker invoke)
         {
             try
             {
@@ -589,7 +578,7 @@ namespace HidemaruLspClient_FrontEnd
                 }
                 long line, character;
                 Hidemaru.HidemaruToZeroBase(out line, out character, hidemaruLine, hidemaruColumn);
-                var locations = worker_.Definition(absFileName, line, character);
+                var locations = invoke(absFileName, line, character);
                 return new LocationContainerImpl(locations);
             }
             catch (Exception e)
@@ -703,7 +692,26 @@ namespace HidemaruLspClient_FrontEnd
             readonly HidemaruLspClient_BackEndContract.ILocationContainer locations_;
         }
         #endregion
-
+        public LocationContainerImpl Declaration(long hidemaruLine, long hidemaruColumn)
+        {
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.Declaration);
+        }
+        public LocationContainerImpl Definition(long hidemaruLine, long hidemaruColumn)
+        {
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.Definition);
+        }
+        public LocationContainerImpl TypeDefinition(long hidemaruLine, long hidemaruColumn)
+        {
+            return CommonImplementationsOfGoto(hidemaruLine,hidemaruColumn, worker_.TypeDefinition);
+        }
+        public LocationContainerImpl Implementation(long hidemaruLine, long hidemaruColumn)
+        {
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.Implementation);
+        }
+        public LocationContainerImpl References(long hidemaruLine, long hidemaruColumn)
+        {
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.References);
+        }
         #endregion
 
     }   

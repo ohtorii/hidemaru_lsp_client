@@ -73,6 +73,9 @@ main:
             , "Completion"
             , "Declaration"
             , "Definition"
+            , "TypeDefinition"
+            , "Implementation"
+            , "References"
             ;
     if(result==0){
         return;
@@ -83,10 +86,19 @@ main:
         call LspCompletion ##obj;
         return ##return;
     }else if(result==3){
-        call LspDeclaration ##obj;
+        call LspGoto "Declaration", ##obj;
         return ##return;
     }else if(result==4){
-        call LspDefinition ##obj;
+        call LspGoto "Definition", ##obj;
+        return ##return;
+    }else if(result==5){
+        call LspGoto "TypeDefinition", ##obj;
+        return ##return;
+    }else if(result==6){
+        call LspGoto "Implementation", ##obj;
+        return ##return;
+    }else if(result==7){
+        call LspGoto "References", ##obj;
         return ##return;
     }
     return false;
@@ -109,40 +121,48 @@ LspCompletion:
     //Memo: マクロはこの行に到達しない
     return true;
 
-LspDeclaration:
-    ##obj=##1;
-    ##foo=callmethod_returnnum(##obj, "Declaration",lineno,column_wcs);
-    return ;
-
-LspDefinition:
-    ##obj=##1;
-    ##LocationContainer=member(##obj, "Definition",lineno,column_wcs);
+LspGoto:
+    $$Method=$$1;
+    ##obj   =##2;
+    ##LocationContainer=member(##obj, $$Method,lineno,column_wcs);
     if(##LocationContainer==0){
         return false;
     }
-    call ForeachDefinitionContainer, ##LocationContainer, "DefinitionCallback";
-    if(#g_definitionNum==0){
+    call ForeachLocationContainer, ##LocationContainer, "LocationCallback";
+    if(#g_locationNum==0){
         return;
     }
-    if(#g_definitionNum==1){
-        call GotoDefinition $g_definitionAbsFilename[0], #g_definitionLine[0], #g_definitionCharacter[0];
+    if(#g_locationNum==1){
+        call GotoLocation $g_locationAbsFilename[0], #g_locationLine[0], #g_locationCharacter[0];
         return ##return;
     }
-    message "【未実装】Goto Definition の複数選択"
-    //あとで実装する
-    return true;
 
-#g_definitionNum         =0;
-$g_definitionAbsFilename[0] ="";
-#g_definitionLine[0]     =0;
-#g_definitionCharacter[0]=0;
+    ##i=0;
+    while(##i < #g_locationNum){
+    	$$menu[##i]=sprintf(R"(%s(%d,%d))",$g_locationAbsFilename[##i],#g_locationLine[##i],#g_locationCharacter[##i]);
+    	##i = ##i + 1;
+    }
+    menuarray $$menu, #g_locationNum;
+    if(result==0){
+        return false;
+    }
+    ##menuIndex=result-1;
+    call GotoLocation $g_locationAbsFilename[##menuIndex],#g_locationLine[##menuIndex],#g_locationCharacter[##menuIndex];
+    return ##return;
 
-GotoDefinition:
-    $$absFilename=$$1;
-    ##startLine=##2;
+
+#g_locationNum            =0;
+$g_locationAbsFilename[0] ="";
+#g_locationLine[0]        =0;
+#g_locationCharacter[0]   =0;
+
+GotoLocation:
+    $$absFilename   =$$1;
+    ##startLine     =##2;
     ##startCharacter=##3;
     $$position=sprintf(R"(/j%d,%d)",##startLine,##startCharacter);
     openfile $$position + " " + $$absFilename;
+    //moveto2 ##startCharacter, ##startLine;
     /*debuginfo 1;
     debuginfo "$$absFilename="+$$absFilename;
     debuginfo "##startLine="+str(##startLine);
@@ -150,17 +170,17 @@ GotoDefinition:
 
     return ;
 
-DefinitionCallback:
-    ##i=#g_definitionNum;
+LocationCallback:
+    ##i=#g_locationNum;
 
-    $g_definitionAbsFilename[##i]  =$$1;
-    #g_definitionLine[##i]         =##2;
-    #g_definitionCharacter[##i]    =##3;
+    $g_locationAbsFilename[##i]  =$$1;
+    #g_locationLine[##i]         =##2;
+    #g_locationCharacter[##i]    =##3;
 
-    #g_definitionNum = #g_definitionNum + 1;
+    #g_locationNum = #g_locationNum + 1;
     return ;
 
-ForeachDefinitionContainer:
+ForeachLocationContainer:
     ##LocationContainer=##1;
     $$callback=$$2;
 

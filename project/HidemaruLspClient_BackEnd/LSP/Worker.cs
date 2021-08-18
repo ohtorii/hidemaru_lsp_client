@@ -488,33 +488,80 @@ namespace HidemaruLspClient
             }
             #endregion
         }
-		
-        
+
+
 		#endregion
 
-		[LogMethod]
-		void IWorker.Declaration(string absFilename, long line, long column)
+		#region Location
+		class LocationImpl : HidemaruLspClient_BackEndContract.ILocation
 		{
-			if ((line < 0) || (column < 0))
+			public LocationImpl(LSP.Model.ILocation location)
 			{
-				return;
+				location_ = location;
 			}
-			var sourceUri = new Uri(absFilename);
-			var param = new DeclarationParams();
-			param.position.line = (uint)line;
-			param.position.character = (uint)column;
-			param.textDocument.uri = sourceUri.AbsoluteUri;
+			public string uri
+			{
+				get
+				{
+					if (location_ == null)
+					{
+						return "";
+					}
+					return location_.uri;
+				}
+			}
+			public HidemaruLspClient_BackEndContract.IRange range
+			{
+				get
+				{
+					if (location_ == null)
+					{
+						return null;
+					}
+					if (location_.range == null)
+					{
+						return null;
+					}
+					return new RangeImpl(location_.range.start, location_.range.end);
+				}
+			}
 
-			var id = client_.Send.TextDocumentDeclaration(param);
-			var result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
-			if (result == null)
-			{
-				return ;
-			}
+			readonly LSP.Model.ILocation location_;
 		}
+		class LocationContainerImpl : HidemaruLspClient_BackEndContract.ILocationContainer
+		{
+			public LocationContainerImpl(Location[] location)
+			{
+				location_ = location;
+			}
+			public HidemaruLspClient_BackEndContract.ILocation Item(long index)
+			{
+				if (location_ == null)
+				{
+					return null;
+				}
+				return new LocationImpl(location_[index]);
 
-		ILocationContainer IWorker.Definition(string absFilename, long line, long column)
-        {
+			}
+
+			public long Length
+			{
+				get
+				{
+					if (location_ == null)
+					{
+						return 0;
+					}
+					return location_.LongLength;
+				}
+			}
+
+			readonly Location[] location_;
+
+		}
+		#endregion
+		ILocationContainer CommonProcessingOfGoto(string absFilename, long line, long column, ITextDocumentPositionParams param, Func<ITextDocumentPositionParams, RequestId> func)
+		{
 			var empty = new LocationContainerImpl(null);
 			if ((line < 0) || (column < 0))
 			{
@@ -523,87 +570,46 @@ namespace HidemaruLspClient
 			Location[] result;
 			{
 				var sourceUri = new Uri(absFilename);
-				var param = new DefinitionParams();
 				param.position.line = (uint)line;
 				param.position.character = (uint)column;
 				param.textDocument.uri = sourceUri.AbsoluteUri;
-
-				var id = client_.Send.TextDocumentDefinition(param);
+				var id = func(param);
 				var response = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
 				if ((response == null) || (response.error != null))
 				{
 					return empty;
 				}
 				result = response.item as Location[];
-			}            
+			}
 			return new LocationContainerImpl(result);
 		}
-
-		class LocationImpl : HidemaruLspClient_BackEndContract.ILocation
+		[LogMethod]
+		ILocationContainer IWorker.Declaration(string absFilename, long line, long column)
 		{
-			public LocationImpl(LSP.Model.ILocation location)
-            {
-				location_ = location;
-			}
-            public string uri
-            {
-                get
-                {
-                    if (location_ == null)
-                    {
-						return "";
-                    }
-					return location_.uri;
-				}
-            }
-            public HidemaruLspClient_BackEndContract.IRange range
-            {
-                get
-                {
-                    if (location_ == null)
-                    {
-						return null;
-                    }
-                    if (location_.range == null)
-                    {
-						return null;
-                    }
-					return new RangeImpl(location_.range.start, location_.range.end);
-                }
-            }
-
-            readonly LSP.Model.ILocation location_; 
+			var param = new DeclarationParams();
+			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentDeclaration((DeclarationParams)arg));			
+		}						
+		ILocationContainer IWorker.Definition(string absFilename, long line, long column)
+        {
+			var param = new DefinitionParams();
+            return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentDefinition((DefinitionParams)arg));
 		}
-		class LocationContainerImpl: HidemaruLspClient_BackEndContract.ILocationContainer
-		{
-			public LocationContainerImpl(Location[] location)
-            {
-				location_ = location;
-			}
-			public HidemaruLspClient_BackEndContract.ILocation Item(long index)
-            {
-                if (location_ == null)
-                {
-					return null;
-                }
-				return new LocationImpl(location_[index]);
-
-			}
-
-            public long Length {
-                get
-                {
-                    if (location_ == null)
-                    {
-						return 0;
-                    }
-                    return location_.LongLength;
-                } 
-			}
-
-            readonly Location[] location_;
-
+        ILocationContainer IWorker.TypeDefinition(string absFilename, long line, long column)
+        {
+			var param = new TypeDefinitionParams();
+			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentTypeDefinition((TypeDefinitionParams)arg));
 		}
-		#endregion
-	}
+        public ILocationContainer Implementation(string absFilename, long line, long column)
+        {
+			var param = new ImplementationParams();
+			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentImplementation((ImplementationParams)arg));
+		}
+
+        public ILocationContainer References(string absFilename, long line, long column)
+        {
+			var param = new ReferencesParams();
+			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentReferences((ReferencesParams)arg));
+		}
+        #endregion
+    }
 }

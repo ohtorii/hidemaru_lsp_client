@@ -64,8 +64,8 @@ namespace LSP.Model
 				return m_position;
             } 
 		}
-		ProgressToken IWorkDoneProgressParams.workDoneToken { get; set; }
-		ProgressToken IPartialResultParams.partialResultToken { get; set; }
+		public ProgressToken workDoneToken { get; set; }
+		public ProgressToken partialResultToken { get; set; }
 
 		[JsonIgnore] TextDocumentIdentifier m_textDocumentIdentifier;
 		[JsonIgnore] Position m_position;

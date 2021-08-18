@@ -129,8 +129,13 @@ namespace LSP.Implementation
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
 			Notification(param, "textDocument/didClose");
 		}
-        #region Completion
-        public RequestId TextDocumentCompletion(ICompletionParams param)
+		public void WorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)
+		{
+			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
+			Notification(param, "workspace/didChangeConfiguration");
+		}
+		#region Completion
+		public RequestId TextDocumentCompletion(ICompletionParams param)
 		{
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
 			return Request(param, "textDocument/completion", ActionTextDocumentCompletion);
@@ -160,29 +165,11 @@ namespace LSP.Implementation
 			}
 			StoreResponse(response.id, response.error, f((JToken)response.result), null);
 		}
-		#endregion
-		public RequestId TextDocumentDeclaration(IDeclarationParams param)
-        {
-			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
-			return Request(param, "textDocument/declaration", ActionTextDocumentDeclaration);
-		}
-		void ActionTextDocumentDeclaration(ResponseMessage response)
-        {            
-			var arg = (JToken)response.result;
-			StoreResponse(
-				response.id,
-				response.error,
-				arg,/*Todo: とりあえず、このまま格納してコンパイルを通す。後で修正*/
-				null);
-		}
-		public RequestId TextDocumentDefinition(IDefinitionParams param)
-        {
-			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
-			return Request(param, "textDocument/definition", ActionTextDocumentDefinition);
-		}
-		void ActionTextDocumentDefinition(ResponseMessage response)
-        {
-			Location[] f(JToken arg)
+		#endregion		
+
+		void ActionTextDocumentGoto(ResponseMessage response)
+		{
+			Location[] JTokenToLocations(JToken arg)
 			{
 				if (arg == null)
 				{
@@ -193,18 +180,39 @@ namespace LSP.Implementation
 					//CompletionItem[]の場合
 					return arg.ToObject<Location[]>();
 				}
-				return new Location[] { arg.ToObject<Location>() };				
+				return new Location[] { arg.ToObject<Location>() };
 			}
+
 			StoreResponse(
 				response.id,
 				response.error,
-				f((JToken)response.result),
+				JTokenToLocations((JToken)response.result),
 				null);
 		}
-		public void WorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)
-		{
+		RequestId TextDocumentGoto(object param, string method)
+        {
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
-			Notification(param, "workspace/didChangeConfiguration");
+			return Request(param, method, ActionTextDocumentGoto);
+		}
+		public RequestId TextDocumentDeclaration(IDeclarationParams param)
+        {
+			return TextDocumentGoto(param, "textDocument/declaration");			
+		}				
+		public RequestId TextDocumentDefinition(IDefinitionParams param)
+        {
+			return TextDocumentGoto(param, "textDocument/definition");
+		}						
+		public RequestId TextDocumentTypeDefinition(ITypeDefinitionParams param)
+		{
+			return TextDocumentGoto(param, "textDocument/typeDefinition");
+		}		
+		public RequestId TextDocumentImplementation(IImplementationParams param)
+		{
+			return TextDocumentGoto(param, "textDocument/implementation");
+		}
+		public RequestId TextDocumentReferences(IReferencesParams param)
+		{
+			return TextDocumentGoto(param, "textDocument/references");
 		}
 
 		#region  リクエストの返信

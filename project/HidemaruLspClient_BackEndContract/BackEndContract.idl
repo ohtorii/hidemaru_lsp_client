@@ -142,8 +142,11 @@ interface IWorker :IDispatch
     HRESULT DidClose([in]BSTR absFilename);
     HRESULT Completion([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out,retval]BSTR*retval);
     HRESULT PullDiagnosticsParams([out, retval] IPublishDiagnosticsParamsContainer** ret);
-    HRESULT Declaration([in]BSTR absFilename, [in]hyper line, [in]hyper column);
+    HRESULT Declaration([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out, retval]ILocationContainer** ret);
     HRESULT Definition([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out,retval]ILocationContainer**ret);
+    HRESULT TypeDefinition([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out, retval]ILocationContainer** ret);
+    HRESULT Implementation([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out, retval]ILocationContainer** ret);
+    HRESULT References([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out, retval]ILocationContainer** ret);
 }
 
 [

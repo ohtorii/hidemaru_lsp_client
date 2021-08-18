@@ -4,18 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foo{
-	/// <summary>
-	/// Summary description for Hoge
-	/// </summary>
-	class Hoge{
-        public Hoge(){
-
-        }
-        public int  Test(){}
-    }
-}       /*Foo*/
-
 namespace simple
 {
     class Program
@@ -24,6 +12,8 @@ namespace simple
         {
             //System.Console. ;
             var h=new Hoge();
+            var h2=new Hoge();
+            var h3=new Hoge();
 /*a𐐀b*/Hoge.;
             int x=1;
             int y=2;
