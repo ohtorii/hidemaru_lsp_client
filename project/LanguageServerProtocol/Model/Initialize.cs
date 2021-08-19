@@ -163,7 +163,7 @@ namespace LSP.Model
 		/**
 		 * The server provides document link support.
 		 */
-		DocumentLinkOptions documentLinkProvider=null;
+		public DocumentLinkOptions documentLinkProvider=null;
 
 		/**
 		 * The server provides color provider support.
@@ -227,7 +227,7 @@ namespace LSP.Model
 		 */
 		public BooleanOr<CallHierarchyRegistrationOptions>/*boolean | CallHierarchyOptions| CallHierarchyRegistrationOptions;*/ callHierarchyProvider=null;
 
-		//ToDo:後で実装
+		//ToDo:後で実装(semanticTokensProvider)
 #if false
 		/**
 		 * The server provides semantic tokens support.

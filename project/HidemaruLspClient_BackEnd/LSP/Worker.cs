@@ -36,20 +36,22 @@ namespace HidemaruLspClient
 		/// 通信のタイムアウト値(単位は㎳)
 		/// (Memo)6000では短いため現在は12000で運用中
 		/// </summary>
-		const int defaultTimeout = 12000;
-		static bool				initialized_ = false;
-		static LspClientLogger	lspLogger_   = null;
+		const int defaultTimeout                 = 12000;
+		static bool				initialized_     = false;
+		static LspClientLogger	lspLogger_       = null;
 
 
 		internal LspKey key { get; }
 		LanguageClient				client_		 = null;
-		Option					options_	 = null;
-		//List<string>			tempFilename = new List<string>();
-
+		Option					options_	     = null;
+		//List<string>			tempFilename     = new List<string>();
+		
+		InitializeResult		initializeResult_= null;
+		HidemaruLspClient_BackEnd.LSP.ServerCapabilities serverCapabilities_ = null;
 		/// <summary>
 		/// completionで返した一時ファイル名
 		/// </summary>
-		TempFileOne prevCompletionTempFile_ =new TempFileOne();
+		TempFileOne prevCompletionTempFile_      =new TempFileOne();
 
 		/// <summary>
 		/// 秀丸エディタのProcessId
@@ -100,11 +102,31 @@ namespace HidemaruLspClient
 			}
 			
 			var reqId=InitializeServer();
-			var response = client_.QueryResponse(reqId, millisecondsTimeout: defaultTimeout).item as InitializeResult;
-            if (response == null)
+			var response = client_.QueryResponse(reqId, millisecondsTimeout: defaultTimeout);
+			if ((response == null) || (response.item == null) || (response.error != null))
             {
 				return false;
 			}
+			initializeResult_ = (InitializeResult)response.item;
+			/*{//debug
+				bool v = false;
+				//var p = result.capabilities.declarationProvider;
+				var p = result.capabilities.definitionProvider;
+				if (p == null) {
+					v = false;
+                }else { 
+					if (p.IsBool)
+					{
+						v = p.Bool;
+					}
+					else
+					{
+						v = true;
+					}
+				}
+				//Console.WriteLine(string.Format("declarationProvider={0}",v));
+				Console.WriteLine(string.Format("definitionProvider={0}", v));
+			}*/
 			InitializedClient();			
 			return true;
 		}
@@ -610,6 +632,18 @@ namespace HidemaruLspClient
 			var param = new ReferencesParams();
 			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentReferences((ReferencesParams)arg));
 		}
+
+        public IServerCapabilities ServerCapabilities
+		{
+            get
+            {
+				if (serverCapabilities_ == null)
+				{
+					serverCapabilities_ = new HidemaruLspClient_BackEnd.LSP.ServerCapabilities(initializeResult_);
+				}
+				return serverCapabilities_;
+			}
+        }
         #endregion
     }
 }

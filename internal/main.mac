@@ -55,16 +55,13 @@ main:
             return false;
         }
         setcomdetachmethod ##obj,"Finalizer";
-        ##n=callmethod_returnnum(##obj,"Initialize",$logFileName,$$absConfigFileName,directory2);
+        ##n=member(##obj,"Initialize",$logFileName,$$absConfigFileName,directory2);
         if(##n==false){
             message "Initializeに失敗";
             return false;
         }
-        /*##n=callmethod_returnnum(##obj,"CreateWorker",$$absConfigFileName,directory2);
-        if(##n==false){
-            message "CreateWorker に失敗";
-            return false;
-        }*/
+        ##serverCapabilities=member(##obj,"ServerCapabilities");
+        call LspServerCapabilities ##serverCapabilities;
 
         setstaticvariable $comObjectName,str(##obj),#comObjectShareMode;
         keepobject ##obj, 2;
@@ -105,7 +102,7 @@ main:
 
 LspSyncDocument:
     ##obj=##1;
-    ##success=callmethod_returnnum(##obj, "SyncDocument");
+    ##success=member(##obj, "SyncDocument");
     return ##success;
 
 LspCompletion:
@@ -204,23 +201,46 @@ ForeachLocationContainer:
     }
     return ;
 
-    /*
-LspLint:
-    ##obj=##1;
-    $$diagnostics=callmethod_returnstr(##obj, "Diagnostics");
-    //message $$diagnostics;
-    ##outputHandle=loaddll("HmOutputPane.dll");
+LspServerCapabilities:
+    ##serverCapabilities=##1;
 
-    //アウトプット枠の内容をクリア
-    ##h=dllfunc(##outputHandle,"GetWindowHandle",hidemaruhandle(0));
-    ##ret=sendmessage(##h,0x111,1009,0); //0x111==WM_COMMAND , 1009=クリア
+    ##capabilitiesNum=0;
+    $$capabilities[##capabilitiesNum]="CompletionProvider"              ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="HoverProvider"                   ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="SignatureHelpProvider"           ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="DeclarationProvider"             ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="DefinitionProvider"              ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="TypeDefinitionProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="ImplementationProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="ReferencesProvider"              ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="DocumentHighlightProvider"       ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="DocumentSymbolProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="CodeActionProvider"              ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="CodeLensProvider"                ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="DocumentLinkProvider"            ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="ColorProvider"                   ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="DocumentFormattingProvider"      ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="DocumentRangeFormattingProvider" ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="DocumentOnTypeFormattingProvider";##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="RenameProvider"                  ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="FoldingRangeProvider"            ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="ExecuteCommandProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="SelectionRangeProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="LinkedEditingRangeProvider"      ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="CallHierarchyProvider"           ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="SemanticTokensProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="MonikerProvider"                 ;##capabilitiesNum=##capabilitiesNum+1;
+    $$capabilities[##capabilitiesNum]="WorkspaceSymbolProvider"         ;##capabilitiesNum=##capabilitiesNum+1;
 
-    if($$diagnostics!=""){
-        ##ret=dllfunc(##outputHandle,"Output",hidemaruhandle(0),$$diagnostics);
+    debuginfo 1;
+    ##i=0;
+    while(##i < ##capabilitiesNum){
+        $$provider=$$capabilities[##i];
+    	##enable=member(##serverCapabilities,$$provider);
+    	debuginfo $$provider + "=" + str(##enable);
+    	##i = ##i + 1;
     }
-    freedll(##outputHandle);
-    return true;
-*/
+    return ;
 
 
 FindServerConfigFile:

@@ -128,6 +128,44 @@ interface ILocationContainer : IDispatch{
 };
 
 ///////////////////////////////////////////////////////////////////////////
+/// Provider
+///////////////////////////////////////////////////////////////////////////
+[
+    object,
+    oleautomation,
+    uuid(0ad45c64-1c79-445a-b089-975a2240afe8)
+]
+interface IServerCapabilities : IDispatch {
+    [propget] HRESULT CompletionProvider([out, retval]boolean* ret);
+    [propget] HRESULT HoverProvider([out, retval]boolean* ret);
+    [propget] HRESULT SignatureHelpProvider([out, retval]boolean* ret);
+    [propget] HRESULT DeclarationProvider([out, retval]boolean* ret);
+    [propget] HRESULT DefinitionProvider([out, retval]boolean* ret);
+    [propget] HRESULT TypeDefinitionProvider([out, retval]boolean* ret);
+    [propget] HRESULT ImplementationProvider([out, retval]boolean* ret);
+    [propget] HRESULT ReferencesProvider([out, retval]boolean* ret);
+    [propget] HRESULT DocumentHighlightProvider([out, retval]boolean* ret);
+    [propget] HRESULT DocumentSymbolProvider([out, retval]boolean* ret);
+    [propget] HRESULT CodeActionProvider([out, retval]boolean* ret);
+    [propget] HRESULT CodeLensProvider([out, retval]boolean* ret);
+    [propget] HRESULT DocumentLinkProvider([out, retval]boolean* ret);
+    [propget] HRESULT ColorProvider([out, retval]boolean* ret);
+    [propget] HRESULT DocumentFormattingProvider([out, retval]boolean* ret);
+    [propget] HRESULT DocumentRangeFormattingProvider([out, retval]boolean* ret);
+    [propget] HRESULT DocumentOnTypeFormattingProvider([out, retval]boolean* ret);
+    [propget] HRESULT RenameProvider([out, retval]boolean* ret);
+    [propget] HRESULT FoldingRangeProvider([out, retval]boolean* ret);
+    [propget] HRESULT ExecuteCommandProvider([out, retval]boolean* ret);
+    [propget] HRESULT SelectionRangeProvider([out, retval]boolean* ret);
+    [propget] HRESULT LinkedEditingRangeProvider([out, retval]boolean* ret);
+    [propget] HRESULT CallHierarchyProvider([out, retval]boolean* ret);
+    [propget] HRESULT SemanticTokensProvider([out, retval]boolean* ret);
+    [propget] HRESULT MonikerProvider([out, retval]boolean* ret);
+    [propget] HRESULT WorkspaceSymbolProvider([out, retval]boolean* ret);
+}
+
+
+///////////////////////////////////////////////////////////////////////////
 /// IWorker
 ///////////////////////////////////////////////////////////////////////////
 [
@@ -137,6 +175,8 @@ interface ILocationContainer : IDispatch{
 ]
 interface IWorker :IDispatch 
 {
+    [propget] HRESULT ServerCapabilities([out, retval]IServerCapabilities** ret);
+    
     HRESULT DidOpen([in]BSTR absFilename, [in]BSTR text, [in]int contentsVersion);
     HRESULT DidChange([in]BSTR absFilename, [in]BSTR text, [in]int contentsVersion);
     HRESULT DidClose([in]BSTR absFilename);
