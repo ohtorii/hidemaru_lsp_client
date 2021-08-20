@@ -309,7 +309,6 @@ namespace HidemaruLspClient
 			CompletionList completionList;			
 			{
 				Sender.ResponseResult result;
-				RequestId id;
 				{
 					var param = new CompletionParams();
 					var sourceUri = new Uri(absFilename);
@@ -319,17 +318,16 @@ namespace HidemaruLspClient
 					param.context.triggerKind = CompletionTriggerKind.TriggerCharacter;
 					param.context.triggerCharacter = ;
 #endif
-					param.textDocument.uri		= sourceUri.AbsoluteUri;
-					param.position.line			= (uint)line;
-					param.position.character	= (uint)column;
-					id = client_.Send.TextDocumentCompletion(param);
+					param.textDocument.uri = sourceUri.AbsoluteUri;
+					param.position.line = (uint)line;
+					param.position.character = (uint)column;
+					var id = client_.Send.TextDocumentCompletion(param);
+					result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);					
 				}
-
-				result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
-				if((ResponseIsCorrect(result)==false)|| (result.item == null))
+				if ((ResponseIsCorrect(result) == false) || (result.item == null))
 				{
 					return "";
-				}                
+				}
 				completionList = (CompletionList)result.item;
 			}			
 			if (completionList.items.Length == 0)
@@ -395,7 +393,7 @@ namespace HidemaruLspClient
 			return new PublishDiagnosticsParamsContainerImpl(dst);
 		}
 
-		sealed class PublishDiagnosticsParamsContainerImpl: IPublishDiagnosticsParamsContainer
+		sealed class PublishDiagnosticsParamsContainerImpl: HidemaruLspClient_BackEndContract.IPublishDiagnosticsParamsContainer
         {
 			readonly PublishDiagnosticsParamsImpl[] diagnosticsParams_;
 			public PublishDiagnosticsParamsContainerImpl(PublishDiagnosticsParamsImpl[] diagnosticsParams)
@@ -464,7 +462,6 @@ namespace HidemaruLspClient
 					return diagnostics_.Length;
 				}
 			}
-
             IDiagnostic IPublishDiagnosticsParams.Item(long index)
             {
 				return diagnostics_[index];
@@ -526,7 +523,7 @@ namespace HidemaruLspClient
 		#endregion
 
 		#region Location
-		class LocationImpl : HidemaruLspClient_BackEndContract.ILocation
+		sealed class LocationImpl : HidemaruLspClient_BackEndContract.ILocation
 		{
 			public LocationImpl(LSP.Model.ILocation location)
 			{
@@ -561,7 +558,7 @@ namespace HidemaruLspClient
 
 			readonly LSP.Model.ILocation location_;
 		}
-		class LocationContainerImpl : HidemaruLspClient_BackEndContract.ILocationContainer
+		sealed class LocationContainerImpl : HidemaruLspClient_BackEndContract.ILocationContainer
 		{
 			public LocationContainerImpl(Location[] location)
 			{
@@ -632,19 +629,19 @@ namespace HidemaruLspClient
 			var param = new TypeDefinitionParams();
 			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentTypeDefinition((TypeDefinitionParams)arg));
 		}
-        public ILocationContainer Implementation(string absFilename, long line, long column)
+        ILocationContainer IWorker.Implementation(string absFilename, long line, long column)
         {
 			var param = new ImplementationParams();
 			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentImplementation((ImplementationParams)arg));
 		}
 
-        public ILocationContainer References(string absFilename, long line, long column)
+        ILocationContainer IWorker.References(string absFilename, long line, long column)
         {
 			var param = new ReferencesParams();
 			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentReferences((ReferencesParams)arg));
 		}
 
-        public IServerCapabilities ServerCapabilities
+        IServerCapabilities IWorker.ServerCapabilities
 		{
             get
             {
@@ -655,6 +652,74 @@ namespace HidemaruLspClient
 				return serverCapabilities_;
 			}
         }
-        #endregion
-    }
+
+        #region Hover
+        IHover IWorker.Hover(string absFilename, long line, long column)
+        {
+			if ((line < 0) || (column < 0))
+			{
+				return null;
+			}
+			Sender.ResponseResult result;
+			{
+				var param = new HoverParams();
+				var sourceUri = new Uri(absFilename);
+				param.position.line = (uint)line;
+				param.position.character = (uint)column;
+				param.textDocument.uri = sourceUri.AbsoluteUri;
+				var id = client_.Send.TextDocumentHover(param);
+
+				result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
+				if ((ResponseIsCorrect(result) == false) || (result.item == null))
+				{
+					return null;
+				}
+			}
+			return new HoverImpl((Hover)result.item);
+		}
+		sealed class HoverImpl : HidemaruLspClient_BackEndContract.IHover
+        {
+			public HoverImpl(Hover hover)
+            {
+				hover_ = hover;
+			}
+            public HidemaruLspClient_BackEndContract.IMarkupContent contents => new MarkupContentImpl(hover_.contents);
+
+            public HidemaruLspClient_BackEndContract.IRange range => new RangeImpl(hover_.range.start, hover_.range.end);
+			
+			Hover hover_;
+        }
+		sealed class MarkupContentImpl : HidemaruLspClient_BackEndContract.IMarkupContent
+        {
+			public MarkupContentImpl(MarkupContent content)
+            {
+				content_ = content;
+            }
+			public HidemaruLspClient_BackEndContract.MarkupKind kind
+			{
+                get
+                {
+                    switch (content_.kind)
+                    {
+						case LSP.Model.MarkupKind.plaintext:
+							return HidemaruLspClient_BackEndContract.MarkupKind.PlainText;
+						case LSP.Model.MarkupKind.markdown:
+							return HidemaruLspClient_BackEndContract.MarkupKind.Markdown;
+						default:
+							//pass
+							break;
+					}
+					return HidemaruLspClient_BackEndContract.MarkupKind.PlainText;
+				}
+			}			
+            public string value => content_.value;
+
+			MarkupContent content_;
+		}
+		#endregion
+
+
+
+		#endregion
+	}
 }

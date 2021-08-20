@@ -214,7 +214,17 @@ namespace LSP.Implementation
 		{
 			return TextDocumentGoto(param, "textDocument/references");
 		}
-
+		public RequestId TextDocumentHover(IHoverParams param)
+		{
+			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
+			return Request(param, "textDocument/hover", ActionTextDocumentHover);
+		}
+		void ActionTextDocumentHover(ResponseMessage response)
+        {
+			var token = (JToken)response.result;
+			var hover = token.ToObject<Hover>();
+			StoreResponse(response.id, response.error, hover, null);
+		}
 		#region  リクエストの返信
 		public class ResponseResult
 		{

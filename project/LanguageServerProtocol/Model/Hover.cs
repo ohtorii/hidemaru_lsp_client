@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -29,27 +30,55 @@ namespace LSP.Model
 	interface IHoverRegistrationOptions:ITextDocumentRegistrationOptions, IHoverOptions {
 	}
 
-	interface HoverParams : ITextDocumentPositionParams,IWorkDoneProgressParams {
+	interface IHoverParams : ITextDocumentPositionParams,IWorkDoneProgressParams {
 	}
 
-#if false
+    class HoverParams : IHoverParams
+    {
+        public ITextDocumentIdentifier textDocument
+        {
+            get
+            {
+                if (m_textDocumentIdentifier == null)
+                {
+					m_textDocumentIdentifier = new TextDocumentIdentifier();
+                }
+				return m_textDocumentIdentifier;
+			} 
+		}
+
+        public IPosition position
+        {
+            get
+            {
+                if (m_position == null)
+                {
+					m_position = new Position();
+                }
+				return m_position;
+            }
+        }
+
+        public ProgressToken workDoneToken { get; set; }
+
+		[JsonIgnore] TextDocumentIdentifier m_textDocumentIdentifier;
+		[JsonIgnore] Position m_position;
+	}
+
 	/**
 	 * The result of a hover request.
 	 */
-	interface Hover
+	class Hover
 	{
-		/**
+        /**
 		 * The hover's content
 		 */
-		contents: MarkedString | MarkedString[] | MarkupContent;
+        public /*MarkedString | MarkedString[] |*/ MarkupContent contents;
 
 		/**
 		 * An optional range is a range inside a text document
 		 * that is used to visualize a hover, e.g. by changing the background color.
 		 */
-		range?: Range;
-	}
-#endif
-
-	
+		public Range range;
+	}    
 }

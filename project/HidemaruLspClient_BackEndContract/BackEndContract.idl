@@ -164,6 +164,35 @@ interface IServerCapabilities : IDispatch {
     [propget] HRESULT WorkspaceSymbolProvider([out, retval]boolean* ret);
 }
 
+///////////////////////////////////////////////////////////////////////////
+/// Hover
+///////////////////////////////////////////////////////////////////////////
+enum MarkupKind{
+    PlainText=0,
+    Markdown=1,
+};
+
+[
+    object,
+    oleautomation,
+    uuid(d9878138-3fb0-4afc-8955-cff67f86cfec)
+]
+interface IMarkupContent:IDispatch
+{
+    [propget] HRESULT kind([out,retval]enum MarkupKind *ret);
+    [propget] HRESULT value([out, retval]BSTR* ret);
+};
+
+[
+    object,
+    oleautomation,
+    uuid(6d7d5a32-8bdf-4124-be0f-71094a5f6bdb)
+]
+interface IHover : IDispatch {
+    [propget] HRESULT contents([out,retval]IMarkupContent**ret);
+    [propget] HRESULT range([out, retval]IRange** ret);
+};
+
 
 ///////////////////////////////////////////////////////////////////////////
 /// IWorker
@@ -187,6 +216,7 @@ interface IWorker :IDispatch
     HRESULT TypeDefinition([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out, retval]ILocationContainer** ret);
     HRESULT Implementation([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out, retval]ILocationContainer** ret);
     HRESULT References([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out, retval]ILocationContainer** ret);
+    HRESULT Hover([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out,retval]IHover**ret);
 }
 
 [

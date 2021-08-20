@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HidemaruLspClient_BackEndContract;
@@ -764,8 +765,10 @@ namespace HidemaruLspClient_FrontEnd
             }
 
             readonly HidemaruLspClient_BackEndContract.ILocationContainer locations_;
-        }
+        }        
         #endregion
+
+
         public LocationContainerImpl Declaration(long hidemaruLine, long hidemaruColumn)
         {
             return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.Declaration);
@@ -786,7 +789,41 @@ namespace HidemaruLspClient_FrontEnd
         {
             return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.References);
         }
+
+        #region Hover
+        public string Hover(long hidemaruLine, long hidemaruColumn)
+        {
+            try
+            {
+                Debug.Assert(worker_ != null);
+
+                var absFileName = FileProc();
+                if (String.IsNullOrEmpty(absFileName))
+                {
+                    return "";
+                }
+                long line, character;
+                Hidemaru.HidemaruToZeroBase(out line, out character, hidemaruLine, hidemaruColumn);
+                var hover = worker_.Hover(absFileName, line, character);
+                if (hover == null)
+                {
+                    return "";
+                }
+                return hover.contents.value;
+            }
+            catch (Exception e)
+            {
+                logger_.Error(e.ToString());
+            }
+            return "";
+        }
+
+        
+        
         #endregion
 
-    }   
+
+        #endregion
+
+    }
 }

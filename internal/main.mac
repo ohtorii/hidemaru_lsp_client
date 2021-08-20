@@ -54,13 +54,21 @@ CreateMenuArray:
     $g_menuJumpLabel[0]="";
 
     {
+        /*注意
+
+        以下変数の配列長を同じにすること。
+
+            - $$capabilitiePrvides[]
+            - $$labels
+        */
         $$capabilitiePrvides[0]="CompletionProvider"    ;
         $$capabilitiePrvides[1]="DeclarationProvider"   ;
         $$capabilitiePrvides[2]="DefinitionProvider"    ;
         $$capabilitiePrvides[3]="TypeDefinitionProvider";
         $$capabilitiePrvides[4]="ImplementationProvider";
         $$capabilitiePrvides[5]="ReferencesProvider"    ;
-        ##capabilitiesNum=6;
+        $$capabilitiePrvides[6]="HoverProvider"         ;
+        ##capabilitiesNum=7;
 
 
         $$labels[0]="Completion"    ;
@@ -69,6 +77,7 @@ CreateMenuArray:
         $$labels[3]="TypeDefinition";
         $$labels[4]="Implementation";
         $$labels[5]="References"    ;
+        $$labels[6]="Hover"         ;
 
         ##i=0;
         while(##i<##capabilitiesNum){
@@ -125,6 +134,12 @@ MenuImplementation:
 MenuReferences:
     call LspGoto "References", ##1;
     return ##return;
+
+MenuHover:
+    ##comObject=##1;
+    $$content=member(##comObject,"Hover",lineno,column_wcs);
+    message $$content;
+    return ;
 
 MenuSyncDocument:
     ##comObject=##1;

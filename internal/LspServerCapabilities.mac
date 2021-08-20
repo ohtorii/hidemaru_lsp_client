@@ -46,7 +46,8 @@ Store:
         ##enable  =member(##serverCapabilities,$$provider);
 
         setstaticvariable $$provider,str(##enable),#ShareMode;
-
+        debuginfo 1;
+        debuginfo $$provider+"="+str(##enable);
         ##i = ##i + 1;
     }
     return true;

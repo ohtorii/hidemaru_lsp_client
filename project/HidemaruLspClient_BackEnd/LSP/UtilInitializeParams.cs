@@ -94,7 +94,7 @@ namespace HidemaruLspClient
                     textDocument.hover = new HoverClientCapabilities();
                     var hover = textDocument.hover;
                     hover.dynamicRegistration = false;
-                    hover.contentFormat = new[] { MarkupKind.markdown, MarkupKind.plaintext };
+                    hover.contentFormat = new[] { /*MarkupKind.markdown,*/ MarkupKind.plaintext };
                 }
                 {//rangeFormatting
                     textDocument.rangeFormatting = new DocumentRangeFormattingClientCapabilities();
