@@ -103,10 +103,10 @@ namespace HidemaruLspClient
 			
 			var reqId=InitializeServer();
 			var response = client_.QueryResponse(reqId, millisecondsTimeout: defaultTimeout);
-			if ((response == null) || (response.item == null) || (response.error != null))
+            if ((ResponseIsCorrect(response) == false) || (response.item == null))
             {
 				return false;
-			}
+            }			
 			initializeResult_ = (InitializeResult)response.item;
 			/*{//debug
 				bool v = false;
@@ -277,9 +277,20 @@ namespace HidemaruLspClient
 			param.textDocument.uri = sourceUri.AbsoluteUri;
 			client_.Send.TextDocumentDidClose(param);
 		}
-        
+        static bool ResponseIsCorrect(Sender.ResponseResult response)
+        {
+            if (response == null)
+            {
+				return false;
+            }
+            if (response.error != null)
+            {
+				return false;
+            }
+			return true;
+        }
 		#region Completion
-        [LogMethod]
+		[LogMethod]
 		/// <summary>
 		/// 
 		/// </summary>
@@ -297,7 +308,7 @@ namespace HidemaruLspClient
 
 			CompletionList completionList;			
 			{
-				object result;
+				Sender.ResponseResult result;
 				RequestId id;
 				{
 					var param = new CompletionParams();
@@ -315,11 +326,11 @@ namespace HidemaruLspClient
 				}
 
 				result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
-				if (result == null)
+				if((ResponseIsCorrect(result)==false)|| (result.item == null))
 				{
 					return "";
-				}
-				completionList = result as CompletionList;
+				}                
+				completionList = (CompletionList)result.item;
 			}			
 			if (completionList.items.Length == 0)
 			{
@@ -597,7 +608,7 @@ namespace HidemaruLspClient
 				param.textDocument.uri = sourceUri.AbsoluteUri;
 				var id = func(param);
 				var response = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
-				if ((response == null) || (response.error != null))
+				if (ResponseIsCorrect(response)==false)
 				{
 					return empty;
 				}

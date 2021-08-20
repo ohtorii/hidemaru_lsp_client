@@ -1,4 +1,4 @@
-﻿if(version<891){
+﻿if(version<900){
 	message
 	"秀丸エディタのバージョンが古いためマクロを実行できません。\n"	+
 	"本マクロのドキュメントに記載されたバージョン以降の秀丸エディタをお使いください。";
@@ -8,24 +8,11 @@
 /////////////////////////////////////////////////////////////////////////////
 //    グローバル変数
 /////////////////////////////////////////////////////////////////////////////
-$comClientFileName=@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_FrontEnd\bin\Debug\HidemaruLspClient_FrontEnd.dll";
-execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $comClientFileName;
-$comClientFileName=getresultex(-1);
-$comServiceName="HidemaruLspClient_FrontEnd.Service";
-
-
-$logFileName=@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_client.log";
-execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;
-$logFileName=getresultex(-1);
-
-
 $rootFolder=currentmacrodirectory+@"\..";
 $iniServerConfig=$rootFolder+"\\server_config.ini";
 call GetAbsolutePathName $iniServerConfig;
 $iniServerConfig=$$return;
 
-$comObjectName="lsp.client.obj";
-#comObjectShareMode=0;
 
 /////////////////////////////////////////////////////////////////////////////
 //    メイン処理
@@ -45,69 +32,70 @@ main:
         return false;
     }
 
-    $$obj = getstaticvariable($comObjectName,#comObjectShareMode);
-    if($$obj!=""){
-        ##obj = val($$obj);
-    }else{
-        ##obj = createobject($comClientFileName,$comServiceName);
-        if(##obj==0){
-            message "COMのロードに失敗しました";
-            return false;
-        }
-        setcomdetachmethod ##obj,"Finalizer";
-        ##n=member(##obj,"Initialize",$logFileName,$$absConfigFileName,directory2);
-        if(##n==false){
-            message "Initializeに失敗";
-            return false;
-        }
-        ##serverCapabilities=member(##obj,"ServerCapabilities");
-        call LspServerCapabilities ##serverCapabilities;
-
-        setstaticvariable $comObjectName,str(##obj),#comObjectShareMode;
-        keepobject ##obj, 2;
+    execmacro currentmacrodirectory+@"\CreateComClient.mac", $$absConfigFileName;
+    $$obj = getresultex(-1);
+    if($$obj==""){
+        return false;
     }
-    menu      "ファイル内容を同期する（開発用）"
-            , "Completion"
-            , "Declaration"
-            , "Definition"
-            , "TypeDefinition"
-            , "Implementation"
-            , "References"
-            ;
+    ##comObject=val($$obj);
+
+    call CreateMenuArray;
+    menuarray $g_menuName,#g_menuNum;
     if(result==0){
-        return;
-    }else if(result==1){
-        call LspSyncDocument ##obj;
-        return ##return;
-    }else if(result==2){
-        call LspCompletion ##obj;
-        return ##return;
-    }else if(result==3){
-        call LspGoto "Declaration", ##obj;
-        return ##return;
-    }else if(result==4){
-        call LspGoto "Definition", ##obj;
-        return ##return;
-    }else if(result==5){
-        call LspGoto "TypeDefinition", ##obj;
-        return ##return;
-    }else if(result==6){
-        call LspGoto "Implementation", ##obj;
-        return ##return;
-    }else if(result==7){
-        call LspGoto "References", ##obj;
-        return ##return;
+        return false;
     }
-    return false;
+    call $g_menuJumpLabel[result-1],##comObject;
+    return ##return;
 
-LspSyncDocument:
-    ##obj=##1;
-    ##success=member(##obj, "SyncDocument");
-    return ##success;
 
-LspCompletion:
-    ##obj=##1;
-    $$dictionalyFileName=callmethod_returnstr(##obj, "Completion",lineno,column_wcs);
+CreateMenuArray:
+    $g_menuName[0]     ="";
+    #g_menuNum         =0;
+    $g_menuJumpLabel[0]="";
+
+    {
+        $$capabilitiePrvides[0]="CompletionProvider"    ;
+        $$capabilitiePrvides[1]="DeclarationProvider"   ;
+        $$capabilitiePrvides[2]="DefinitionProvider"    ;
+        $$capabilitiePrvides[3]="TypeDefinitionProvider";
+        $$capabilitiePrvides[4]="ImplementationProvider";
+        $$capabilitiePrvides[5]="ReferencesProvider"    ;
+        ##capabilitiesNum=6;
+
+
+        $$labels[0]="Completion"    ;
+        $$labels[1]="Declaration"   ;
+        $$labels[2]="Definition"    ;
+        $$labels[3]="TypeDefinition";
+        $$labels[4]="Implementation";
+        $$labels[5]="References"    ;
+
+        ##i=0;
+        while(##i<##capabilitiesNum){
+            execmacro currentmacrodirectory+@"\LspServerCapabilities.mac", "Load", $$capabilitiePrvides[##i];
+            ##enable = val(getresultex(-1));
+            if(##enable){
+                $g_menuName[#g_menuNum]     =$$labels[##i];
+                $g_menuJumpLabel[#g_menuNum]="Menu"+$$labels[##i];
+                #g_menuNum                  = #g_menuNum + 1;
+            }
+
+            ##i = ##i + 1;
+        }
+    }
+
+    {
+        $g_menuName[#g_menuNum]     ="ファイル同期（開発用）";
+        $g_menuJumpLabel[#g_menuNum]="MenuSyncDocument";
+        #g_menuNum = #g_menuNum + 1;
+
+    }
+    return ;
+
+
+MenuCompletion:
+    ##comObject=##1;
+    $$dictionalyFileName=member(##comObject,"Completion",lineno,column_wcs);
     if($$dictionalyFileName==""){
         message "Completion に失敗";
         return false;
@@ -118,130 +106,37 @@ LspCompletion:
     //Memo: マクロはこの行に到達しない
     return true;
 
-LspGoto:
-    $$Method=$$1;
-    ##obj   =##2;
-    ##LocationContainer=member(##obj, $$Method,lineno,column_wcs);
-    if(##LocationContainer==0){
-        return false;
-    }
-    call ForeachLocationContainer, ##LocationContainer, "LocationCallback";
-    if(#g_locationNum==0){
-        return;
-    }
-    if(#g_locationNum==1){
-        call GotoLocation $g_locationAbsFilename[0], #g_locationLine[0], #g_locationCharacter[0];
-        return ##return;
-    }
-
-    ##i=0;
-    while(##i < #g_locationNum){
-    	$$menu[##i]=sprintf(R"(%s(%d,%d))",$g_locationAbsFilename[##i],#g_locationLine[##i],#g_locationCharacter[##i]);
-    	##i = ##i + 1;
-    }
-    menuarray $$menu, #g_locationNum;
-    if(result==0){
-        return false;
-    }
-    ##menuIndex=result-1;
-    call GotoLocation $g_locationAbsFilename[##menuIndex],#g_locationLine[##menuIndex],#g_locationCharacter[##menuIndex];
+MenuDeclaration:
+    call LspGoto "Declaration", ##1;
     return ##return;
 
+MenuDefinition:
+    call LspGoto "Definition", ##1;
+    return ##return;
 
-#g_locationNum            =0;
-$g_locationAbsFilename[0] ="";
-#g_locationLine[0]        =0;
-#g_locationCharacter[0]   =0;
+MenuTypeDefinition:
+    call LspGoto "TypeDefinition", ##1;
+    return ##return;
 
-GotoLocation:
-    $$absFilename   =$$1;
-    ##startLine     =##2;
-    ##startCharacter=##3;
-    $$position=sprintf(R"(/j%d,%d)",##startLine,##startCharacter);
-    openfile $$position + " " + $$absFilename;
-    //moveto2 ##startCharacter, ##startLine;
-    /*debuginfo 1;
-    debuginfo "$$absFilename="+$$absFilename;
-    debuginfo "##startLine="+str(##startLine);
-    debuginfo "##startCharacter="+str(##startCharacter);*/
+MenuImplementation:
+    call LspGoto "Implementation", ##1;
+    return ##return;
 
-    return ;
+MenuReferences:
+    call LspGoto "References", ##1;
+    return ##return;
 
-LocationCallback:
-    ##i=#g_locationNum;
+MenuSyncDocument:
+    ##comObject=##1;
+    ##success=member(##comObject, "SyncDocument");
+    return ##success;
 
-    $g_locationAbsFilename[##i]  =$$1;
-    #g_locationLine[##i]         =##2;
-    #g_locationCharacter[##i]    =##3;
 
-    #g_locationNum = #g_locationNum + 1;
-    return ;
-
-ForeachLocationContainer:
-    ##LocationContainer=##1;
-    $$callback=$$2;
-
-    ##Length=member(##LocationContainer,"Length");
-    ##i=0;
-    while(##i < ##Length){
-        ##Location      =member(##LocationContainer,"Item", ##i);
-        $$absFilename   =member(##Location         ,"AbsFilename");
-        ##Range         =member(##Location         ,"range");
-        ##PositionStart =member(##Range            ,"start");
-        ##PositionEnd   =member(##Range            ,"end");
-
-        ##startLine     =member(##PositionStart    ,"line");
-        ##startCharacter=member(##PositionStart    ,"character");
-        ##endLine       =member(##PositionEnd      ,"line");
-        ##endCharacter  =member(##PositionEnd      ,"character");
-
-        call $$callback, $$absFilename, ##startLine, ##startCharacter;
-
-        ##i = ##i + 1;
-    }
-    return ;
-
-LspServerCapabilities:
-    ##serverCapabilities=##1;
-
-    ##capabilitiesNum=0;
-    $$capabilities[##capabilitiesNum]="CompletionProvider"              ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="HoverProvider"                   ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="SignatureHelpProvider"           ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="DeclarationProvider"             ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="DefinitionProvider"              ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="TypeDefinitionProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="ImplementationProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="ReferencesProvider"              ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="DocumentHighlightProvider"       ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="DocumentSymbolProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="CodeActionProvider"              ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="CodeLensProvider"                ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="DocumentLinkProvider"            ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="ColorProvider"                   ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="DocumentFormattingProvider"      ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="DocumentRangeFormattingProvider" ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="DocumentOnTypeFormattingProvider";##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="RenameProvider"                  ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="FoldingRangeProvider"            ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="ExecuteCommandProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="SelectionRangeProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="LinkedEditingRangeProvider"      ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="CallHierarchyProvider"           ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="SemanticTokensProvider"          ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="MonikerProvider"                 ;##capabilitiesNum=##capabilitiesNum+1;
-    $$capabilities[##capabilitiesNum]="WorkspaceSymbolProvider"         ;##capabilitiesNum=##capabilitiesNum+1;
-
-    debuginfo 1;
-    ##i=0;
-    while(##i < ##capabilitiesNum){
-        $$provider=$$capabilities[##i];
-    	##enable=member(##serverCapabilities,$$provider);
-    	debuginfo $$provider + "=" + str(##enable);
-    	##i = ##i + 1;
-    }
-    return ;
-
+LspGoto:
+    $$Method    =$$1;
+    ##comObject =##2;
+    execmacro currentmacrodirectory + @"/LspGoto.mac", $$Method, str(##comObject);
+    return val(getresultex(-1));
 
 FindServerConfigFile:
     $$extension = $$1;

@@ -1,0 +1,82 @@
+﻿#g_locationNum            =0;
+$g_locationAbsFilename[0] ="";
+#g_locationLine[0]        =0;
+#g_locationCharacter[0]   =0;
+
+
+call main getarg(0),val(getarg(1));
+endmacro str(##return);
+
+main:
+    $$Method    =$$1;
+    ##comObject =##2;
+
+    ##LocationContainer=member(##comObject, $$Method,lineno,column_wcs);
+    if(##LocationContainer==0){
+        return false;
+    }
+    call ForeachLocationContainer, ##LocationContainer, "LocationCallback";
+    if(#g_locationNum==0){
+        return true;
+    }else if(#g_locationNum==1){
+        call GotoLocation $g_locationAbsFilename[0], #g_locationLine[0], #g_locationCharacter[0];
+        return true;
+    }else{
+        ##i=0;
+        while(##i < #g_locationNum){
+        	$$menu[##i]=sprintf(R"(%s(%d,%d))",$g_locationAbsFilename[##i],#g_locationLine[##i],#g_locationCharacter[##i]);
+        	##i = ##i + 1;
+        }
+        menuarray $$menu, #g_locationNum;
+        if(result==0){
+            return false;
+        }
+        ##menuIndex=result-1;
+        call GotoLocation $g_locationAbsFilename[##menuIndex],#g_locationLine[##menuIndex],#g_locationCharacter[##menuIndex];
+        return true;
+    }
+    return false;
+
+
+GotoLocation:
+    $$absFilename   =$$1;
+    ##startLine     =##2;
+    ##startCharacter=##3;
+    $$position=sprintf(R"(/j%d,%d)",##startLine,##startCharacter);
+    openfile $$position + " " + $$absFilename;
+    return result;
+
+LocationCallback:
+    ##i=#g_locationNum;
+
+    $g_locationAbsFilename[##i]  =$$1;
+    #g_locationLine[##i]         =##2;
+    #g_locationCharacter[##i]    =##3;
+
+    #g_locationNum = #g_locationNum + 1;
+    return ;
+
+ForeachLocationContainer:
+    ##LocationContainer=##1;
+    $$callback=$$2;
+
+    ##Length=member(##LocationContainer,"Length");
+    ##i=0;
+    while(##i < ##Length){
+        ##Location      =member(##LocationContainer,"Item", ##i);
+        $$absFilename   =member(##Location         ,"AbsFilename");
+        ##Range         =member(##Location         ,"range");
+        ##PositionStart =member(##Range            ,"start");
+        ##PositionEnd   =member(##Range            ,"end");
+
+        ##startLine     =member(##PositionStart    ,"line");
+        ##startCharacter=member(##PositionStart    ,"character");
+        ##endLine       =member(##PositionEnd      ,"line");
+        ##endCharacter  =member(##PositionEnd      ,"character");
+
+        call $$callback, $$absFilename, ##startLine, ##startCharacter;
+
+        ##i = ##i + 1;
+    }
+    return ;
+

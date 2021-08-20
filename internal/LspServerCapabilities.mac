@@ -1,0 +1,67 @@
+﻿#ShareMode=2;
+
+call main getarg(0),getarg(1);
+endmacro str(##return);
+
+main:
+    call $$1,$$2;
+    return ##return;
+
+
+Store:
+    ##serverCapabilities=val($$1);
+
+    ##i=0;
+    $$capabilities[##i]="CompletionProvider"              ;##i=##i+1;
+    $$capabilities[##i]="HoverProvider"                   ;##i=##i+1;
+    $$capabilities[##i]="SignatureHelpProvider"           ;##i=##i+1;
+    $$capabilities[##i]="DeclarationProvider"             ;##i=##i+1;
+    $$capabilities[##i]="DefinitionProvider"              ;##i=##i+1;
+    $$capabilities[##i]="TypeDefinitionProvider"          ;##i=##i+1;
+    $$capabilities[##i]="ImplementationProvider"          ;##i=##i+1;
+    $$capabilities[##i]="ReferencesProvider"              ;##i=##i+1;
+    $$capabilities[##i]="DocumentHighlightProvider"       ;##i=##i+1;
+    $$capabilities[##i]="DocumentSymbolProvider"          ;##i=##i+1;
+    $$capabilities[##i]="CodeActionProvider"              ;##i=##i+1;
+    $$capabilities[##i]="CodeLensProvider"                ;##i=##i+1;
+    $$capabilities[##i]="DocumentLinkProvider"            ;##i=##i+1;
+    $$capabilities[##i]="ColorProvider"                   ;##i=##i+1;
+    $$capabilities[##i]="DocumentFormattingProvider"      ;##i=##i+1;
+    $$capabilities[##i]="DocumentRangeFormattingProvider" ;##i=##i+1;
+    $$capabilities[##i]="DocumentOnTypeFormattingProvider";##i=##i+1;
+    $$capabilities[##i]="RenameProvider"                  ;##i=##i+1;
+    $$capabilities[##i]="FoldingRangeProvider"            ;##i=##i+1;
+    $$capabilities[##i]="ExecuteCommandProvider"          ;##i=##i+1;
+    $$capabilities[##i]="SelectionRangeProvider"          ;##i=##i+1;
+    $$capabilities[##i]="LinkedEditingRangeProvider"      ;##i=##i+1;
+    $$capabilities[##i]="CallHierarchyProvider"           ;##i=##i+1;
+    $$capabilities[##i]="SemanticTokensProvider"          ;##i=##i+1;
+    $$capabilities[##i]="MonikerProvider"                 ;##i=##i+1;
+    $$capabilities[##i]="WorkspaceSymbolProvider"         ;##i=##i+1;
+    ##capabilitiesNum=##i;
+
+    ##i=0;
+    while(##i < ##capabilitiesNum){
+        $$provider=$$capabilities[##i];
+        ##enable  =member(##serverCapabilities,$$provider);
+
+        setstaticvariable $$provider,str(##enable),#ShareMode;
+
+        ##i = ##i + 1;
+    }
+    return true;
+
+
+Load:
+    $$provider=$$1;
+    if($$provider==""){
+        message "指定されたproviderが空白文字列です";
+        return false;
+    }
+    $$enable=getstaticvariable($$provider,#ShareMode);
+    if($$enable==""){
+        $$mes="指定されたproviderが見つかりません\n$$provider=" + $$provider;
+        message $$mes;
+        return false;
+    }
+    return val($$enable);
