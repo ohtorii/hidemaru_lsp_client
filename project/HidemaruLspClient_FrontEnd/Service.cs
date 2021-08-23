@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient_FrontEnd
-{    
+{
     /// <summary>
     /// 秀丸エディタへ公開するクラス
     /// </summary>
     [ComVisible(true)]
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
-    public class Service
+    public partial class Service
     {
         static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
 
@@ -311,130 +310,8 @@ namespace HidemaruLspClient_FrontEnd
 
         
         CancellationTokenSource tokenSource_=null;
-        Diagnostics diagnostics_ = null;
-
-        /// <summary>
-        /// 定期的な処理
-        /// </summary>
-        void RoutineTask(CancellationToken  cancellationToken)
-        {
-            while (true)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-                Thread.Sleep(200);
-            }
-        }
-
-        /// <summary>
-        /// textDocument/publishDiagnostics
-        /// </summary>        
-        class Diagnostics
-        {
-            Task task_;
-            IWorker worker_;
-            ILspClientLogger logger_;
-            CancellationToken cancellationToken_;
-
-            /// <summary>
-            /// 秀丸エディタのウインドウハンドル
-            /// </summary>
-            IntPtr hwndHidemaru_;
-
-            /// <summary>
-            /// アウトプット枠をクリアしたかどうか
-            /// 繰り返しクリアしてウインドウがちらつくのを防止する。
-            /// </summary>
-            bool outputPaneCleard_;
-
-            public Diagnostics(IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
-            {
-                hwndHidemaru_     = Hidemaru.Hidemaru_GetCurrentWindowHandle();
-                outputPaneCleard_ = false;
-
-                worker_            = worker;
-                logger_ = logger;
-                cancellationToken_ = cancellationToken;                
-                task_              =Task.Run(MainLoop, cancellationToken_);
-            }
-            void MainLoop()
-            {
-                //Todoポーリングではなくイベント通知にする
-                try
-                {
-                    while (true)
-                    {
-                        if (cancellationToken_.IsCancellationRequested)
-                        {
-                            return;
-                        }
-                        Process();
-                        Thread.Sleep(500);
-                    }
-                }catch(System.Runtime.InteropServices.COMException e)
-                {
-                    //COMサーバ(.exe)が終了したため、ログ出力してからポーリング動作を終了させる。
-                    logger_.Error(e.ToString());
-                }
-            }
-            void Process()
-            {                
-                var container = worker_.PullDiagnosticsParams();
-                bool hasEvent = container.Length == 0 ? false : true;
-
-                if (hasEvent == false)
-                {
-                    return;
-                }
-
-                var sb = new StringBuilder();
-                for (long i = 0; i < container.Length; ++i)
-                {
-                    FormatDiagnostics(sb, container.Item(i));
-                }
-
-                if (sb.Length == 0)
-                {
-                    if (outputPaneCleard_ == false)
-                    {
-                        HmOutputPane.Clear(hwndHidemaru_);
-                        outputPaneCleard_ = true;
-                    }
-                }
-                else
-                {
-                    HmOutputPane.Clear(hwndHidemaru_);
-                    HmOutputPane.OutputW(hwndHidemaru_, sb.ToString());
-
-                    outputPaneCleard_ = false;
-                }
-            }
-
-            static void FormatDiagnostics(StringBuilder sb, IPublishDiagnosticsParams diagnosticsParams)
-            {
-                var uri      = new Uri(diagnosticsParams.uri);
-                var filename = uri.LocalPath;
-                for (long i = 0; i < diagnosticsParams.Length; ++i)
-                {
-                    var diagnostic = diagnosticsParams.Item(i);
-                    var severity   = diagnostic.severity;
-                    if (severity <= /*DiagnosticSeverity.Error*/ DiagnosticSeverity.Warning)
-                    {
-                        //+1して秀丸エディタの行番号(1開始)にする
-                        var line    = diagnostic.range.start.line + 1;
-                        var code    = diagnostic.code;
-                        var message = diagnostic.message;
-                        var source  = diagnostic.source;
-
-                        //Memo: 秀丸エディタのアウトプット枠へ出力するには \r\n が必要。
-                        sb.Append($"{filename}({line}):  {source}({code}) {message}\r\n");
-                    }
-                }
-            }
-        }
-
+        DiagnosticsTask diagnosticsTask_ = null;
+        HoverTask hoverTask_ = null;
         #region Public methods
         public bool Initialize(string logFilename, string serverConfigFilename, string currentSourceCodeDirectory)
         {
@@ -455,14 +332,183 @@ namespace HidemaruLspClient_FrontEnd
                 tokenSource_ = new CancellationTokenSource();
             }
 
-            if (diagnostics_ == null)
+            if (diagnosticsTask_ == null)
             {
-                diagnostics_ = new Diagnostics(worker_, logger_, tokenSource_.Token);
+                diagnosticsTask_ = new DiagnosticsTask(worker_, logger_, tokenSource_.Token);
             }
-            
+            if (hoverTask_ == null)
+            {
+                hoverTask_=new HoverTask(this, worker_, logger_, tokenSource_.Token);
+            }
             return true;
         }
-        
+        #region HoverTask
+        class HoverTask
+        {
+            const int defaultMillisecondsTimeout = 500;
+
+            Service service_;
+            Task task_;
+            IWorker worker_;
+            ILspClientLogger logger_;
+            CancellationToken cancellationToken_;
+
+            Dll.POINT prevMousePoint_ = new Dll.POINT (0,  0 );
+            Hidemaru.Position prevHidemaruPosition_ = new Hidemaru.Position(0, 0);
+            Dll.TOOLINFO toolItem_ = new Dll.TOOLINFO();
+            IntPtr toolTipHandle_=new IntPtr(0);
+            /// <summary>
+            /// 秀丸エディタのウインドウハンドル
+            /// </summary>
+            IntPtr hwndHidemaru_;
+
+            public HoverTask(Service service, IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
+            {
+                service_ = service;
+                hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+
+                worker_ = worker;
+                logger_ = logger;
+                cancellationToken_ = cancellationToken;
+                task_ = Task.Run(MainLoop, cancellationToken_);
+            }
+            void MainLoop()
+            {
+                //Todoポーリングではなくイベント通知にする
+                try
+                {
+                    while (true)
+                    {
+                        if (cancellationToken_.IsCancellationRequested)
+                        {
+                            return;
+                        }
+                        Process();
+                        Thread.Sleep(defaultMillisecondsTimeout);
+                    }
+                }
+                catch (System.Runtime.InteropServices.COMException e)
+                {
+                    //COMサーバ(.exe)が終了したため、ログ出力してからポーリング動作を終了させる。
+                    logger_.Error(e.ToString());
+                }
+            }
+            void Process()
+            {
+                var currentMousePoint = new Dll.POINT (0,0);
+                if (Dll.GetCursorPos(ref currentMousePoint)==false)
+                {
+                    return;
+                }
+                if (currentMousePoint == prevMousePoint_)
+                {
+                    return;
+                }
+
+                var currentHidemaruPosition_ = new Hidemaru.Position(0, 0);
+                if (Hidemaru.Hidemaru_GetCursorPosUnicodeFromMousePos(ref currentMousePoint,ref currentHidemaruPosition_.line, ref currentHidemaruPosition_.column) == false)
+                {
+                    return;
+                }
+                if (! currentHidemaruPosition_.ValueIsCorrect())
+                {
+                    return;
+                }
+                prevMousePoint_ = currentMousePoint;
+                prevHidemaruPosition_ = currentHidemaruPosition_;
+//                System.Diagnostics.Debug.WriteLine(string.Format("column/Line={0},{1}", prevHidemaruPosition_.column, prevHidemaruPosition_.line));
+
+                var text = service_.Hover(currentHidemaruPosition_.line, currentHidemaruPosition_.column);
+                ShowToolTips(prevMousePoint_.x, prevMousePoint_.y, text);
+            }
+            void ShowToolTips(int screenX, int screenY, string text)
+            {
+                if (toolTipHandle_.ToInt32()==0)
+                {
+#if true
+                    IntPtr hInstance = new IntPtr(0);
+                    IntPtr hwnd = new IntPtr(0); 
+#else
+                    //Memo: 秀丸エディタのウインドウが固まる
+                    IntPtr hInstance = Dll.GetModuleHandle(null);
+                    IntPtr hwnd = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+#endif
+                    toolTipHandle_ = CreateTrackingToolTip(hwnd, hInstance, " ");
+                    if (toolTipHandle_.ToInt32() == 0)
+                    {
+                        return;
+                    }
+                }
+
+                // Activate the tooltip.
+                {
+                    const int True = 1;
+                    SendMessage(toolTipHandle_, (uint)Dll.ToolTipMessage.TTM_TRACKACTIVATE, new IntPtr(True));
+                }
+
+                toolItem_.lpszText = text;
+                SendMessage(toolTipHandle_, (uint)Dll.ToolTipMessage.TTM_SETTOOLINFO);
+
+                // Position the tooltip. The coordinates are adjusted so that the tooltip does not overlap the mouse pointer.
+                {
+                    var pt = new Dll.POINT(screenX, screenY);
+                    var lparam = new IntPtr(Dll.MAKELONG(pt.x + 10, pt.y - 20));
+                    //Dll.ClientToScreen(hWnd, &pt);
+                    Dll.SendMessage(toolTipHandle_, (uint)Dll.ToolTipMessage.TTM_TRACKPOSITION, 0, lparam);
+                }
+            }
+
+            IntPtr CreateTrackingToolTip(IntPtr hwndParent, IntPtr hInstance, string  pText)
+            {
+                var NULL = new IntPtr(0);
+                // Create a tooltip.
+                var hwndTT = Dll.CreateWindowEx(Dll.WindowStylesEx.WS_EX_TOPMOST, Dll.TOOLTIPS_CLASS, null,
+                    Dll.WindowStyles.WS_POPUP | Dll.WindowStyles.TTS_NOPREFIX | Dll.WindowStyles.TTS_ALWAYSTIP,
+                    Dll.CW_USEDEFAULT, Dll.CW_USEDEFAULT, Dll.CW_USEDEFAULT, Dll.CW_USEDEFAULT,
+                    hwndParent, NULL, hInstance, NULL);
+                if (hwndTT==NULL)
+                {
+                    return NULL;
+                }
+
+                // Set up the tool information. In this case, the "tool" is the entire parent window.
+
+                toolItem_.cbSize   = Dll.TTTOOLINFOW_V2_SIZE;// Marshal.SizeOf(typeof(Dll.TOOLINFO));
+                toolItem_.uFlags   = (int)(Dll.ToolTipFlags.TTF_IDISHWND | Dll.ToolTipFlags.TTF_TRACK | Dll.ToolTipFlags.TTF_ABSOLUTE);
+                toolItem_.hwnd     = hwndParent;
+                toolItem_.hinst    = hInstance;
+                toolItem_.lpszText = pText;
+                toolItem_.uId      = hwndParent;
+                toolItem_.lParam   = NULL;
+                Dll.GetClientRect(hwndParent, out toolItem_.rect);
+
+                this.SendMessage(hwndTT, (uint)Dll.ToolTipMessage.TTM_ADDTOOL);
+                return hwndTT;
+            }
+            bool SendMessage(IntPtr hWnd, uint Msg, IntPtr wparam)
+            {
+                unsafe
+                {
+                    // Associate the tooltip with the tool window.
+                    fixed (int* lp = &toolItem_.cbSize)
+                    {
+                        var ppp = new IntPtr(lp);
+                        if (!Dll.SendMessage(hWnd, Msg, wparam, ppp))
+                        {
+                            System.Diagnostics.Debug.WriteLine("Failed: TTM_ADDTOOL");
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            bool SendMessage(IntPtr hWnd, uint Msg)
+            {
+                return this.SendMessage(hWnd,Msg,IntPtr.Zero);
+            }
+        }
+
+#endregion
         /// <summary>
         /// テスト用のメソッド
         /// </summary>
@@ -508,7 +554,7 @@ namespace HidemaruLspClient_FrontEnd
             logger_      = null;
 
             tokenSource_ = null;
-            diagnostics_ = null;
+            diagnosticsTask_ = null;
             worker_      = null;
             server_      = null;
             dasmr_       = null;
@@ -516,7 +562,7 @@ namespace HidemaruLspClient_FrontEnd
 
             return;
         }
-        #region ServerCapabilities
+#region ServerCapabilities
         public ServerCapabilitiesImpl ServerCapabilities()
         {
             try
@@ -589,7 +635,7 @@ namespace HidemaruLspClient_FrontEnd
 
             public sbyte WorkspaceSymbolProvider => serverCapabilities_.WorkspaceSymbolProvider;
         }
-        #endregion
+#endregion
 
         /// <summary>
         /// 秀丸エディタのテキストとサーバ側のテキストを同期する（デバッグ用途）
@@ -638,7 +684,7 @@ namespace HidemaruLspClient_FrontEnd
             return "";
         }
 
-        #region Impl
+#region Impl
         delegate ILocationContainer InvokeWorker(string absFilename, long line, long character);
         LocationContainerImpl CommonImplementationsOfGoto(long hidemaruLine, long hidemaruColumn, InvokeWorker invoke)
         {
@@ -766,7 +812,7 @@ namespace HidemaruLspClient_FrontEnd
 
             readonly HidemaruLspClient_BackEndContract.ILocationContainer locations_;
         }        
-        #endregion
+#endregion
 
 
         public LocationContainerImpl Declaration(long hidemaruLine, long hidemaruColumn)
@@ -790,7 +836,7 @@ namespace HidemaruLspClient_FrontEnd
             return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.References);
         }
 
-        #region Hover
+#region Hover
         public string Hover(long hidemaruLine, long hidemaruColumn)
         {
             try
@@ -820,10 +866,10 @@ namespace HidemaruLspClient_FrontEnd
 
         
         
-        #endregion
+#endregion
 
 
-        #endregion
+#endregion
 
     }
 }
