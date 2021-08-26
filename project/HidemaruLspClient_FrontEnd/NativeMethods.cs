@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace HidemaruLspClient_FrontEnd
 {
-    class Dll
+    class NativeMethods
     {
         /*
          * NOTE: All Message Numbers below 0x0400 are RESERVED.
@@ -358,6 +359,60 @@ namespace HidemaruLspClient_FrontEnd
             }
         }
 
+#if true
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int left;
+            public int top;
+            public int right;
+            public int bottom;
+
+            public RECT(int left, int top, int right, int bottom)
+            {
+                this.left = left;
+                this.top = top;
+                this.right = right;
+                this.bottom = bottom;
+            }
+
+            public RECT(System.Drawing.Rectangle r)
+            {
+                this.left = r.Left;
+                this.top = r.Top;
+                this.right = r.Right;
+                this.bottom = r.Bottom;
+            }
+
+            public static RECT FromXYWH(int x, int y, int width, int height)
+            {
+                return new RECT(x, y, x + width, y + height);
+            }
+
+            public System.Drawing.Size Size
+            {
+                get
+                {
+                    return new System.Drawing.Size(this.right - this.left, this.bottom - this.top);
+                }
+            }
+        }
+        //DotNet48ZDP2\ndp\fx\src\winforms\Managed\System\WinForms\NativeMethods.cs
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        public class TOOLINFO
+        {
+            public int cbSize = Marshal.SizeOf(typeof(TOOLINFO));
+            public int uFlags;
+            public IntPtr hwnd;
+            public IntPtr uId;
+            public RECT rect;
+            public IntPtr hinst = IntPtr.Zero;
+            public IntPtr lpszText;
+            //public IntPtr lParam = IntPtr.Zero;
+        }
+#else
+        //www.pinvoke.net
+        
 		[StructLayout(LayoutKind.Sequential)]
 		public struct RECT
 		{
@@ -395,7 +450,7 @@ namespace HidemaruLspClient_FrontEnd
                 return !(left == right);
             }
         }
-		public struct TOOLINFO
+        public struct TOOLINFO
 		{
 			public int cbSize;
 			public int uFlags;
@@ -403,20 +458,21 @@ namespace HidemaruLspClient_FrontEnd
 			public IntPtr uId;
 			public RECT rect;
 			public IntPtr hinst;
-			[MarshalAs(UnmanagedType.LPTStr)]
+			[MarshalAs(UnmanagedType.LPTStr/*LPWStr*/)]
 			public string lpszText;
 			public IntPtr lParam;
 		}
-        public static int MAKELONG(int a, int b)
+#endif
+        public static int MAKELONG(int low, int high)
         {
-            return (a & 0xffff) | ((b & 0xffff) << 16);
+            return (high << 16) | (low & 0xffff);
         }
-		#region comctl32.dll
+#region comctl32.dll
 		[DllImport("comctl32.dll", EntryPoint = "InitCommonControls", CallingConvention = CallingConvention.StdCall)]
 		static extern bool InitCommonControls();
-        #endregion
+#endregion
 
-        #region kernel32.dll
+#region kernel32.dll
         [DllImport("kernel32.dll")]
 		public static extern IntPtr GetModuleHandle(string lpFileName);
 
@@ -438,10 +494,10 @@ namespace HidemaruLspClient_FrontEnd
 
 		[DllImport("kernel32.dll")]
 		public static extern bool CloseHandle(IntPtr handle);
-		#endregion
+#endregion
 
 
-		#region user32.dll
+#region user32.dll
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern IntPtr CreateWindowEx(WindowStylesEx dwExStyle, string lpClassName, string lpWindowName, WindowStyles dwStyle, int x, int y, int nWidth, int nHeight, IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
 		
@@ -449,16 +505,22 @@ namespace HidemaruLspClient_FrontEnd
 		[return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DestroyWindow(IntPtr hwnd);
 
-		[DllImport("user32.dll", EntryPoint = "SendMessage", CharSet = CharSet.Auto)]
+		[DllImport("user32.dll", EntryPoint = "SendMessageW", CharSet = CharSet.Auto)]
 		public static extern bool SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, StringBuilder lParam);
 
-		[DllImport("user32.dll", EntryPoint = "SendMessage", CharSet = CharSet.Auto)]
+		[DllImport("user32.dll", EntryPoint = "SendMessageW", CharSet = CharSet.Auto)]
 		public static extern bool SendMessage(IntPtr hWnd, uint Msg, StringBuilder wParam, StringBuilder lParam);
 
-		[DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, int wParam, NativeMethods.TOOLINFO lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, int wParam, int lParam);
+
+        [DllImport("user32.dll", EntryPoint = "SendMessageW", SetLastError = true)]
 		public static extern bool SendMessage(IntPtr hWnd, uint Msg, IntPtr wparam, IntPtr lparam);
 
-		[DllImport("user32.dll", SetLastError = true)]
+		[DllImport("user32.dll", EntryPoint = "SendMessageW", SetLastError = true)]
 		public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, int command, IntPtr lparam);
 		
 		[DllImport("user32.dll", SetLastError = true)]
@@ -466,6 +528,6 @@ namespace HidemaruLspClient_FrontEnd
 
         [DllImport("user32.dll")]
         public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
-        #endregion
+#endregion
     }
 }

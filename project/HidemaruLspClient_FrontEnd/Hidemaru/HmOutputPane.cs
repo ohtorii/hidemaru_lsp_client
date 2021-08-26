@@ -19,7 +19,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             //0x111=WM_COMMAND
             //1009=クリア
-            Dll.SendMessage(GetWindowHandle(hwndHidemaru), 0x111, 1009, new IntPtr(0)); 
+            NativeMethods.SendMessage(GetWindowHandle(hwndHidemaru), 0x111, 1009, new IntPtr(0)); 
         }
     }
 }
