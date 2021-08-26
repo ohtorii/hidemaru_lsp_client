@@ -17,45 +17,7 @@ namespace HidemaruLspClient_FrontEnd
          */
         const uint  WM_USER                         =0x0400;
 
-#if false
-		/*
-		 * Extended Window Styles
-		 */
-		const uint WS_EX_DLGMODALFRAME     =0x00000001;
-		const uint WS_EX_NOPARENTNOTIFY    =0x00000004;
-		const uint WS_EX_TOPMOST           =0x00000008;
-		const uint WS_EX_ACCEPTFILES       =0x00000010;
-		const uint WS_EX_TRANSPARENT       =0x00000020;
 
-    	/*
-         * Window Styles
-         */
-        const uint WS_OVERLAPPED       =0x00000000;
-        const uint WS_POPUP            =0x80000000;
-        const uint WS_CHILD            =0x40000000;
-        const uint WS_MINIMIZE         =0x20000000;
-        const uint WS_VISIBLE          =0x10000000;
-        const uint WS_DISABLED         =0x08000000;
-        const uint WS_CLIPSIBLINGS     =0x04000000;
-        const uint WS_CLIPCHILDREN     =0x02000000;
-        const uint WS_MAXIMIZE         =0x01000000;
-        const uint WS_CAPTION          =0x00C00000;     /* WS_BORDER | WS_DLGFRAME  */
-        const uint WS_BORDER           =0x00800000;
-        const uint WS_DLGFRAME         =0x00400000;
-        const uint WS_VSCROLL          =0x00200000;
-        const uint WS_HSCROLL          =0x00100000;
-        const uint WS_SYSMENU          =0x00080000;
-        const uint WS_THICKFRAME       =0x00040000;
-        const uint WS_GROUP            =0x00020000;
-        const uint WS_TABSTOP          =0x00010000;
-        const uint WS_MINIMIZEBOX      =0x00020000;
-        const uint WS_MAXIMIZEBOX      =0x00010000;
-        const uint WS_TILED            =WS_OVERLAPPED;
-        const uint WS_ICONIC           =WS_MINIMIZE;
-        const uint WS_SIZEBOX          =WS_THICKFRAME;
-//        const uint WS_TILEDWINDOW      =WS_OVERLAPPEDWINDOW;
-
-#endif
         public const string TOOLTIPS_CLASS = "tooltips_class32";
         public const int TTTOOLINFOW_V2_SIZE = 0x0000002c;
         public const int TTTOOLINFOW_V3_SIZE = 0x00000030;
@@ -359,7 +321,6 @@ namespace HidemaruLspClient_FrontEnd
             }
         }
 
-#if true
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
         {
@@ -410,59 +371,7 @@ namespace HidemaruLspClient_FrontEnd
             public IntPtr lpszText;
             //public IntPtr lParam = IntPtr.Zero;
         }
-#else
-        //www.pinvoke.net
-        
-		[StructLayout(LayoutKind.Sequential)]
-		public struct RECT
-		{
-			private int _Left;
-			private int _Top;
-			private int _Right;
-			private int _Bottom;
 
-            public override bool Equals(object obj)
-            {
-                return obj is RECT rECT &&
-                       _Left == rECT._Left &&
-                       _Top == rECT._Top &&
-                       _Right == rECT._Right &&
-                       _Bottom == rECT._Bottom;
-            }
-
-            public override int GetHashCode()
-            {
-                int hashCode = -1752138683;
-                hashCode = hashCode * -1521134295 + _Left.GetHashCode();
-                hashCode = hashCode * -1521134295 + _Top.GetHashCode();
-                hashCode = hashCode * -1521134295 + _Right.GetHashCode();
-                hashCode = hashCode * -1521134295 + _Bottom.GetHashCode();
-                return hashCode;
-            }
-
-            public static bool operator ==(RECT left, RECT right)
-            {
-                return left.Equals(right);
-            }
-
-            public static bool operator !=(RECT left, RECT right)
-            {
-                return !(left == right);
-            }
-        }
-        public struct TOOLINFO
-		{
-			public int cbSize;
-			public int uFlags;
-			public IntPtr hwnd;
-			public IntPtr uId;
-			public RECT rect;
-			public IntPtr hinst;
-			[MarshalAs(UnmanagedType.LPTStr/*LPWStr*/)]
-			public string lpszText;
-			public IntPtr lParam;
-		}
-#endif
         public static int MAKELONG(int low, int high)
         {
             return (high << 16) | (low & 0xffff);
