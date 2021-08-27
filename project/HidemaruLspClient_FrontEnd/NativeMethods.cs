@@ -15,7 +15,7 @@ namespace HidemaruLspClient_FrontEnd
          *
          * Private Window Messages Start Here:
          */
-        const uint  WM_USER                         =0x0400;
+        const uint WM_USER = 0x0400;
 
 
         public const string TOOLTIPS_CLASS = "tooltips_class32";
@@ -23,79 +23,81 @@ namespace HidemaruLspClient_FrontEnd
         public const int TTTOOLINFOW_V3_SIZE = 0x00000030;
 
         [Flags]
-        public enum ToolTipFlags : uint {
-            TTF_IDISHWND            =0x0001,
-            TTF_CENTERTIP           =0x0002,
-            TTF_RTLREADING          =0x0004,
-            TTF_SUBCLASS            =0x0010,
-            TTF_TRACK               =0x0020,
-            TTF_ABSOLUTE            =0x0080,
-            TTF_TRANSPARENT         =0x0100,
-            TTF_PARSELINKS          =0x1000,
-            TTF_DI_SETITEM          =0x8000,       // valid only on the TTN_NEEDTEXT callback
+        public enum ToolTipFlags : uint
+        {
+            TTF_IDISHWND = 0x0001,
+            TTF_CENTERTIP = 0x0002,
+            TTF_RTLREADING = 0x0004,
+            TTF_SUBCLASS = 0x0010,
+            TTF_TRACK = 0x0020,
+            TTF_ABSOLUTE = 0x0080,
+            TTF_TRANSPARENT = 0x0100,
+            TTF_PARSELINKS = 0x1000,
+            TTF_DI_SETITEM = 0x8000,       // valid only on the TTN_NEEDTEXT callback
         }
 
-    enum TTM:uint{
-        TTM_ACTIVATE            =(WM_USER + 1),
-        TTM_SETDELAYTIME        =(WM_USER + 3),
-        TTM_ADDTOOLA            =(WM_USER + 4),
-        TTM_ADDTOOLW            =(WM_USER + 50),
-        TTM_DELTOOLA            =(WM_USER + 5),
-        TTM_DELTOOLW            =(WM_USER + 51),
-        TTM_NEWTOOLRECTA        =(WM_USER + 6),
-        TTM_NEWTOOLRECTW        =(WM_USER + 52),
-        TTM_RELAYEVENT          =(WM_USER + 7), // Win7: wParam = GetMessageExtraInfo() when relaying WM_MOUSEMOVE
-        TTM_GETTOOLINFOA        =(WM_USER + 8),
-        TTM_GETTOOLINFOW        =(WM_USER + 53),
-        TTM_SETTOOLINFOA        =(WM_USER + 9),
-        TTM_SETTOOLINFOW        =(WM_USER + 54),
-        TTM_HITTESTA            =(WM_USER +10),
-        TTM_HITTESTW            =(WM_USER +55),
-        TTM_GETTEXTA            =(WM_USER +11),
-        TTM_GETTEXTW            =(WM_USER +56),
-        TTM_UPDATETIPTEXTA      =(WM_USER +12),
-        TTM_UPDATETIPTEXTW      =(WM_USER +57),
-        TTM_GETTOOLCOUNT        =(WM_USER +13),
-        TTM_ENUMTOOLSA          =(WM_USER +14),
-        TTM_ENUMTOOLSW          =(WM_USER +58),
-        TTM_GETCURRENTTOOLA     =(WM_USER + 15),
-        TTM_GETCURRENTTOOLW     =(WM_USER + 59),
-        TTM_WINDOWFROMPOINT     =(WM_USER + 16),
-        TTM_TRACKACTIVATE       =(WM_USER + 17),  // wParam = TRUE/FALSE start end  lparam = LPTOOLINFO
-        TTM_TRACKPOSITION       =(WM_USER + 18),  // lParam = dwPos
-        TTM_SETTIPBKCOLOR       =(WM_USER + 19),
-        TTM_SETTIPTEXTCOLOR     =(WM_USER + 20),
-        TTM_GETDELAYTIME        =(WM_USER + 21),
-        TTM_GETTIPBKCOLOR       =(WM_USER + 22),
-        TTM_GETTIPTEXTCOLOR     =(WM_USER + 23),
-        TTM_SETMAXTIPWIDTH      =(WM_USER + 24),
-        TTM_GETMAXTIPWIDTH      =(WM_USER + 25),
-        TTM_SETMARGIN           =(WM_USER + 26),  // lParam = lprc
-        TTM_GETMARGIN           =(WM_USER + 27),  // lParam = lprc
-        TTM_POP                 =(WM_USER + 28),
-        TTM_UPDATE              =(WM_USER + 29),
-        TTM_GETBUBBLESIZE       =(WM_USER + 30),
-        TTM_ADJUSTRECT          =(WM_USER + 31),
-        TTM_SETTITLEA           =(WM_USER + 32),  // wParam = TTI_*, lParam = char* szTitle
-        TTM_SETTITLEW           =(WM_USER + 33),  // wParam = TTI_*, lParam = wchar* szTitle
-    }
+        enum TTM : uint
+        {
+            TTM_ACTIVATE = (WM_USER + 1),
+            TTM_SETDELAYTIME = (WM_USER + 3),
+            TTM_ADDTOOLA = (WM_USER + 4),
+            TTM_ADDTOOLW = (WM_USER + 50),
+            TTM_DELTOOLA = (WM_USER + 5),
+            TTM_DELTOOLW = (WM_USER + 51),
+            TTM_NEWTOOLRECTA = (WM_USER + 6),
+            TTM_NEWTOOLRECTW = (WM_USER + 52),
+            TTM_RELAYEVENT = (WM_USER + 7), // Win7: wParam = GetMessageExtraInfo() when relaying WM_MOUSEMOVE
+            TTM_GETTOOLINFOA = (WM_USER + 8),
+            TTM_GETTOOLINFOW = (WM_USER + 53),
+            TTM_SETTOOLINFOA = (WM_USER + 9),
+            TTM_SETTOOLINFOW = (WM_USER + 54),
+            TTM_HITTESTA = (WM_USER + 10),
+            TTM_HITTESTW = (WM_USER + 55),
+            TTM_GETTEXTA = (WM_USER + 11),
+            TTM_GETTEXTW = (WM_USER + 56),
+            TTM_UPDATETIPTEXTA = (WM_USER + 12),
+            TTM_UPDATETIPTEXTW = (WM_USER + 57),
+            TTM_GETTOOLCOUNT = (WM_USER + 13),
+            TTM_ENUMTOOLSA = (WM_USER + 14),
+            TTM_ENUMTOOLSW = (WM_USER + 58),
+            TTM_GETCURRENTTOOLA = (WM_USER + 15),
+            TTM_GETCURRENTTOOLW = (WM_USER + 59),
+            TTM_WINDOWFROMPOINT = (WM_USER + 16),
+            TTM_TRACKACTIVATE = (WM_USER + 17),  // wParam = TRUE/FALSE start end  lparam = LPTOOLINFO
+            TTM_TRACKPOSITION = (WM_USER + 18),  // lParam = dwPos
+            TTM_SETTIPBKCOLOR = (WM_USER + 19),
+            TTM_SETTIPTEXTCOLOR = (WM_USER + 20),
+            TTM_GETDELAYTIME = (WM_USER + 21),
+            TTM_GETTIPBKCOLOR = (WM_USER + 22),
+            TTM_GETTIPTEXTCOLOR = (WM_USER + 23),
+            TTM_SETMAXTIPWIDTH = (WM_USER + 24),
+            TTM_GETMAXTIPWIDTH = (WM_USER + 25),
+            TTM_SETMARGIN = (WM_USER + 26),  // lParam = lprc
+            TTM_GETMARGIN = (WM_USER + 27),  // lParam = lprc
+            TTM_POP = (WM_USER + 28),
+            TTM_UPDATE = (WM_USER + 29),
+            TTM_GETBUBBLESIZE = (WM_USER + 30),
+            TTM_ADJUSTRECT = (WM_USER + 31),
+            TTM_SETTITLEA = (WM_USER + 32),  // wParam = TTI_*, lParam = char* szTitle
+            TTM_SETTITLEW = (WM_USER + 33),  // wParam = TTI_*, lParam = wchar* szTitle
+        }
 
-        
+
         public enum ToolTipMessage : uint
         {
-            TTM_ADDTOOL             =TTM.TTM_ADDTOOLW,
-            TTM_DELTOOL             =TTM.TTM_DELTOOLW,
-            TTM_NEWTOOLRECT         =TTM.TTM_NEWTOOLRECTW,
-            TTM_GETTOOLINFO         =TTM.TTM_GETTOOLINFOW,
-            TTM_SETTOOLINFO         =TTM.TTM_SETTOOLINFOW,
-            TTM_HITTEST             =TTM.TTM_HITTESTW,
-            TTM_GETTEXT             =TTM.TTM_GETTEXTW,
-            TTM_UPDATETIPTEXT       =TTM.TTM_UPDATETIPTEXTW,
-            TTM_ENUMTOOLS           =TTM.TTM_ENUMTOOLSW,
-            TTM_GETCURRENTTOOL      =TTM.TTM_GETCURRENTTOOLW,
-            TTM_SETTITLE            =TTM.TTM_SETTITLEW,
-            TTM_TRACKPOSITION       =TTM.TTM_TRACKPOSITION,
-            TTM_TRACKACTIVATE       =TTM.TTM_TRACKACTIVATE,
+            TTM_ADDTOOL = TTM.TTM_ADDTOOLW,
+            TTM_DELTOOL = TTM.TTM_DELTOOLW,
+            TTM_NEWTOOLRECT = TTM.TTM_NEWTOOLRECTW,
+            TTM_GETTOOLINFO = TTM.TTM_GETTOOLINFOW,
+            TTM_SETTOOLINFO = TTM.TTM_SETTOOLINFOW,
+            TTM_HITTEST = TTM.TTM_HITTESTW,
+            TTM_GETTEXT = TTM.TTM_GETTEXTW,
+            TTM_UPDATETIPTEXT = TTM.TTM_UPDATETIPTEXTW,
+            TTM_ENUMTOOLS = TTM.TTM_ENUMTOOLSW,
+            TTM_GETCURRENTTOOL = TTM.TTM_GETCURRENTTOOLW,
+            TTM_SETTITLE = TTM.TTM_SETTITLEW,
+            TTM_TRACKPOSITION = TTM.TTM_TRACKPOSITION,
+            TTM_TRACKACTIVATE = TTM.TTM_TRACKACTIVATE,
         }
         //		public const uint WS_POPUP		=	0x80000000;
         public const int CW_USEDEFAULT = -1; //0x80000000;
@@ -133,8 +135,8 @@ namespace HidemaruLspClient_FrontEnd
             TTS_BALLOON = 0x40,
             TTS_CLOSE = 0x80,
 
-    }
-    [Flags]
+        }
+        [Flags]
         public enum WindowStylesEx : uint
         {
             /// <summary>Specifies a window that accepts drag-drop files.</summary>
@@ -284,11 +286,11 @@ namespace HidemaruLspClient_FrontEnd
         }
 
         [StructLayout(LayoutKind.Sequential)]
-		public struct POINT
-		{
-			public int x;
-			public int y;
-            
+        public struct POINT
+        {
+            public int x;
+            public int y;
+
             public POINT(int x, int y)
             {
                 this.x = x;
@@ -376,67 +378,5 @@ namespace HidemaruLspClient_FrontEnd
         {
             return (high << 16) | (low & 0xffff);
         }
-#region comctl32.dll
-		[DllImport("comctl32.dll", EntryPoint = "InitCommonControls", CallingConvention = CallingConvention.StdCall)]
-		static extern bool InitCommonControls();
-#endregion
-
-#region kernel32.dll
-        [DllImport("kernel32.dll")]
-		public static extern IntPtr GetModuleHandle(string lpFileName);
-
-		[DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
-		public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
-		[DllImport("kernel32.dll")]
-		public static extern IntPtr GlobalLock(IntPtr hMem);
-
-		[DllImport("kernel32.dll")]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		public static extern bool GlobalUnlock(IntPtr hMem);
-
-		[DllImport("kernel32.dll")]
-		public static extern IntPtr GlobalFree(IntPtr hMem);
-
-		[DllImport("kernel32.dll", SetLastError = true)]
-		public static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, uint dwProcessId);
-
-		[DllImport("kernel32.dll")]
-		public static extern bool CloseHandle(IntPtr handle);
-#endregion
-
-
-#region user32.dll
-		[DllImport("user32.dll", SetLastError = true)]
-		public static extern IntPtr CreateWindowEx(WindowStylesEx dwExStyle, string lpClassName, string lpWindowName, WindowStyles dwStyle, int x, int y, int nWidth, int nHeight, IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
-		
-		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool DestroyWindow(IntPtr hwnd);
-
-		[DllImport("user32.dll", EntryPoint = "SendMessageW", CharSet = CharSet.Auto)]
-		public static extern bool SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, StringBuilder lParam);
-
-		[DllImport("user32.dll", EntryPoint = "SendMessageW", CharSet = CharSet.Auto)]
-		public static extern bool SendMessage(IntPtr hWnd, uint Msg, StringBuilder wParam, StringBuilder lParam);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, int wParam, NativeMethods.TOOLINFO lParam);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, int wParam, int lParam);
-
-        [DllImport("user32.dll", EntryPoint = "SendMessageW", SetLastError = true)]
-		public static extern bool SendMessage(IntPtr hWnd, uint Msg, IntPtr wparam, IntPtr lparam);
-
-		[DllImport("user32.dll", EntryPoint = "SendMessageW", SetLastError = true)]
-		public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, int command, IntPtr lparam);
-		
-		[DllImport("user32.dll", SetLastError = true)]
-		public static extern bool GetCursorPos(ref POINT lpPoint);
-
-        [DllImport("user32.dll")]
-        public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
-#endregion
     }
 }

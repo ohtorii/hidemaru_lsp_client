@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using HidemaruLspClient_BackEndContract;
 using System.Runtime.InteropServices;
+using static HidemaruLspClient_FrontEnd.UnsafeNativeMethods;
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -63,7 +64,7 @@ namespace HidemaruLspClient_FrontEnd
             void Process()
             {
                 var currentMousePoint = new NativeMethods.POINT (0,0);
-                if (NativeMethods.GetCursorPos(ref currentMousePoint)==false)
+                if (UnsafeNativeMethods.GetCursorPos(ref currentMousePoint)==false)
                 {
                     return;
                 }
@@ -123,7 +124,7 @@ namespace HidemaruLspClient_FrontEnd
                     // Position the tooltip. The coordinates are adjusted so that the tooltip does not overlap the mouse pointer.
                     {
                         var pt = new NativeMethods.POINT(screenX, screenY);
-                        NativeMethods.SendMessage(toolTipHandle_, (uint)NativeMethods.ToolTipMessage.TTM_TRACKPOSITION, 0, NativeMethods.MAKELONG(pt.x + 10, pt.y - 20));
+                        SendMessage(toolTipHandle_, (uint)NativeMethods.ToolTipMessage.TTM_TRACKPOSITION, 0, NativeMethods.MAKELONG(pt.x + 10, pt.y - 20));
                     }
                 }
                 finally
@@ -142,7 +143,7 @@ namespace HidemaruLspClient_FrontEnd
                 var NULL = IntPtr.Zero;
 
                 // Create a tooltip.
-                var hwndTT = NativeMethods.CreateWindowEx(NativeMethods.WindowStylesEx.WS_EX_TOPMOST, NativeMethods.TOOLTIPS_CLASS, null,
+                var hwndTT = UnsafeNativeMethods.CreateWindowEx(NativeMethods.WindowStylesEx.WS_EX_TOPMOST, NativeMethods.TOOLTIPS_CLASS, null,
                     NativeMethods.WindowStyles.WS_POPUP | NativeMethods.WindowStyles.TTS_NOPREFIX | NativeMethods.WindowStyles.TTS_ALWAYSTIP,
                     NativeMethods.CW_USEDEFAULT, NativeMethods.CW_USEDEFAULT, NativeMethods.CW_USEDEFAULT, NativeMethods.CW_USEDEFAULT,
                     hwndParent, NULL, hInstance, NULL);
@@ -159,7 +160,7 @@ namespace HidemaruLspClient_FrontEnd
                 toolItem_.hinst    = hInstance;
                 toolItem_.uId      = hwndParent;
                 //toolItem_.lParam   = NULL;
-                NativeMethods.GetClientRect(hwndParent, out toolItem_.rect);
+                UnsafeNativeMethods.GetClientRect(hwndParent, out toolItem_.rect);
                 
                 try
                 {
@@ -179,7 +180,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             bool SendMessageWin32(IntPtr hWnd, uint Msg, int wparam)
             {
-                var ret = (int)NativeMethods.SendMessage(hWnd, Msg, wparam, toolItem_);
+                var ret = (int)SendMessage(hWnd, Msg, wparam, toolItem_);
                 if (ret == 0)
                 {
                     return false;

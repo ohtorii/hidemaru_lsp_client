@@ -66,6 +66,7 @@
     <Compile Include="Ole32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service.cs" />
+    <Compile Include="UnsafeNativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LanguageServerProcess\LanguageServerProcess.csproj">

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static HidemaruLspClient_FrontEnd.UnsafeNativeMethods;
 
 namespace HidemaruLspClient_FrontEnd
 {    
@@ -19,7 +20,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             //0x111=WM_COMMAND
             //1009=クリア
-            NativeMethods.SendMessage(GetWindowHandle(hwndHidemaru), 0x111, 1009, new IntPtr(0)); 
+            SendMessage(GetWindowHandle(hwndHidemaru), 0x111, 1009, new IntPtr(0)); 
         }
     }
 }
