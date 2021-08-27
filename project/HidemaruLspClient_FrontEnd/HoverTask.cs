@@ -12,6 +12,9 @@ namespace HidemaruLspClient_FrontEnd
 {
     public partial class Service
     {
+        /// <summary>
+        /// textDocument/hover
+        /// </summary>
         class HoverTask
         {
             const int defaultMillisecondsTimeout = 500;
@@ -85,13 +88,22 @@ namespace HidemaruLspClient_FrontEnd
                 }
                 prevMousePoint_ = currentMousePoint;
                 prevHidemaruPosition_ = currentHidemaruPosition_;
-//                System.Diagnostics.Debug.WriteLine(string.Format("column/Line={0},{1}", prevHidemaruPosition_.column, prevHidemaruPosition_.line));
 
                 var text = service_.Hover(currentHidemaruPosition_.line, currentHidemaruPosition_.column);
-                //ShowToolTips(prevMousePoint_.x, prevMousePoint_.y, text);
+
+                /*WinformsのTooltipsは何故か表示できないため（原因特定は行っていない）、Win32-APIを利用しています。
+                 * 
+                 * ShowToolTipsWinforms(prevMousePoint_.x, prevMousePoint_.y, text);
+                 */
                 ShowToolTipsWin32(prevMousePoint_.x, prevMousePoint_.y, text);
             }
 
+            /// <summary>
+            /// Win32-APIでTooltipsを表示する
+            /// </summary>
+            /// <param name="screenX"></param>
+            /// <param name="screenY"></param>
+            /// <param name="text"></param>
             void ShowToolTipsWin32(int screenX, int screenY, string text)
             {
                 if (toolTipHandle_==IntPtr.Zero)
@@ -193,9 +205,5 @@ namespace HidemaruLspClient_FrontEnd
                 return this.SendMessageWin32(hWnd,Msg,0);
             }
         }
-
-        
-        
-
     }
 }
