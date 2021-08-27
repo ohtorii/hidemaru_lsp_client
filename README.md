@@ -13,8 +13,6 @@
 # 予めのお断りとお願い
 
 このマクロを使用してみようと思う方は既にある程度のスキルを持っておられるものと推測し、このドキュメントもそのような方が読まれることを前提として書いてあります。 
-詳細が不足していると感じる箇所は、ぜひあなたのスキルで脳内補完してください。
-
 
 # できること
 
@@ -24,11 +22,11 @@
 |Lint|textDocument/publishDiagnostics|○|
 |宣言へ移動|textDocument/declaration|○|
 |定義へ移動|textDocument/definition|○|
-|カーソル位置にあるシンボルの方定義へジャンプする|textDocument/typeDefinition|実装中|
-|カーソル位置のシンボルを参照している箇所へジャンプ|textDocument/references|実装中|
-|実装へ移動|textDocument/implementation|実装中|
-|||||
-|||||
+|カーソル位置にあるシンボルの型定義へジャンプする|textDocument/typeDefinition|○|
+|カーソル位置のシンボルを参照している箇所へジャンプ|textDocument/references|○|
+|実装へ移動|textDocument/implementation|○|
+|Hover|textDocument/hover|○|
+||||
 
 
 ## 動作確認した言語サーバ
