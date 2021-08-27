@@ -6,6 +6,7 @@ using System.Drawing;
 using HidemaruLspClient_BackEndContract;
 using System.Runtime.InteropServices;
 using static HidemaruLspClient_FrontEnd.UnsafeNativeMethods;
+using static HidemaruLspClient_FrontEnd.NativeMethods;
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -21,9 +22,9 @@ namespace HidemaruLspClient_FrontEnd
             ILspClientLogger logger_;
             CancellationToken cancellationToken_;
 
-            NativeMethods.POINT prevMousePoint_ = new NativeMethods.POINT (0,  0 );
+            POINT prevMousePoint_ = new POINT (0,  0 );
             Hidemaru.Position prevHidemaruPosition_ = new Hidemaru.Position(0, 0);
-            NativeMethods.TOOLINFO toolItem_ = new NativeMethods.TOOLINFO();
+            TOOLINFO toolItem_ = new TOOLINFO();
             IntPtr toolTipHandle_=new IntPtr(0);
             /// <summary>
             /// 秀丸エディタのウインドウハンドル
@@ -63,8 +64,8 @@ namespace HidemaruLspClient_FrontEnd
             }
             void Process()
             {
-                var currentMousePoint = new NativeMethods.POINT (0,0);
-                if (UnsafeNativeMethods.GetCursorPos(ref currentMousePoint)==false)
+                var currentMousePoint = new POINT (0,0);
+                if (GetCursorPos(ref currentMousePoint)==false)
                 {
                     return;
                 }
@@ -113,18 +114,18 @@ namespace HidemaruLspClient_FrontEnd
                 // Activate the tooltip.
                 {
                     const int True = 1;
-                    SendMessageWin32(toolTipHandle_, (uint)NativeMethods.ToolTipMessage.TTM_TRACKACTIVATE, True);
+                    SendMessageWin32(toolTipHandle_, (uint)ToolTipMessage.TTM_TRACKACTIVATE, True);
                 }
 
                 toolItem_.lpszText = Marshal.StringToHGlobalAuto(text); 
                 try
                 {
-                    SendMessageWin32(toolTipHandle_, (uint)NativeMethods.ToolTipMessage.TTM_SETTOOLINFO);
+                    SendMessageWin32(toolTipHandle_, (uint)ToolTipMessage.TTM_SETTOOLINFO);
 
                     // Position the tooltip. The coordinates are adjusted so that the tooltip does not overlap the mouse pointer.
                     {
-                        var pt = new NativeMethods.POINT(screenX, screenY);
-                        SendMessage(toolTipHandle_, (uint)NativeMethods.ToolTipMessage.TTM_TRACKPOSITION, 0, NativeMethods.MAKELONG(pt.x + 10, pt.y - 20));
+                        var pt = new POINT(screenX, screenY);
+                        SendMessage(toolTipHandle_, (uint)ToolTipMessage.TTM_TRACKPOSITION, 0, MAKELONG(pt.x + 10, pt.y - 20));
                     }
                 }
                 finally
@@ -143,9 +144,9 @@ namespace HidemaruLspClient_FrontEnd
                 var NULL = IntPtr.Zero;
 
                 // Create a tooltip.
-                var hwndTT = UnsafeNativeMethods.CreateWindowEx(NativeMethods.WindowStylesEx.WS_EX_TOPMOST, NativeMethods.TOOLTIPS_CLASS, null,
-                    NativeMethods.WindowStyles.WS_POPUP | NativeMethods.WindowStyles.TTS_NOPREFIX | NativeMethods.WindowStyles.TTS_ALWAYSTIP,
-                    NativeMethods.CW_USEDEFAULT, NativeMethods.CW_USEDEFAULT, NativeMethods.CW_USEDEFAULT, NativeMethods.CW_USEDEFAULT,
+                var hwndTT = CreateWindowEx(WindowStylesEx.WS_EX_TOPMOST, TOOLTIPS_CLASS, null,
+                    WindowStyles.WS_POPUP | WindowStyles.TTS_NOPREFIX | WindowStyles.TTS_ALWAYSTIP,
+                    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                     hwndParent, NULL, hInstance, NULL);
                 if (hwndTT== IntPtr.Zero)
                 {
@@ -154,18 +155,18 @@ namespace HidemaruLspClient_FrontEnd
 
                 // Set up the tool information. In this case, the "tool" is the entire parent window.
 
-                //toolItem_.cbSize   = NativeMethods.TTTOOLINFOW_V2_SIZE;// Marshal.SizeOf(typeof(Dll.TOOLINFO));
-                toolItem_.uFlags   = (int)(NativeMethods.ToolTipFlags.TTF_IDISHWND | NativeMethods.ToolTipFlags.TTF_TRACK | NativeMethods.ToolTipFlags.TTF_ABSOLUTE);
+                //toolItem_.cbSize   = TTTOOLINFOW_V2_SIZE;// Marshal.SizeOf(typeof(Dll.TOOLINFO));
+                toolItem_.uFlags   = (int)(ToolTipFlags.TTF_IDISHWND | ToolTipFlags.TTF_TRACK | ToolTipFlags.TTF_ABSOLUTE);
                 toolItem_.hwnd     = hwndParent;
                 toolItem_.hinst    = hInstance;
                 toolItem_.uId      = hwndParent;
                 //toolItem_.lParam   = NULL;
-                UnsafeNativeMethods.GetClientRect(hwndParent, out toolItem_.rect);
+                GetClientRect(hwndParent, out toolItem_.rect);
                 
                 try
                 {
                     toolItem_.lpszText = Marshal.StringToHGlobalAuto(text);
-                    this.SendMessageWin32(hwndTT, (uint)NativeMethods.ToolTipMessage.TTM_ADDTOOL);
+                    this.SendMessageWin32(hwndTT, (uint)ToolTipMessage.TTM_ADDTOOL);
                 }
                 finally
                 {
