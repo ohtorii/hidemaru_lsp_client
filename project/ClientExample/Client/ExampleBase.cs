@@ -98,8 +98,8 @@ namespace ClientExample
 
                 requestId = client.Send.TextDocumentCompletion(param);
             }
-            var millisecondsTimeout = 1000;
-            Console.WriteLine(string.Format("millisecondsTimeout={0}", millisecondsTimeout));
+            var millisecondsTimeout = 6000;
+            //Console.WriteLine(string.Format("millisecondsTimeout={0}", millisecondsTimeout));
             var completion = (CompletionList)client.QueryResponse(requestId, millisecondsTimeout).item;
             if (completion == null)
             {

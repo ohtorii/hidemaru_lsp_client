@@ -13,7 +13,7 @@ namespace ClientExample
         internal override Uri rootUri => new Uri(rootPath);
 
         //internal override Uri sourceUri => new Uri(rootUri, @"simple\Program.cs");
-        internal override Uri sourceUri => new Uri(rootUri, @"simple\Hoge.cs");
+        internal override Uri sourceUri => new Uri(rootUri, @"simple\Program.cs");
 
         internal override CompilationPosition compilationPosition => new ExampleBase.CompilationPosition { line = 12, character = 27 };
 

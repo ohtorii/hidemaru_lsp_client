@@ -91,8 +91,9 @@ namespace HidemaruLspClient_FrontEnd
 
                 var text = service_.Hover(currentHidemaruPosition_.line, currentHidemaruPosition_.column);
 
-                /*WinformsのTooltipsは何故か表示できないため（原因特定は行っていない）、Win32-APIを利用しています。
-                 * 
+                /*秀丸エディタはWin32-APIを利用したアプリなので、本マクロでも素直にWin32-APIを利用しています。
+                 *なお、WinformsのToolTipも動作検証しましたが、意図したとおりに動かず利用していません。
+                 *　
                  * ShowToolTipsWinforms(prevMousePoint_.x, prevMousePoint_.y, text);
                  */
                 ShowToolTipsWin32(prevMousePoint_.x, prevMousePoint_.y, text);
