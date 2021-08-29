@@ -13,14 +13,14 @@ namespace ClientExample
             {
                 var clientInfo = param.clientInfo;
                 clientInfo.name = "hidemal-lsp";
-                clientInfo.version = "1.1.1";
+                clientInfo.version = "0.5.0";
             }
             param.trace = "verbose";//"off";
             {
-                //var workspace = param.capabilities.workspace;
-                //workspace.configuration = true;
-                //workspace.applyEdit = true;
-                //workspace.workspaceFolders = true;
+                var workspace = param.capabilities.workspace;
+                workspace.configuration = true;
+                workspace.applyEdit = true;
+                workspace.workspaceFolders = true;
             }
             {
                 var window = param.capabilities.window;
@@ -50,9 +50,9 @@ namespace ClientExample
                 {//completion
                     textDocument.completion = new CompletionClientCapabilities();
                     var completion = textDocument.completion;
-                    completion.completionItem.snippetSupport = true;
+                    completion.completionItem.snippetSupport = false;
                     completion.completionItem.resolveSupport.properties = new[] { "additionalTextEdits" };
-                    completion.completionItem.documentationFormat = new[] { MarkupKind.markdown, MarkupKind.plaintext };
+                    completion.completionItem.documentationFormat = new[] { /*MarkupKind.markdown,*/ MarkupKind.plaintext };
                     completion.dynamicRegistration = false;
                     completion.completionItemKind.valueSet = new[] {
                         CompletionItemKind.Text         ,
@@ -94,7 +94,7 @@ namespace ClientExample
                     textDocument.hover = new HoverClientCapabilities();
                     var hover = textDocument.hover;
                     hover.dynamicRegistration = false;
-                    hover.contentFormat = new[] { MarkupKind.markdown, MarkupKind.plaintext };
+                    hover.contentFormat = new[] { /*MarkupKind.markdown, */MarkupKind.plaintext };
                 }
                 {//rangeFormatting
                     textDocument.rangeFormatting = new DocumentRangeFormattingClientCapabilities();
