@@ -39,12 +39,86 @@ namespace LSP.Model
 		public IRange range { get; set; } = new Range();
 	}
 
+	interface ILocationLink
+	{
+		/**
+		 * Span of the origin of this link.
+		 *
+		 * Used as the underlined span for mouse interaction. Defaults to the word
+		 * range at the mouse position.
+		 */
+		IRange originSelectionRange { get;  }
 
-	/**
-	 * Defines how the host (editor) should sync document changes
-	 * to the language server.
-	 */
-	[JsonConverter(typeof(NumberEnumConverter))]
+		/**
+		 * The target resource identifier of this link.
+		 */
+		DocumentUri targetUri { get; set; }
+
+		/**
+		 * The full target range of this link. If the target for example is a symbol
+		 * then target range is the range enclosing this symbol not including
+		 * leading/trailing whitespace but everything else like comments. This
+		 * information is typically used to highlight the range in the editor.
+		 */
+		IRange targetRange { get; }
+
+		/**
+		 * The range that should be selected and revealed when this link is being
+		 * followed, e.g the name of a function. Must be contained by the the
+		 * `targetRange`. See also `DocumentSymbol#range`
+		 */
+		IRange targetSelectionRange { get; }
+	}
+    class LocationLink : ILocationLink
+    {
+        public IRange originSelectionRange
+        {
+            get
+            {
+                if (originSelectionRange_ == null)
+                {
+					originSelectionRange_ = new Range();
+
+				}
+				return originSelectionRange_;
+			}
+        }
+        public string targetUri { get; set; }
+
+        public IRange targetRange
+        {
+            get
+            {
+                if (targetRange_ == null)
+                {
+					targetRange_ = new Range();
+				}
+				return targetRange_;
+			}
+        }
+
+        public IRange targetSelectionRange
+        {
+            get
+            {
+                if (targetSelectionRange_ == null)
+                {
+					targetSelectionRange_ = new Range();
+				}
+				return targetSelectionRange_;
+			}
+        }
+
+        Range originSelectionRange_;
+		Range targetRange_;
+		Range targetSelectionRange_;
+	}
+
+    /**
+		* Defines how the host (editor) should sync document changes
+		* to the language server.
+		*/
+    [JsonConverter(typeof(NumberEnumConverter))]
 	enum TextDocumentSyncKind
 	{
 		/**
