@@ -84,10 +84,7 @@ namespace LSP.Implementation
 		#region publishDiagnostics
 		static string makePublishDiagnosticsKey(string uri)
         {
-			//(Ex.)
-			//Before:file:///c%3A/Users/foo/GitHub/hidemaru_lsp_client/project/TestData/lua/test1.lua
-			//After :file:///c:/users/foo/github/hidemaru_lsp_client/project/testdata/lua/test1.lua			
-			return Uri.UnescapeDataString(uri).ToLower();
+			return Util.NormalizeUri(uri).ToLower();
 		}
 		public void OnTextDocumentPublishDiagnostics(PublishDiagnosticsParams param)
 		{
