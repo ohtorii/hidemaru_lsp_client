@@ -124,12 +124,12 @@ namespace HidemaruLspClient_FrontEnd
 		public static void HidemaruToZeroBase(out long zerobaseLine, out long zerobaseCharacter, long hidemaruLine,  long hidemaruColumn)
         {
 			zerobaseLine      = hidemaruLine	- 1;
-			zerobaseCharacter = hidemaruColumn	- 1;
+			zerobaseCharacter = hidemaruColumn	/*- 1*/;
         }
 		public static void ZeroBaseToHidemaru(out long hidemaruLine, out long hidemaruColumn, long zerobaseLine,long zerobaseCharacter)
 		{
 			hidemaruLine   =zerobaseLine		+ 1;
-			hidemaruColumn =zerobaseCharacter	+ 1;
+			hidemaruColumn =zerobaseCharacter	/*+ 1*/;
 		}
 	}
 }
