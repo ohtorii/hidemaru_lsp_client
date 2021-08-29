@@ -98,6 +98,7 @@ namespace HidemaruLspClient_FrontEnd
             TTM_SETTITLE = TTM.TTM_SETTITLEW,
             TTM_TRACKPOSITION = TTM.TTM_TRACKPOSITION,
             TTM_TRACKACTIVATE = TTM.TTM_TRACKACTIVATE,
+            TTM_SETMAXTIPWIDTH=TTM.TTM_SETMAXTIPWIDTH,
         }
         //		public const uint WS_POPUP		=	0x80000000;
         public const int CW_USEDEFAULT = -1; //0x80000000;

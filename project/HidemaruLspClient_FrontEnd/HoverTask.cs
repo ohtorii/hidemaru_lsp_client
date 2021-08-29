@@ -46,7 +46,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             void MainLoop()
             {
-                //Todoポーリングではなくイベント通知にする
+                //Todo:ポーリングではなくイベント通知にする
                 try
                 {
                     while (true)
@@ -61,7 +61,7 @@ namespace HidemaruLspClient_FrontEnd
                 }
                 catch (System.Runtime.InteropServices.COMException e)
                 {
-                    //COMサーバ(.exe)が終了したため、ログ出力してからポーリング動作を終了させる。
+                    //COMサーバ(.exe)が終了したため、ログ出力してからポーリング動作を終了する。
                     logger_.Error(e.ToString());
                 }
             }
@@ -100,7 +100,7 @@ namespace HidemaruLspClient_FrontEnd
             }
 
             /// <summary>
-            /// Win32-APIでTooltipsを表示する
+            /// Tooltipsを表示する(Win-API版)
             /// </summary>
             /// <param name="screenX"></param>
             /// <param name="screenY"></param>
@@ -190,6 +190,7 @@ namespace HidemaruLspClient_FrontEnd
                         Marshal.FreeHGlobal(ptr);
                     }
                 }
+                SendMessage(hwndTT, (uint)ToolTipMessage.TTM_SETMAXTIPWIDTH, 0, 200);
                 return hwndTT;
             }
             bool SendMessageWin32(IntPtr hWnd, uint Msg, int wparam)
