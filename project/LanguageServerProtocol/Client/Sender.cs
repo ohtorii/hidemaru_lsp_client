@@ -165,28 +165,84 @@ namespace LSP.Implementation
 			}
 			StoreResponse(response.id, response.error, f((JToken)response.result), null);
 		}
-		#endregion		
+		#endregion
 
-		void ActionTextDocumentGoto(ResponseMessage response)
-		{
-			Location[] JTokenToLocations(JToken arg)
+		#region Goto
+		static Location[] ConvertToLocationArray(JToken arg)
+		{			
+			if (arg == null)
 			{
-				if (arg == null)
+				return null;
+			}
+			if (arg is JArray)
+			{
+				var ja = arg.ToObject<JArray>();
+				var result = new Location[ja.Count];
+				var i = 0;
+				foreach (var item in ja)
 				{
-					return null;
+					result[i] = ConvertToLocation(item);
+					++i;
 				}
-				if (arg is JArray)
-				{
-					//CompletionItem[]の場合
-					return arg.ToObject<Location[]>();
-				}
+				return result;
+			}
+			
+			var obj = arg.ToObject<JObject>();
+			if (obj.ContainsKey("uri"))
+			{
 				return new Location[] { arg.ToObject<Location>() };
 			}
+			return new Location[] { ConvertToLocation(arg.ToObject<LocationLink>()) };
+		}
 
+		static Location ConvertToLocation(LocationLink ll)
+		{
+			return new Location { uri = ll.targetUri, range = ll.targetRange };
+		}
+
+		static Location ConvertToLocation(JToken token)
+		{
+			var obj = token.ToObject<JObject>();
+			if (obj.ContainsKey("uri"))
+			{
+				return obj.ToObject<Location>();
+			}
+			else
+			{
+				return ConvertToLocation(obj.ToObject<LocationLink>());
+			}
+		}
+		static Location[] DistinctLocations(Location[] locations)
+        {
+            if (locations == null)
+            {
+				return null;
+            }
+			Location[] result;
+			{
+				var dic = new Dictionary<string, Location>();
+				foreach (var item in locations)
+				{
+					item.uri = Util.NormalizeUri(item.uri);
+					dic.Add(item.uri, item);
+				}
+				int i = 0;
+				result = new Location[dic.Count];
+				foreach(var item in dic)
+                {
+					result[i] = item.Value;					
+					++i;
+                }
+			}
+			return result;
+		}
+		void ActionTextDocumentGoto(ResponseMessage response)
+		{
+			var locations = DistinctLocations( ConvertToLocationArray((JToken)response.result));
 			StoreResponse(
 				response.id,
 				response.error,
-				JTokenToLocations((JToken)response.result),
+				locations,
 				null);
 		}
 		RequestId TextDocumentGoto(object param, string method)
@@ -214,7 +270,10 @@ namespace LSP.Implementation
 		{
 			return TextDocumentGoto(param, "textDocument/references");
 		}
-		public RequestId TextDocumentHover(IHoverParams param)
+        #endregion
+
+        #region Hover
+        public RequestId TextDocumentHover(IHoverParams param)
 		{
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
 			return Request(param, "textDocument/hover", ActionTextDocumentHover);
@@ -225,8 +284,11 @@ namespace LSP.Implementation
 			var hover = token.ToObject<Hover>();
 			StoreResponse(response.id, response.error, hover, null);
 		}
-		#region  リクエストの返信
-		public class ResponseResult
+        #endregion
+
+
+        #region  リクエストの返信
+        public class ResponseResult
 		{
 			public ResponseResult(ResponseError responseError, object responseItem)
 			{
