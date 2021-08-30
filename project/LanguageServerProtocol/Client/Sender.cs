@@ -220,11 +220,15 @@ namespace LSP.Implementation
             }
 			Location[] result;
 			{
-				var dic = new Dictionary<string, Location>();
+				var dic = new SortedDictionary<LocationKey, Location>(new LocationKeySortComparer());
 				foreach (var item in locations)
 				{
 					item.uri = Util.NormalizeUri(item.uri);
-					dic[item.uri]= item;
+
+					var start = item.range.start;
+					var end   = item.range.end;
+					var key   = new LocationKey(item.uri, start.line, start.character);
+					dic[key] = item;
 				}
 				int i = 0;
 				result = new Location[dic.Count];
@@ -236,6 +240,42 @@ namespace LSP.Implementation
 			}
 			return result;
 		}
+		class LocationKey
+		{
+			public LocationKey(string filename, uint line, uint character)
+			{
+				this.filename = filename;
+				this.line = line;
+				this.character = character;
+			}
+			public override string ToString()
+			{
+				return string.Format("{0} ({1},{2})", this.filename, this.line, this.character);
+			}
+			public string filename { get; }
+			public uint line { get; }
+			public uint character { get; }
+		}
+
+		class LocationKeySortComparer : IComparer<LocationKey>
+		{
+			public int Compare(LocationKey x, LocationKey y)
+			{
+				var filename = x.filename.CompareTo(y.filename);
+				if (filename != 0)
+				{
+					return filename;
+				}
+				var line = x.line.CompareTo(y.line);
+				if (line != 0)
+				{
+					return line;
+				}
+				var character = x.character.CompareTo(y.character);
+				return character;
+			}
+		}
+
 		void ActionTextDocumentGoto(ResponseMessage response)
 		{
 			var locations = DistinctLocations( ConvertToLocationArray(response.result as JToken));
