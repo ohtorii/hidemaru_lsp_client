@@ -39,6 +39,8 @@ main:
 
 
 GotoLocation:
+    savebacktagjump;
+
     $$absFilename   =$$1;
     ##startLine     =##2;
     ##startCharacter=##3;
@@ -51,7 +53,7 @@ LocationCallback:
 
     $g_locationAbsFilename[##i]  =$$1;
     #g_locationLine[##i]         =##2;
-    #g_locationCharacter[##i]    =##3;
+    #g_locationCharacter[##i]    =##3 + 1;
 
     #g_locationNum = #g_locationNum + 1;
     return ;
