@@ -107,6 +107,8 @@ namespace HidemaruLspClient_FrontEnd
             /// <param name="text"></param>
             void ShowToolTipsWin32(int screenX, int screenY, string text)
             {
+                return;
+
                 if (toolTipHandle_==IntPtr.Zero)
                 {
 #if true

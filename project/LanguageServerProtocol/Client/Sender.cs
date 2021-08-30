@@ -163,7 +163,7 @@ namespace LSP.Implementation
 				}
 				return null;
 			}
-			StoreResponse(response.id, response.error, f((JToken)response.result), null);
+			StoreResponse(response.id, response.error, f(response.result as JToken), null);
 		}
 		#endregion
 
@@ -224,7 +224,7 @@ namespace LSP.Implementation
 				foreach (var item in locations)
 				{
 					item.uri = Util.NormalizeUri(item.uri);
-					dic.Add(item.uri, item);
+					dic[item.uri]= item;
 				}
 				int i = 0;
 				result = new Location[dic.Count];
@@ -238,7 +238,7 @@ namespace LSP.Implementation
 		}
 		void ActionTextDocumentGoto(ResponseMessage response)
 		{
-			var locations = DistinctLocations( ConvertToLocationArray((JToken)response.result));
+			var locations = DistinctLocations( ConvertToLocationArray(response.result as JToken));
 			StoreResponse(
 				response.id,
 				response.error,
@@ -280,9 +280,15 @@ namespace LSP.Implementation
 		}
 		void ActionTextDocumentHover(ResponseMessage response)
         {
-			var token = (JToken)response.result;
-			var hover = token.ToObject<Hover>();
-			StoreResponse(response.id, response.error, hover, null);
+			object hoverItem=null;
+			{
+				JToken token = response.result as JToken;
+				if (token != null)
+				{
+					hoverItem = token.ToObject<Hover>();
+				}
+			}			
+			StoreResponse(response.id, response.error, hoverItem, null);
 		}
         #endregion
 
@@ -468,18 +474,22 @@ namespace LSP.Implementation
 			}
 		}
 		void StoreResponse(int responseId, ResponseError error, object responseItem, Action postAction)
-        {
-			var id    = new RequestId(responseId);
+        {			
+			var id = new RequestId(responseId);
 			var value = new ResponseObject(error, responseItem, true);
 			lock (response_)
 			{
-				Debug.Assert(response_.ContainsKey(id));				
-				response_[id] = value;
-                if (postAction != null)
+				Debug.Assert(response_.ContainsKey(id));
+				if (param_.logger.IsDebugEnabled)
                 {
+                    param_.logger.Debug(string.Format("StoreResponse. id={0}",id));
+                }
+				response_[id] = value;
+				if (postAction != null)
+				{
 					postAction();
-				}				
-			}
+				}
+			}			
 		}
 		#endregion
 	}

@@ -28,12 +28,15 @@ namespace LSP.Implementation
 				return id_;
 			}
 		}
+		public override string ToString() {
+			return id_.ToString();
+		}
+
 		int id_;
 	}
 
 	class RequestIdGenerator
 	{
-		
 		int id_ = 1;
 		public RequestId NextId()
 		{

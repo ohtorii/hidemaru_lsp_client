@@ -180,7 +180,7 @@ namespace HidemaruLspClient
 		void Shutdown()
 		{
 			var requestId = client_.Send.Shutdown();
-			var error = client_.QueryResponse(requestId).item as ResponseError;
+			var error = client_.QueryResponse(requestId, millisecondsTimeout: defaultTimeout).item as ResponseError;
 			if (error != null)
 			{
 				if (lspLogger_.IsErrorEnabled) {
@@ -322,7 +322,7 @@ namespace HidemaruLspClient
 					param.position.line = (uint)line;
 					param.position.character = (uint)column;
 					var id = client_.Send.TextDocumentCompletion(param);
-					result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);					
+					result = client_.QueryResponse(id, millisecondsTimeout: defaultTimeout);
 				}
 				if ((ResponseIsCorrect(result) == false) || (result.item == null))
 				{

@@ -128,11 +128,31 @@ namespace LSP.Implementation
 		
 		public Sender.ResponseResult QueryResponse(RequestId id, int millisecondsTimeout = -1)
         {
-			return Send.QueryResponse(id, millisecondsTimeout);
+			try
+			{
+				return Send.QueryResponse(id, millisecondsTimeout);
+			}catch(Exception e)
+            {
+                if (param_.logger.IsDebugEnabled)
+                {
+					param_.logger.Error(e.ToString());
+                }
+            }
+			return null;
         }
 		public PublishDiagnosticsParams[] PullTextDocumentPublishDiagnostics()
         {
-			return clientEvents_.PullTextDocumentPublishDiagnostics();
+			try
+			{
+				return clientEvents_.PullTextDocumentPublishDiagnostics();
+			}catch(Exception e)
+            {
+				if (param_.logger.IsDebugEnabled)
+				{
+					param_.logger.Error(e.ToString());
+				}
+			}
+			return new PublishDiagnosticsParams[0];
 		}
 	}
 }

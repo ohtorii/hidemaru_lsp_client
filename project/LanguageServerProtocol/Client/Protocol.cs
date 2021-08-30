@@ -102,46 +102,56 @@ namespace LSP.Implementation
         public void Parse()
         {
             //Todo: EventWaitHandle or Task で書き直す
-
-            int sleepTime = 10;
-            while (cancelToken_.IsCancellationRequested == false)
+            try
             {
-                switch (mode_)
+                int sleepTime = 10;
+                while (cancelToken_.IsCancellationRequested == false)
                 {
-                    case Mode.FindContextLength:
-                        if (OnFindContextLength() == false)
-                        {
-                            Thread.Sleep(sleepTime);
+                    switch (mode_)
+                    {
+                        case Mode.FindContextLength:
+                            if (OnFindContextLength() == false)
+                            {
+                                Thread.Sleep(sleepTime);
+                                break;
+                            }
+                            mode_ = Mode.ParseContextLength;
                             break;
-                        }
-                        mode_ = Mode.ParseContextLength;
-                        break;
-                    case Mode.ParseContextLength:
-                        if (OnParseContextLength() == false)
-                        {
-                            Thread.Sleep(sleepTime);
+                        case Mode.ParseContextLength:
+                            if (OnParseContextLength() == false)
+                            {
+                                Thread.Sleep(sleepTime);
+                                break;
+                            }
+                            mode_ = Mode.SkipSeparator;
                             break;
-                        }
-                        mode_ = Mode.SkipSeparator;
-                        break;
-                    case Mode.SkipSeparator:
-                        if (OnSkipContextHeader() == false)
-                        {
-                            Thread.Sleep(sleepTime);
+                        case Mode.SkipSeparator:
+                            if (OnSkipContextHeader() == false)
+                            {
+                                Thread.Sleep(sleepTime);
+                                break;
+                            }
+                            mode_ = Mode.ParseContext;
                             break;
-                        }
-                        mode_ = Mode.ParseContext;
-                        break;
-                    case Mode.ParseContext:
-                        if (OnParseContext() == false)
-                        {
-                            Thread.Sleep(sleepTime);
+                        case Mode.ParseContext:
+                            if (OnParseContext() == false)
+                            {
+                                Thread.Sleep(sleepTime);
+                                break;
+                            }
+                            mode_ = Mode.FindContextLength;
+                            Restart();
                             break;
-                        }
-                        mode_ = Mode.FindContextLength;
-                        Restart();
-                        break;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                if (logger_.IsDebugEnabled)
+                {
+                    logger_.Error(e.ToString());
+                }
+                throw;
             }
         }
 
