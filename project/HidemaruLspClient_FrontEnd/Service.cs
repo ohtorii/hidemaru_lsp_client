@@ -601,7 +601,7 @@ namespace HidemaruLspClient_FrontEnd
                         return "";
                     }
                     var uri = new Uri(location_.uri);
-                    return uri.AbsolutePath;
+                    return uri.LocalPath;
                 } 
             }
             public RangeImpl range { 
