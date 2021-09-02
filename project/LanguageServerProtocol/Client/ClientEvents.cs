@@ -99,15 +99,15 @@ namespace LSP.Implementation
 		}
 		/// <summary>
 		/// ‘textDocument/publishDiagnostics’通知を取得する
-		/// </summary>		
+		/// </summary>
 		/// <returns>対応するドキュメントURIが存在していればnull以外、存在しなければnull</returns>
 		public PublishDiagnosticsParams[] PullTextDocumentPublishDiagnostics()
         {
 			PublishDiagnosticsParams[] result;
 			int index = 0;
 			lock (publishDiagnostics_)
-			{
-				result = new PublishDiagnosticsParams[publishDiagnostics_.Count];
+            {
+                result = new PublishDiagnosticsParams[publishDiagnostics_.Count];
 				foreach (var item in publishDiagnostics_)
 				{
 					result[index] = item.Value;

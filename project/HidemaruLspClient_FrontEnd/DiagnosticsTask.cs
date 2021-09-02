@@ -10,7 +10,7 @@ namespace HidemaruLspClient_FrontEnd
     {
         /// <summary>
         /// textDocument/publishDiagnostics
-        /// </summary>        
+        /// </summary>
         class DiagnosticsTask
         {
             const int defaultMillisecondsTimeout = 500;
@@ -30,6 +30,7 @@ namespace HidemaruLspClient_FrontEnd
             /// </summary>
             bool outputPaneCleard_;
 
+            public Task GetTask() { return task_; }
             public DiagnosticsTask(IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
             {
                 hwndHidemaru_     = Hidemaru.Hidemaru_GetCurrentWindowHandle();
@@ -37,10 +38,10 @@ namespace HidemaruLspClient_FrontEnd
 
                 worker_            = worker;
                 logger_ = logger;
-                cancellationToken_ = cancellationToken;                
+                cancellationToken_ = cancellationToken;
                 task_              =Task.Run(MainLoop, cancellationToken_);
             }
-            void MainLoop()
+            async Task MainLoop()
             {
                 //Todoポーリングではなくイベント通知にする
                 try
@@ -52,7 +53,7 @@ namespace HidemaruLspClient_FrontEnd
                             return;
                         }
                         Process();
-                        Thread.Sleep(defaultMillisecondsTimeout);
+                        await Task.Delay(defaultMillisecondsTimeout,cancellationToken_);
                     }
                 }catch(System.Runtime.InteropServices.COMException e)
                 {
@@ -61,7 +62,7 @@ namespace HidemaruLspClient_FrontEnd
                 }
             }
             void Process()
-            {                
+            {
                 var container = worker_.PullDiagnosticsParams();
                 bool hasEvent = container.Length == 0 ? false : true;
 
@@ -116,8 +117,8 @@ namespace HidemaruLspClient_FrontEnd
             }
         }
 
-        
-                
+
+
 
     }
 }

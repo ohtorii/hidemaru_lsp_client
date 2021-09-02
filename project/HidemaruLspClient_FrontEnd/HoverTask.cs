@@ -33,9 +33,11 @@ namespace HidemaruLspClient_FrontEnd
             /// 秀丸エディタのウインドウハンドル
             /// </summary>
             IntPtr hwndHidemaru_;
+            bool toolTipShow_ = false;
 
+            public Task GetTask() { return task_; }
             public HoverTask(Service service, IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
-            {                
+            {
                 service_ = service;
                 hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();
 
@@ -44,61 +46,135 @@ namespace HidemaruLspClient_FrontEnd
                 cancellationToken_ = cancellationToken;
                 task_ = Task.Run(MainLoop, cancellationToken_);
             }
-            void MainLoop()
+            async Task MainLoop()
             {
                 //Todo:ポーリングではなくイベント通知にする
+                NativeMethods.MSG  msg=new NativeMethods.MSG();
+
                 try
                 {
-                    while (true)
+                    while (0<UnsafeNativeMethods.GetMessage(out msg, IntPtr.Zero, 0, 0))
+                    //while(true)
                     {
                         if (cancellationToken_.IsCancellationRequested)
                         {
                             return;
                         }
                         Process();
+#if true
                         Thread.Sleep(defaultMillisecondsTimeout);
+#else
+                        //SendMessageから戻ってこなくなる
+                        await Task.Delay(defaultMillisecondsTimeout,cancellationToken_);
+#endif
                     }
                 }
-                catch (System.Runtime.InteropServices.COMException e)
+                catch (Exception e)
                 {
-                    //COMサーバ(.exe)が終了したため、ログ出力してからポーリング動作を終了する。
+                    //System.Threading.Tasks.TaskCanceledException
+                    //System.Runtime.InteropServices.COMException
                     logger_.Error(e.ToString());
                 }
             }
             void Process()
             {
-                var currentMousePoint = new POINT (0,0);
-                if (GetCursorPos(ref currentMousePoint)==false)
-                {
-                    return;
-                }
-                if (currentMousePoint == prevMousePoint_)
-                {
-                    return;
-                }
+                System.Diagnostics.Debug.WriteLine("==== Process ====");
 
-                var currentHidemaruPosition_ = new Hidemaru.Position(0, 0);
-                if (Hidemaru.Hidemaru_GetCursorPosUnicodeFromMousePos(ref currentMousePoint,ref currentHidemaruPosition_.line, ref currentHidemaruPosition_.column) == false)
+                string tooltipText=null;
                 {
-                    return;
+                    bool mouseMoved;
+                    bool cursorMoved;
+                    var currentMousePoint = new POINT(0, 0);
+                    var currentHidemaruPosition_ = new Hidemaru.Position(0, 0);
+
+
+                    if (GetCursorPos(ref currentMousePoint) == false)
+                    {
+                        HideToolTipsWin32();
+                        return;
+                    }
+                    mouseMoved = prevMousePoint_ != currentMousePoint;
+                    prevMousePoint_ = currentMousePoint;
+
+                    if (Hidemaru.Hidemaru_GetCursorPosUnicode(ref currentHidemaruPosition_.line, ref currentHidemaruPosition_.column) == false)
+                    {
+                        HideToolTipsWin32();
+                        return;
+                    }
+                    if (!currentHidemaruPosition_.ValueIsCorrect())
+                    {
+                        HideToolTipsWin32();
+                        return;
+                    }
+                    cursorMoved = prevHidemaruPosition_ != currentHidemaruPosition_;
+                    prevHidemaruPosition_ = currentHidemaruPosition_;
+
+                    System.Diagnostics.Debug.WriteLine(string.Format("mouseMoved={0} / cursorMoved={1}", mouseMoved, cursorMoved));
+                    if (mouseMoved)
+                    {
+                        if (cursorMoved)
+                        {
+                            //pass
+                            return;
+                        }
+                        else
+                        {
+                            int line=0, column=0;
+                            if(! Hidemaru.Hidemaru_GetCursorPosUnicodeFromMousePos(ref currentMousePoint,ref line, ref column))
+                            {
+                                HideToolTipsWin32();
+                                return;
+                            }
+                            tooltipText = service_.Hover(line, column);
+                        }
+                    }
+                    else
+                    {
+                        if (cursorMoved)
+                        {
+                            HideToolTipsWin32();
+                        }
+                        else
+                        {
+                            //pass
+                            return;
+                        }
+                    }
                 }
-                if (! currentHidemaruPosition_.ValueIsCorrect())
+                System.Diagnostics.Debug.WriteLine(String.Format("tooltipText={0}", tooltipText));
+                if ((tooltipText == null) || (tooltipText.Length == 0))
                 {
-                    return;
+                    HideToolTipsWin32();
                 }
-                prevMousePoint_ = currentMousePoint;
-                prevHidemaruPosition_ = currentHidemaruPosition_;
-
-                var text = service_.Hover(currentHidemaruPosition_.line, currentHidemaruPosition_.column);
-
-                /*秀丸エディタはWin32-APIを利用したアプリなので、本マクロでも素直にWin32-APIを利用しています。
-                 *なお、WinformsのToolTipも動作検証しましたが、意図したとおりに動かず利用していません。
-                 *　
-                 * ShowToolTipsWinforms(prevMousePoint_.x, prevMousePoint_.y, text);
-                 */
-                ShowToolTipsWin32(prevMousePoint_.x, prevMousePoint_.y, text);
+                else
+                {
+                    /* 秀丸エディタはWin32-APIを利用したアプリなので、本マクロでも素直にWin32-APIを利用しています。
+                         *なお、WinformsのToolTipも動作検証しましたが、意図したとおりに動かず利用していません。
+                         * ShowToolTipsWinforms(prevMousePoint_.x, prevMousePoint_.y, text);
+                         */
+                    ShowToolTipsWin32(prevMousePoint_.x, prevMousePoint_.y, tooltipText);
+                }
             }
 
+            void HideToolTipsWin32()
+            {
+                System.Diagnostics.Debug.WriteLine("HideToolTipsWin32");
+                if (toolTipHandle_ == IntPtr.Zero)
+                {
+                    return;
+                }
+                if (toolTipShow_)
+                {
+#if true
+                    // Deactivate the tooltip.
+                    const int False = 0;
+                    SendMessageWin32(toolTipHandle_, (uint)ToolTipMessage.TTM_TRACKACTIVATE, False);
+#else
+                    ShowWindow(toolTipHandle_, (int)ShowState.SW_HIDE);
+#endif
+                    toolTipShow_ = false;
+                }
+            }
             /// <summary>
             /// Tooltipsを表示する(Win-API版)
             /// </summary>
@@ -107,19 +183,19 @@ namespace HidemaruLspClient_FrontEnd
             /// <param name="text"></param>
             void ShowToolTipsWin32(int screenX, int screenY, string text)
             {
-                return;
+                System.Diagnostics.Debug.WriteLine("ShowToolTipsWin32");
 
                 if (toolTipHandle_==IntPtr.Zero)
                 {
 #if true
                     IntPtr hInstance = new IntPtr(0);
-                    IntPtr hwnd = new IntPtr(0); 
+                    IntPtr hwnd = new IntPtr(0);
 #else
                     //Memo: 秀丸エディタのウインドウが固まる
-                    IntPtr hInstance = Dll.GetModuleHandle(null);
+                    IntPtr hInstance = UnsafeNativeMethods.GetModuleHandle(null);
                     IntPtr hwnd = Hidemaru.Hidemaru_GetCurrentWindowHandle();
 #endif
-                    toolTipHandle_ = CreateTrackingToolTipWin32(hwnd, hInstance, " ");
+                    toolTipHandle_ = CreateTrackingToolTipWin32(hwnd, hInstance);
                     if (toolTipHandle_ == IntPtr.Zero)
                     {
                         return;
@@ -127,12 +203,14 @@ namespace HidemaruLspClient_FrontEnd
                 }
 
                 // Activate the tooltip.
+                if(! toolTipShow_)
                 {
                     const int True = 1;
                     SendMessageWin32(toolTipHandle_, (uint)ToolTipMessage.TTM_TRACKACTIVATE, True);
+                    toolTipShow_ = true;
                 }
 
-                toolItem_.lpszText = Marshal.StringToHGlobalAuto(text); 
+                toolItem_.lpszText = Marshal.StringToHGlobalAuto(text);
                 try
                 {
                     SendMessageWin32(toolTipHandle_, (uint)ToolTipMessage.TTM_SETTOOLINFO);
@@ -154,15 +232,24 @@ namespace HidemaruLspClient_FrontEnd
                 }
             }
 
-            IntPtr CreateTrackingToolTipWin32(IntPtr hwndParent, IntPtr hInstance, string  text)
+            IntPtr CreateTrackingToolTipWin32(IntPtr hwndParent, IntPtr hInstance)
             {
+                System.Diagnostics.Debug.WriteLine("==== CreateTrackingToolTipWin32 ====");
                 var NULL = IntPtr.Zero;
 
                 // Create a tooltip.
-                var hwndTT = CreateWindowEx(WindowStylesEx.WS_EX_TOPMOST, TOOLTIPS_CLASS, null,
-                    WindowStyles.WS_POPUP | WindowStyles.TTS_NOPREFIX | WindowStyles.TTS_ALWAYSTIP,
-                    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                    hwndParent, NULL, hInstance, NULL);
+                var hwndTT = CreateWindowEx(WindowStylesEx.WS_EX_TOPMOST,
+                                            TOOLTIPS_CLASS,
+                                            null,
+                                            WindowStyles.WS_POPUP | WindowStyles.TTS_NOPREFIX | WindowStyles.TTS_ALWAYSTIP,
+                                            CW_USEDEFAULT,
+                                            CW_USEDEFAULT,
+                                            CW_USEDEFAULT,
+                                            CW_USEDEFAULT,
+                                            hwndParent,
+                                            NULL,
+                                            hInstance,
+                                            NULL);
                 if (hwndTT== IntPtr.Zero)
                 {
                     return IntPtr.Zero;
@@ -177,10 +264,10 @@ namespace HidemaruLspClient_FrontEnd
                 toolItem_.uId      = hwndParent;
                 //toolItem_.lParam   = NULL;
                 GetClientRect(hwndParent, out toolItem_.rect);
-                
+
                 try
                 {
-                    toolItem_.lpszText = Marshal.StringToHGlobalAuto(text);
+                    toolItem_.lpszText = Marshal.StringToHGlobalAuto(" ");
                     this.SendMessageWin32(hwndTT, (uint)ToolTipMessage.TTM_ADDTOOL);
                 }
                 finally
@@ -192,12 +279,14 @@ namespace HidemaruLspClient_FrontEnd
                         Marshal.FreeHGlobal(ptr);
                     }
                 }
-                SendMessage(hwndTT, (uint)ToolTipMessage.TTM_SETMAXTIPWIDTH, 0, 200);
+                SendMessage(hwndTT, (uint)ToolTipMessage.TTM_SETMAXTIPWIDTH, 0, 300);
                 return hwndTT;
             }
             bool SendMessageWin32(IntPtr hWnd, uint Msg, int wparam)
             {
+                System.Diagnostics.Debug.WriteLine("  Enter SendMessageWin32");
                 var ret = (int)SendMessage(hWnd, Msg, wparam, toolItem_);
+                System.Diagnostics.Debug.WriteLine(string.Format("  Leave SendMessageWin32. ret={0}",ret));
                 if (ret == 0)
                 {
                     return false;

@@ -8,11 +8,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
+using System.Threading.Tasks;
 
 namespace LSP.Implementation
 {
-    
+
 
     class Protocol
     {
@@ -65,11 +65,11 @@ namespace LSP.Implementation
         Dictionary<RequestId, Action<ResponseMessage>> responseCallback_ =new Dictionary<RequestId, Action<ResponseMessage>>();
 
         CancellationToken cancelToken_;
-        
+
         int contentLength = -1;
         const string HeaderContentLength_ = "Content-Length:";
         static int HeaderContentLengthLength_ = HeaderContentLength_.Length;
-        
+
         List<byte> bufferStreamUTF8_ = new List<byte>();
         ILogger logger_;
 
@@ -83,14 +83,14 @@ namespace LSP.Implementation
             if (streamString.Length == 0)
             {
                 return false;
-            }                        
+            }
 
             lock (bufferStreamUTF8_)
             {
                 bufferStreamUTF8_.AddRange(streamString);
                 return true;
             }
-        }        
+        }
         public void StoreResponseCallback(RequestId id, Action<ResponseMessage> callback)
 		{
             lock (responseCallback_)
@@ -99,7 +99,7 @@ namespace LSP.Implementation
                 responseCallback_.Add(id, callback);
             }
         }
-        public void Parse()
+        public async Task Parse()
         {
             //Todo: EventWaitHandle or Task で書き直す
             try
@@ -112,7 +112,7 @@ namespace LSP.Implementation
                         case Mode.FindContextLength:
                             if (OnFindContextLength() == false)
                             {
-                                Thread.Sleep(sleepTime);
+                                await Task.Delay(sleepTime,cancelToken_);
                                 break;
                             }
                             mode_ = Mode.ParseContextLength;
@@ -120,7 +120,7 @@ namespace LSP.Implementation
                         case Mode.ParseContextLength:
                             if (OnParseContextLength() == false)
                             {
-                                Thread.Sleep(sleepTime);
+                                await Task.Delay(sleepTime, cancelToken_);
                                 break;
                             }
                             mode_ = Mode.SkipSeparator;
@@ -128,7 +128,7 @@ namespace LSP.Implementation
                         case Mode.SkipSeparator:
                             if (OnSkipContextHeader() == false)
                             {
-                                Thread.Sleep(sleepTime);
+                                await Task.Delay(sleepTime, cancelToken_);
                                 break;
                             }
                             mode_ = Mode.ParseContext;
@@ -136,7 +136,7 @@ namespace LSP.Implementation
                         case Mode.ParseContext:
                             if (OnParseContext() == false)
                             {
-                                Thread.Sleep(sleepTime);
+                                await Task.Delay(sleepTime, cancelToken_);
                                 break;
                             }
                             mode_ = Mode.FindContextLength;
@@ -210,7 +210,7 @@ namespace LSP.Implementation
                 }
 
                 {
-                    
+
                     int numericalLen = tail - HeaderContentLengthLength_;
                     var byteArray = bufferStreamUTF8_.GetRange(HeaderContentLengthLength_, numericalLen);
                     var unicodeLen = Encoding.UTF8.GetString(byteArray.ToArray());
@@ -260,8 +260,8 @@ namespace LSP.Implementation
 				if (separatorEndIndex == -1)
 				{
                     return false;
-				}                
-                bufferStreamUTF8_.RemoveRange(0, separatorEndIndex);                
+				}
+                bufferStreamUTF8_.RemoveRange(0, separatorEndIndex);
                 Debug.Assert(bufferStreamUTF8_[0]== Convert.ToByte('{'));
                 /*(After) bufferStreamUTF8={"method":"initialized",...
                  */
@@ -341,7 +341,7 @@ namespace LSP.Implementation
                 }
             }
 
-            
+
         }
         void Request(JObject receiver)
 		{
@@ -402,7 +402,7 @@ namespace LSP.Implementation
             }
         }
         void Response(JObject receiver)
-		{            
+		{
             Action<ResponseMessage> callback=null;
             {
                 var id = new RequestId(receiver["id"].ToObject<int>());
@@ -432,7 +432,7 @@ namespace LSP.Implementation
             else
             {
                 callback(response);
-            }            
+            }
         }
 
         bool FindPairKakko(out int outPairKakkoIndex)

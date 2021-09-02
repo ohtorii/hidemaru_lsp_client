@@ -16,15 +16,15 @@ namespace LSP.Implementation
 		{
 			get {
                 return protocol_;
-            } 
+            }
         }
         Protocol protocol_;
         Task runner_;
 
-		public Mediator(CancellationToken token, ILogger logger)
+        public Mediator(CancellationToken token, ILogger logger)
         {
             protocol_ = new Protocol(token, logger);
-        }               
+        }
 
         public void StoreBuffer(byte[] streamString)
 		{
@@ -41,6 +41,6 @@ namespace LSP.Implementation
 		{
             protocol_.StoreResponseCallback(id, callback);
 		}
-        
+
     }
 }

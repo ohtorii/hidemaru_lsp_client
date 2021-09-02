@@ -10,6 +10,25 @@ namespace HidemaruLspClient_FrontEnd
 {
     class NativeMethods
     {
+        public enum ShowState : int
+        {
+            SW_HIDE = 0,
+            SW_SHOWNORMAL = 1,
+            SW_NORMAL = 1,
+            SW_SHOWMINIMIZED = 2,
+            SW_SHOWMAXIMIZED = 3,
+            SW_MAXIMIZE = 3,
+            SW_SHOWNOACTIVATE = 4,
+            SW_SHOW = 5,
+            SW_MINIMIZE = 6,
+            SW_SHOWMINNOACTIVE = 7,
+            SW_SHOWNA = 8,
+            SW_RESTORE = 9,
+            SW_SHOWDEFAULT = 10,
+            SW_FORCEMINIMIZE = 11,
+            SW_MAX = 11
+        }
+
         /*
          * NOTE: All Message Numbers below 0x0400 are RESERVED.
          *
@@ -373,6 +392,18 @@ namespace HidemaruLspClient_FrontEnd
             public IntPtr hinst = IntPtr.Zero;
             public IntPtr lpszText;
             //public IntPtr lParam = IntPtr.Zero;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MSG
+        {
+            public IntPtr hwnd;
+            public uint message;
+            public UIntPtr wParam;
+            public IntPtr lParam;
+            public int time;
+            public POINT pt;
+            public int lPrivate;
         }
 
         public static int MAKELONG(int low, int high)

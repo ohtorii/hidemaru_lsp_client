@@ -45,7 +45,7 @@ namespace HidemaruLspClient
 		LanguageClient				client_		 = null;
 		Option					options_	     = null;
 		//List<string>			tempFilename     = new List<string>();
-		
+
 		InitializeResult		initializeResult_= null;
 		HidemaruLspClient_BackEnd.LSP.ServerCapabilities serverCapabilities_ = null;
 		/// <summary>
@@ -56,7 +56,7 @@ namespace HidemaruLspClient
 		/// <summary>
 		/// 秀丸エディタのProcessId
 		/// </summary>
-		long hidemaruProcessId_;		
+		long hidemaruProcessId_;
 
 		public Worker(LspKey key)
         {
@@ -71,7 +71,7 @@ namespace HidemaruLspClient
 			lspLogger_ = l;
 			TempFile.Initialize();
 			initialized_ = true;
-		}		
+		}
 		[LogMethod]
 		public bool Start(
 				string ServerName,
@@ -80,7 +80,7 @@ namespace HidemaruLspClient
 				string RootUri,
 				string WorkspaceConfig,
 				long   HidemaruProcessId)
-		{			
+		{
 			if (client_ != null)
 			{//起動済み
 				return true;
@@ -93,20 +93,20 @@ namespace HidemaruLspClient
 				RootUri			= RootUri,
                 WorkspaceConfig = WorkspaceConfig,
 			};
-			
+
 			hidemaruProcessId_ = HidemaruProcessId;
 
 			if (!InitializeClient())
 			{
 				return false;
 			}
-			
+
 			var reqId=InitializeServer();
 			var response = client_.QueryResponse(reqId, millisecondsTimeout: defaultTimeout);
             if ((ResponseIsCorrect(response) == false) || (response.item == null))
             {
 				return false;
-            }			
+            }
 			initializeResult_ = (InitializeResult)response.item;
 			/*{//debug
 				bool v = false;
@@ -114,7 +114,7 @@ namespace HidemaruLspClient
 				var p = result.capabilities.definitionProvider;
 				if (p == null) {
 					v = false;
-                }else { 
+                }else {
 					if (p.IsBool)
 					{
 						v = p.Bool;
@@ -127,13 +127,13 @@ namespace HidemaruLspClient
 				//Console.WriteLine(string.Format("declarationProvider={0}",v));
 				Console.WriteLine(string.Format("definitionProvider={0}", v));
 			}*/
-			InitializedClient();			
+			InitializedClient();
 			return true;
 		}
 
 		[LogMethod]
 		bool InitializeClient()
-        {			
+        {
 			JObject WorkspaceConfiguration=null;
 			if (options_.WorkspaceConfig!="") {
 				WorkspaceConfiguration = (JObject)JsonConvert.DeserializeObject(options_.WorkspaceConfig);
@@ -147,13 +147,13 @@ namespace HidemaruLspClient
 					exeArguments				= options_.Arguments,
 					jsonWorkspaceConfiguration	= WorkspaceConfiguration,
 				}
-			);		
+			);
 			return true;
 		}
 
 		[LogMethod]
 		RequestId InitializeServer()
-		{			
+		{
 			var param = UtilInitializeParams.Initialzie();
 			var rootUri = new Uri(options_.RootUri);
 			param.rootUri          = rootUri.AbsoluteUri;
@@ -166,7 +166,7 @@ namespace HidemaruLspClient
 		void InitializedClient()
 		{
 			var param = new InitializedParams();
-			client_.Send.Initialized(param);			
+			client_.Send.Initialized(param);
 		}
 
 		[LogMethod]
@@ -198,9 +198,9 @@ namespace HidemaruLspClient
 			public PositionImpl(LSP.Model.IPosition pos)
 			{
 				pos_ = pos;
-			}			
+			}
 			long HidemaruLspClient_BackEndContract.IPosition.character => pos_.character;
-			long HidemaruLspClient_BackEndContract.IPosition.line => pos_.line;			
+			long HidemaruLspClient_BackEndContract.IPosition.line => pos_.line;
 			readonly LSP.Model.IPosition pos_;
 		}
 		sealed class RangeImpl : HidemaruLspClient_BackEndContract.IRange
@@ -209,24 +209,24 @@ namespace HidemaruLspClient
 			{
 				start_ = new PositionImpl(start);
 				end_ = new PositionImpl(end);
-			}		
+			}
 			HidemaruLspClient_BackEndContract.IPosition HidemaruLspClient_BackEndContract.IRange.start => start_;
 			HidemaruLspClient_BackEndContract.IPosition HidemaruLspClient_BackEndContract.IRange.end => end_;
 			readonly PositionImpl start_;
 			readonly PositionImpl end_;
 		}
-		
+
 
 
 		#region DidOpen
 		[LogMethod]
 		/// <summary>
-		/// 
+		///
 		/// </summary>
 		/// <param name="absFilename"></param>
 		/// <returns></returns>
 		void IWorker.DidOpen(string absFilename, string text, int contentsVersion)
-		{            
+		{
 			var languageId = FileNameToLanguageId(absFilename);
 			var sourceUri = new Uri(absFilename);
 
@@ -234,7 +234,7 @@ namespace HidemaruLspClient
 			param.textDocument.uri			= sourceUri.AbsoluteUri;
 			param.textDocument.version		= contentsVersion;
 			param.textDocument.text			= text;
-			param.textDocument.languageId	= languageId;			
+			param.textDocument.languageId	= languageId;
 			client_.Send.TextDocumentDidOpen(param);
 		}
 		static string FileNameToLanguageId(string filename)
@@ -259,16 +259,16 @@ namespace HidemaruLspClient
         #endregion
         [LogMethod]
 		void IWorker.DidChange(string absFilename, string text, int contentsVersion)
-        {						
-			var param = new DidChangeTextDocumentParams { 
+        {
+			var param = new DidChangeTextDocumentParams {
 							contentChanges = new[] { new TextDocumentContentChangeEvent { text = text } },
 			};
 			var sourceUri = new Uri(absFilename);
 			param.textDocument.uri		= sourceUri.AbsoluteUri;
-			param.textDocument.version	= contentsVersion;			
+			param.textDocument.version	= contentsVersion;
 			client_.Send.TextDocumentDidChange(param);
 		}
-		
+
 		[LogMethod]
 		void IWorker.DidClose(string absFilename)
         {
@@ -292,7 +292,7 @@ namespace HidemaruLspClient
 		#region Completion
 		[LogMethod]
 		/// <summary>
-		/// 
+		///
 		/// </summary>
 		/// <param name="absFilename"></param>
 		/// <param name="line"></param>
@@ -306,7 +306,7 @@ namespace HidemaruLspClient
 				return "";
             }
 
-			CompletionList completionList;			
+			CompletionList completionList;
 			{
 				Sender.ResponseResult result;
 				{
@@ -329,7 +329,7 @@ namespace HidemaruLspClient
 					return "";
 				}
 				completionList = (CompletionList)result.item;
-			}			
+			}
 			if (completionList.items.Length == 0)
 			{
 				return "";
@@ -376,14 +376,14 @@ namespace HidemaruLspClient
 		}
 		#endregion
 
-		#region Diagnostics		
+		#region Diagnostics
 
-		//[LogMethod]		
+		//[LogMethod]
 		IPublishDiagnosticsParamsContainer IWorker.PullDiagnosticsParams()
 		{
 			var diagnostics = client_.PullTextDocumentPublishDiagnostics();
 			PublishDiagnosticsParamsImpl[] dst = new PublishDiagnosticsParamsImpl[diagnostics.Length];
-			
+
 			int i = 0;
 			foreach(var item in diagnostics)
             {
@@ -430,7 +430,7 @@ namespace HidemaruLspClient
 					diagnostics_[i] = new DiagnosticImpl(item);
 					++i;
 				}
-			}			
+			}
             #region implement
             string IPublishDiagnosticsParams.uri
 			{
@@ -452,9 +452,9 @@ namespace HidemaruLspClient
 						return 0;
                     }
 					return param_.version;
-				} 
+				}
 			}
-			
+
             long IPublishDiagnosticsParams.Length
 			{
 				get
@@ -617,8 +617,8 @@ namespace HidemaruLspClient
 		ILocationContainer IWorker.Declaration(string absFilename, long line, long column)
 		{
 			var param = new DeclarationParams();
-			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentDeclaration((DeclarationParams)arg));			
-		}						
+			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentDeclaration((DeclarationParams)arg));
+		}
 		ILocationContainer IWorker.Definition(string absFilename, long line, long column)
         {
 			var param = new DefinitionParams();
@@ -686,7 +686,7 @@ namespace HidemaruLspClient
             public HidemaruLspClient_BackEndContract.IMarkupContent contents => new MarkupContentImpl(hover_.contents);
 
             public HidemaruLspClient_BackEndContract.IRange range => new RangeImpl(hover_.range.start, hover_.range.end);
-			
+
 			Hover hover_;
         }
 		sealed class MarkupContentImpl : HidemaruLspClient_BackEndContract.IMarkupContent
@@ -711,7 +711,7 @@ namespace HidemaruLspClient
 					}
 					return HidemaruLspClient_BackEndContract.MarkupKind.PlainText;
 				}
-			}			
+			}
             public string value => content_.value;
 
 			MarkupContent content_;

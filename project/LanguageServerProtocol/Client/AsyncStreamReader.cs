@@ -15,7 +15,7 @@ namespace LSP.Implementation
     /// <summary>
     /// Stream reader for StandardOutput and StandardError stream readers
     /// Runs an eternal BeginRead loop on the underlaying stream bypassing the stream reader.
-    /// 
+    ///
     /// The TextReceived sends data received on the stream in non delimited chunks. Event subscriber can
     /// then split on newline characters etc as desired.
     /// </summary>
@@ -53,7 +53,7 @@ namespace LSP.Implementation
                 Active = false;
                 reader.DiscardBufferedData();
             }
-        }        
+        }
         protected void BeginReadAsync()
         {
             if (this.Active)
@@ -69,7 +69,7 @@ namespace LSP.Implementation
                 //callback without data - stop async
                 Stop();
                 return;
-            }            
+            }
             //Send data to event subscriber - null if no longer active
             if (this.DataReceived != null)
             {

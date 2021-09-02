@@ -46,7 +46,7 @@ namespace LSP.Implementation
         }
         public event EventHandler Exited
 		{
-            add 
+            add
             {
                 lock (process_)
                 {
@@ -62,7 +62,7 @@ namespace LSP.Implementation
             }
 		}
         public bool HasExited { get { return process_.HasExited; } }
-        
+
         private ProcessStartInfo processStartInfo_ = null;
         private Process process_ = null;
         private AsyncStreamReader standardOutput_ =null;
@@ -88,7 +88,7 @@ namespace LSP.Implementation
 
                 RedirectStandardError = true,
                 StandardErrorEncoding = Encoding.UTF8,
-                
+
                 WorkingDirectory= WorkingDirectory,
                 CreateNoWindow  = true,
                 UseShellExecute = false,
@@ -102,14 +102,14 @@ namespace LSP.Implementation
 			}
             process_ = Process.Start(processStartInfo_);
             standardOutput_.SetStreamReader(process_.StandardOutput);
-            standardError_.SetStreamReader(process_.StandardError);            
+            standardError_.SetStreamReader(process_.StandardError);
         }
         public void StartRedirect()
         {
             standardOutput_.Start();
             standardError_.Start();
         }
-        public void StartThreadLoop() 
+        public void StartThreadLoop()
         {
             Task.Run(() =>
             {

@@ -42,6 +42,18 @@ namespace HidemaruLspClient_FrontEnd
 
 
 		#region user32.dll
+		[DllImport("user32.dll")]
+		public static extern int GetMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin,uint wMsgFilterMax);
+
+		[DllImport("user32.dll")]
+		public static extern bool TranslateMessage([In] ref MSG lpMsg);
+
+		[DllImport("user32.dll")]
+		public static extern IntPtr DispatchMessage([In] ref MSG lpmsg);
+
+		[DllImport("user32.dll")]
+		public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern IntPtr CreateWindowEx(WindowStylesEx dwExStyle, string lpClassName, string lpWindowName, WindowStyles dwStyle, int x, int y, int nWidth, int nHeight, IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
 

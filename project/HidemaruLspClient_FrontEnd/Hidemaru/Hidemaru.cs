@@ -16,7 +16,7 @@ namespace HidemaruLspClient_FrontEnd
 		public struct Position
         {
 			public int column;
-			public int line;			
+			public int line;
 
 			public Position(int column, int line)
             {
@@ -61,21 +61,26 @@ namespace HidemaruLspClient_FrontEnd
 
         //const uint PROCESS_ALL_ACCESS = 0x1F0FFF;
         #region Hidemaru-API
-        public delegate IntPtr Delegate_Hidemaru_GetTotalTextUnicode();
-        public static Delegate_Hidemaru_GetTotalTextUnicode Hidemaru_GetTotalTextUnicode;
-		
+        delegate IntPtr Delegate_Hidemaru_GetTotalTextUnicode();
+        static Delegate_Hidemaru_GetTotalTextUnicode Hidemaru_GetTotalTextUnicode;
+
 		public delegate  IntPtr Delegate_Hidemaru_GetCurrentWindowHandle();
         public static Delegate_Hidemaru_GetCurrentWindowHandle Hidemaru_GetCurrentWindowHandle;
 
 		public delegate bool Delegate_Hidemaru_GetCursorPosUnicodeFromMousePos(ref NativeMethods.POINT ppt, ref int pnLineNo, ref int pnColumn);
 		public static Delegate_Hidemaru_GetCursorPosUnicodeFromMousePos Hidemaru_GetCursorPosUnicodeFromMousePos;
+
+		public delegate bool Delegate_Hidemaru_GetCursorPosUnicode(ref int pnLineNo, ref int pnColumn);
+		public static Delegate_Hidemaru_GetCursorPosUnicode Hidemaru_GetCursorPosUnicode;
+
+
 		#endregion
 
 
 		class Constant
         {
 			public const int WM_USER = 0x400;
-			public const int WM_HIDEMARUINFO = WM_USER + 181;			
+			public const int WM_HIDEMARUINFO = WM_USER + 181;
 
 			public const int HIDEMARUINFO_GETTABWIDTH = 0;
 			public const int HIDEMARUINFO_GETSTARTCOLUMN = 1;
@@ -91,11 +96,11 @@ namespace HidemaruLspClient_FrontEnd
 				return;
             }
 			IntPtr hmod = UnsafeNativeMethods.GetModuleHandle(null); //hidemaru.exe自身
-			
-            Hidemaru_GetTotalTextUnicode   = (Delegate_Hidemaru_GetTotalTextUnicode)Marshal.GetDelegateForFunctionPointer(GetProcAddress(hmod, "Hidemaru_GetTotalTextUnicode"), typeof(Delegate_Hidemaru_GetTotalTextUnicode));			
-			Hidemaru_GetCurrentWindowHandle= (Delegate_Hidemaru_GetCurrentWindowHandle)Marshal.GetDelegateForFunctionPointer(GetProcAddress(hmod, "Hidemaru_GetCurrentWindowHandle"), typeof(Delegate_Hidemaru_GetCurrentWindowHandle));
-			Hidemaru_GetCursorPosUnicodeFromMousePos=(Delegate_Hidemaru_GetCursorPosUnicodeFromMousePos)Marshal.GetDelegateForFunctionPointer(GetProcAddress(hmod, "Hidemaru_GetCursorPosUnicodeFromMousePos"), typeof(Delegate_Hidemaru_GetCursorPosUnicodeFromMousePos));
 
+            Hidemaru_GetTotalTextUnicode             = (Delegate_Hidemaru_GetTotalTextUnicode)Marshal.GetDelegateForFunctionPointer(GetProcAddress(hmod, "Hidemaru_GetTotalTextUnicode"), typeof(Delegate_Hidemaru_GetTotalTextUnicode));
+			Hidemaru_GetCurrentWindowHandle          = (Delegate_Hidemaru_GetCurrentWindowHandle)Marshal.GetDelegateForFunctionPointer(GetProcAddress(hmod, "Hidemaru_GetCurrentWindowHandle"), typeof(Delegate_Hidemaru_GetCurrentWindowHandle));
+			Hidemaru_GetCursorPosUnicodeFromMousePos = (Delegate_Hidemaru_GetCursorPosUnicodeFromMousePos)Marshal.GetDelegateForFunctionPointer(GetProcAddress(hmod, "Hidemaru_GetCursorPosUnicodeFromMousePos"), typeof(Delegate_Hidemaru_GetCursorPosUnicodeFromMousePos));
+			Hidemaru_GetCursorPosUnicode             = (Delegate_Hidemaru_GetCursorPosUnicode)Marshal.GetDelegateForFunctionPointer(GetProcAddress(hmod, "Hidemaru_GetCursorPosUnicode"), typeof(Delegate_Hidemaru_GetCursorPosUnicode));
 			initialized_ = true;
 		}
         public static string GetTotalTextUnicode()
