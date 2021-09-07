@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
 using HidemaruLspClient_BackEndContract;
-using System.Runtime.InteropServices;
 using static HidemaruLspClient_FrontEnd.UnsafeNativeMethods;
 using static HidemaruLspClient_FrontEnd.NativeMethods;
 
