@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient_FrontEnd
@@ -13,12 +14,10 @@ namespace HidemaruLspClient_FrontEnd
         /// </summary>
         class DiagnosticsTask
         {
-            const int defaultMillisecondsTimeout = 500;
-            Task task_;
             IWorker worker_;
             ILspClientLogger logger_;
             CancellationToken cancellationToken_;
-
+            System.Windows.Forms.Timer timer_;
             /// <summary>
             /// 秀丸エディタのウインドウハンドル
             /// </summary>
@@ -30,7 +29,6 @@ namespace HidemaruLspClient_FrontEnd
             /// </summary>
             bool outputPaneCleard_;
 
-            public Task GetTask() { return task_; }
             public DiagnosticsTask(IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
             {
                 hwndHidemaru_     = Hidemaru.Hidemaru_GetCurrentWindowHandle();
@@ -39,45 +37,25 @@ namespace HidemaruLspClient_FrontEnd
                 worker_            = worker;
                 logger_ = logger;
                 cancellationToken_ = cancellationToken;
-                task_              =Task.Run(MainLoop, cancellationToken_);
-            }
-            async Task MainLoop()
-            {
-                //Todoポーリングではなくイベント通知にする
-                try
-                {
-                    while (true)
-                    {
-                        if (cancellationToken_.IsCancellationRequested)
-                        {
-                            return;
-                        }
-                        Process();
-                        await Task.Delay(defaultMillisecondsTimeout,cancellationToken_);
-                    }
-                }catch(System.Runtime.InteropServices.COMException e)
-                {
-                    //COMサーバ(.exe)が終了したため、ログ出力してからポーリング動作を終了させる。
-                    logger_.Error(e.ToString());
-                }
-            }
-            void Process()
-            {
-                var container = worker_.PullDiagnosticsParams();
-                bool hasEvent = container.Length == 0 ? false : true;
 
-                if (hasEvent == false)
+                timer_ = new System.Windows.Forms.Timer();
+                timer_.Interval = 500;
+                timer_.Tick += MainLoopAsync;
+                timer_.Start();
+            }
+
+            async void MainLoopAsync(object sender, EventArgs e)
+            {
+                if (cancellationToken_.IsCancellationRequested)
                 {
                     return;
                 }
-
-                var sb = new StringBuilder();
-                for (long i = 0; i < container.Length; ++i)
+                var result = await Task.Run(() => PullDiagnosticsText(),cancellationToken_);
+                if (result.pullEventOccurred == false)
                 {
-                    FormatDiagnostics(sb, container.Item(i));
+                    return;
                 }
-
-                if (sb.Length == 0)
+                if (result.text == null)
                 {
                     if (outputPaneCleard_ == false)
                     {
@@ -88,10 +66,31 @@ namespace HidemaruLspClient_FrontEnd
                 else
                 {
                     HmOutputPane.Clear(hwndHidemaru_);
-                    HmOutputPane.OutputW(hwndHidemaru_, sb.ToString());
-
+                    HmOutputPane.OutputW(hwndHidemaru_, result.text);
                     outputPaneCleard_ = false;
                 }
+            }
+
+            (bool pullEventOccurred, string text) PullDiagnosticsText()
+            {
+                var container = worker_.PullDiagnosticsParams();
+                bool pullEventOccurred = container.Length == 0 ? false : true;
+                if (pullEventOccurred == false)
+                {
+                    return (pullEventOccurred,null);
+                }
+
+                var sb = new StringBuilder();
+                for (long i = 0; i < container.Length; ++i)
+                {
+                    FormatDiagnostics(sb, container.Item(i));
+                }
+                var text = sb.ToString();
+                if (text.Length == 0)
+                {
+                    return (pullEventOccurred, null);
+                }
+                return (pullEventOccurred, text);
             }
 
             static void FormatDiagnostics(StringBuilder sb, IPublishDiagnosticsParams diagnosticsParams)
@@ -116,9 +115,5 @@ namespace HidemaruLspClient_FrontEnd
                 }
             }
         }
-
-
-
-
     }
 }

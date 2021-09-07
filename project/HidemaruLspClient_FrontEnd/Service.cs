@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient_FrontEnd
@@ -307,11 +308,12 @@ namespace HidemaruLspClient_FrontEnd
         CancellationTokenSource tokenSource_=null;
         DiagnosticsTask diagnosticsTask_ = null;
         HoverTask hoverTask_ = null;
-        List<Task> waitingTasks_;
 
-        #region Public methods
+#region Public methods
         public bool Initialize(string logFilename, string serverConfigFilename, string currentSourceCodeDirectory)
         {
+            UIThread.Initializer();
+
             Hidemaru.Initialize();
 
             if (!CreateComServer(logFilename))
@@ -328,19 +330,13 @@ namespace HidemaruLspClient_FrontEnd
             {
                 tokenSource_ = new CancellationTokenSource();
             }
-            if (waitingTasks_ == null)
-            {
-                waitingTasks_ = new List<Task>();
-            }
             if (diagnosticsTask_ == null)
             {
                 diagnosticsTask_ = new DiagnosticsTask(worker_, logger_, tokenSource_.Token);
-                waitingTasks_.Add(diagnosticsTask_.GetTask());
             }
             if (hoverTask_ == null)
             {
                 hoverTask_=new HoverTask(this, worker_, logger_, tokenSource_.Token);
-                waitingTasks_.Add(hoverTask_.GetTask());
             }
             return true;
         }
@@ -371,18 +367,6 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     tokenSource_.Cancel();
                 }
-                if (waitingTasks_ != null)
-                {
-                    try
-                    {
-                        //Task.WhenAll(waitingTasks_);
-                        int millisecondsDelay = 1000;
-                        Task.WhenAny(Task.WhenAll(waitingTasks_), Task.Delay(millisecondsDelay)).Wait();
-                    }catch(System.Threading.Tasks.TaskCanceledException e)
-                    {
-                        logger_?.Error(e.ToString());
-                    }
-                }
                 if ((server_ != null) && (worker_ != null))
                 {
                     if (string.IsNullOrEmpty(openedFile_.Filename) == false)
@@ -391,6 +375,7 @@ namespace HidemaruLspClient_FrontEnd
                     }
                     server_.DestroyWorker(worker_);
                 }
+                UIThread.Finalizer();
             }
             catch (Exception e)
             {

@@ -108,25 +108,6 @@ namespace HidemaruLspClient
 				return false;
             }
 			initializeResult_ = (InitializeResult)response.item;
-			/*{//debug
-				bool v = false;
-				//var p = result.capabilities.declarationProvider;
-				var p = result.capabilities.definitionProvider;
-				if (p == null) {
-					v = false;
-                }else {
-					if (p.IsBool)
-					{
-						v = p.Bool;
-					}
-					else
-					{
-						v = true;
-					}
-				}
-				//Console.WriteLine(string.Format("declarationProvider={0}",v));
-				Console.WriteLine(string.Format("definitionProvider={0}", v));
-			}*/
 			InitializedClient();
 			return true;
 		}

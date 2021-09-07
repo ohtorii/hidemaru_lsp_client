@@ -145,6 +145,10 @@ namespace LSP.Implementation
                     }
                 }
             }
+            catch (System.Threading.Tasks.TaskCanceledException)
+            {
+                //pass
+            }
             catch (Exception e)
             {
                 if (logger_.IsDebugEnabled)
