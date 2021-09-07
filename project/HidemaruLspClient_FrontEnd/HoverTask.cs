@@ -49,19 +49,17 @@ namespace HidemaruLspClient_FrontEnd
                 #region フォームの要素
                 Label label_ = new Label();
                 System.Windows.Forms.Timer timer_;
-                //private string fontName_;
                 #endregion
 
 
                 public Tooltipform(Service service,  ILspClientLogger logger, CancellationToken cancellationToken)
                 {
-                    service_ = service;
-                    hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+                    service_           = service;
+                    hwndHidemaru_      = Hidemaru.Hidemaru_GetCurrentWindowHandle();
 
-                    logger_ = logger;
+                    logger_            = logger;
                     cancellationToken_ = cancellationToken;
 
-                    // this.fontName_ = fontname;
                     SetFormAttr();
                     SetLabelAttr();
                     SetTimerAttr();
@@ -86,10 +84,11 @@ namespace HidemaruLspClient_FrontEnd
                 }
                 protected override bool ShowWithoutActivation => true;
 
-                const int WM_MOUSEACTIVATE = 0x0021;
-                const int MA_NOACTIVATE = 3;
                 protected override void WndProc(ref Message m)
                 {
+                    const int WM_MOUSEACTIVATE = 0x0021;
+                    const int MA_NOACTIVATE = 3;
+
                     if (m.Msg == WM_MOUSEACTIVATE)
                     {
                         m.Result = new IntPtr(MA_NOACTIVATE);
@@ -99,13 +98,14 @@ namespace HidemaruLspClient_FrontEnd
                     base.WndProc(ref m);
                 }
 
-                // 常に最前面に表示させる(topMostプロパティを使うと
-                // ShowWithoutActivationが効かないため
-                const int WS_EX_TOPMOST = 0x00000008;
                 protected override CreateParams CreateParams
                 {
                     get
                     {
+                        // 常に最前面に表示させる(topMostプロパティを使うと
+                        // ShowWithoutActivationが効かないため
+                        const int WS_EX_TOPMOST = 0x00000008;
+
                         CreateParams p = base.CreateParams;
                         p.ExStyle |= WS_EX_TOPMOST;
                         return p;
@@ -120,7 +120,6 @@ namespace HidemaruLspClient_FrontEnd
 
                     label_.Left = padding;
                     label_.Top = padding;
-                    //label_.Font = new Font(fontName_, 14);
                     label_.Width = 800;
                     label_.Height = 140;
                     this.Controls.Add(label_);
@@ -206,7 +205,7 @@ namespace HidemaruLspClient_FrontEnd
                             }
                         }
                     }
-                    System.Diagnostics.Debug.WriteLine(String.Format("tooltipText={0}", tooltipText));
+
                     if ((tooltipText == null) || (tooltipText.Length == 0))
                     {
                         HideToolTips();
