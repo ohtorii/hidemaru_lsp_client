@@ -1,0 +1,4 @@
+﻿/*「自動起動マクロ→ファイルを開いた直後」に登録するマクロ
+*/
+execmacro currentmacrodirectory+"\\internal\\CreateComClient.mac";
+endmacro getresultex(-1);
