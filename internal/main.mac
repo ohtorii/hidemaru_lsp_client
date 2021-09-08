@@ -5,14 +5,6 @@
 	endmacro "0";
 }
 
-/////////////////////////////////////////////////////////////////////////////
-//    グローバル変数
-/////////////////////////////////////////////////////////////////////////////
-$rootFolder=currentmacrodirectory+@"\..";
-$iniServerConfig=$rootFolder+"\\server_config.ini";
-call GetAbsolutePathName $iniServerConfig;
-$iniServerConfig=$$return;
-
 
 /////////////////////////////////////////////////////////////////////////////
 //    メイン処理
@@ -21,18 +13,7 @@ call main;
 endmacro str(##return);
 
 main:
-    call FindServerConfigFile filetype;
-    $$absConfigFileName=$$return;
-    if($$absConfigFileName==""){
-        message "言語サーバの設定がIniファイル中で見つかりません";
-        return false;
-    }
-    if(! existfile($$absConfigFileName)){
-        message "ファイルが見つからない。"+$$absConfigFileName;
-        return false;
-    }
-
-    execmacro currentmacrodirectory+@"\CreateComClient.mac", $$absConfigFileName;
+    execmacro currentmacrodirectory+@"\CreateComClient.mac";
     $$obj = getresultex(-1);
     if($$obj==""){
         return false;
@@ -146,24 +127,9 @@ MenuSyncDocument:
     ##success=member(##comObject, "SyncDocument");
     return ##success;
 
-
 LspGoto:
     $$Method    =$$1;
     ##comObject =##2;
     execmacro currentmacrodirectory + @"/LspGoto.mac", $$Method, str(##comObject);
     return val(getresultex(-1));
 
-FindServerConfigFile:
-    $$extension = $$1;
-    $$configFilename=getinistrw($iniServerConfig, "ServerConfig", $$extension);
-    if($$configFilename==""){
-        return "";
-    }
-    $$absConfigFileName=$rootFolder+"\\"+$$configFilename;
-    return $$absConfigFileName;
-
-GetAbsolutePathName:
-	##fso=createobject("Scripting.FileSystemObject");
-	$$abs_filename = member(##fso,"GetAbsolutePathName",$$1);
-	releaseobject ##fso;
-    return $$abs_filename;

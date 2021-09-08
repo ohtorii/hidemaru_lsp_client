@@ -1,4 +1,7 @@
-﻿#ShareMode=2;
+﻿/*LSPから取得したServer capabilitiesを読み書きする。
+
+*/
+#ShareMode=2;
 
 call main getarg(0),getarg(1);
 endmacro str(##return);

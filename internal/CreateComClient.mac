@@ -1,8 +1,15 @@
-﻿$g_absConfigFileName=getarg(0);
+﻿/*COMクライアントを作成する。
 
+返値　成功：COM-Object(int)を文字列で返す
+    　失敗：空文字
+*/
 /////////////////////////////////////////////////////////////////////////////
 //    グローバル変数
 /////////////////////////////////////////////////////////////////////////////
+
+//
+//LSP
+//
 $comClientFileName=@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_FrontEnd\bin\Debug\HidemaruLspClient_FrontEnd.dll";
 execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $comClientFileName;
 $comClientFileName=getresultex(-1);
@@ -13,9 +20,17 @@ $logFileName=@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_client.log";
 execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;
 $logFileName=getresultex(-1);
 
-
 $comObjectName="lsp.client.obj";
 #comObjectShareMode=2;
+
+//
+//Iniファイル
+//
+$rootFolder=currentmacrodirectory+@"\..";
+$iniServerConfig=$rootFolder+"\\server_config.ini";
+call GetAbsolutePathName $iniServerConfig;
+$iniServerConfig=$$return;
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -24,8 +39,21 @@ $comObjectName="lsp.client.obj";
 call main;
 endmacro $$return;
 
+
 main:
-    $$comError="";
+    $$comError="";//定数
+
+    call FindServerConfigFile filetype;
+    $$absConfigFileName=$$return;
+    if($$absConfigFileName==""){
+        message "言語サーバの設定がIniファイル中で見つかりません";
+        return false;
+    }
+
+    if(! existfile($$absConfigFileName)){
+        message "ファイルが見つからない。"+$$absConfigFileName;
+        return $$comError;
+    }
 
     $$obj = getstaticvariable($comObjectName,#comObjectShareMode);
     if($$obj!=""){
@@ -37,7 +65,7 @@ main:
             return $$comError;
         }
         setcomdetachmethod ##obj,"Finalizer";
-        ##n=member(##obj,"Initialize",$logFileName,$g_absConfigFileName,directory2);
+        ##n=member(##obj,"Initialize",$logFileName,$$absConfigFileName,directory2);
         if(##n==false){
             message "COMのInitializeに失敗";
             return $$comError;
@@ -52,3 +80,19 @@ main:
     }
     return $$comError;
 
+
+FindServerConfigFile:
+    $$extension = $$1;
+    $$configFilename=getinistrw($iniServerConfig, "ServerConfig", $$extension);
+    if($$configFilename==""){
+        return "";
+    }
+    $$absConfigFileName=$rootFolder+"\\"+$$configFilename;
+    return $$absConfigFileName;
+
+
+GetAbsolutePathName:
+	##fso=createobject("Scripting.FileSystemObject");
+	$$abs_filename = member(##fso,"GetAbsolutePathName",$$1);
+	releaseobject ##fso;
+    return $$abs_filename;
