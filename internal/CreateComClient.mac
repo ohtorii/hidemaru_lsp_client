@@ -10,12 +10,22 @@
 //
 //LSP
 //
-$comClientFileName =@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_FrontEnd\bin\Debug\HidemaruLspClient_FrontEnd.dll";
-$comServiceName    ="HidemaruLspClient_FrontEnd.Service";
-$logFileName       =@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_client.log";
-$comObjectName     ="lsp.client.obj";
-#comObjectShareMode=2;
-$comError          ="";
+$comClientFileName  =@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_FrontEnd\bin\Debug\HidemaruLspClient_FrontEnd.dll";
+$comServiceName     ="HidemaruLspClient_FrontEnd.Service";
+$logFileName        =@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_client.log";
+$comObjectName      ="lsp.client.obj";
+$stageName          ="lsp.client.stage";
+$configName         ="lsp.client.configname";
+#comShareMode       =2;
+
+$comError           ="";
+
+$stageStart           ="";
+$stageInitialized     ="Initialized";
+$stageCreatedComObject="CreateedComObject";
+$stageFindedConfig    ="FindedConfig";
+$stageFinish          ="Finish";
+
 
 //
 //Iniファイル
@@ -32,26 +42,57 @@ endmacro $$return;
 
 
 main:
-    $$obj = getstaticvariable($comObjectName,#comObjectShareMode);
-    if($$obj != ""){
-        return $$obj;
+    $$stage = getstaticvariable($stageName,#comShareMode);
+    if($$stage==$stageStart){
+        call InitializeGlobalVariable;
+        setstaticvariable $stageName,$stageInitialized,#comShareMode;
+        call main;
+        return $$return;
+
+    }else if($$stage==$stageInitialized){
+        call CreateComObject;
+        ##obj=##return;
+        if(##obj==0){
+            return $comError;
+        }
+        setstaticvariable $stageName,$stageCreatedComObject,#comShareMode;
+        setstaticvariable $comObjectName,str(##obj),#comShareMode;
+        call main;
+        return $$return;
+
+    }else if($$stage==$stageCreatedComObject){
+        call FindServerConfigFile filetype;
+        $$absConfigFileName=$$return;
+        if($$absConfigFileName==""){
+            return $comError;
+        }
+        setstaticvariable $configName,$$absConfigFileName,#comShareMode;
+        setstaticvariable $stageName,$stageFindedConfig,#comShareMode;
+        call main;
+        return $$return;
+
+    }else if($$stage==$stageFindedConfig){
+        $$obj              =getstaticvariable($comObjectName,#comShareMode);
+        $$absConfigFileName=getstaticvariable($configName,#comShareMode);
+        call InitializeComObject val($$obj),$$absConfigFileName;
+        if(##return == false){
+            return $comError;
+        }
+        setstaticvariable $stageName,$stageFinish,#comShareMode;
+        call main;
+        return $$return;
+
+    }else if($$stage==$stageFinish){
+        return getstaticvariable($comObjectName,#comShareMode);
     }
-    call InitializeGlobalVariable;
-    call FindServerConfigFile filetype;
-    $$absConfigFileName=$$return;
-    if($$absConfigFileName==""){
-        return $comError;
-    }
-    call CreateComObject $$absConfigFileName;
-    ##obj=##return;
-    return str(##obj);
+    return $comError;
 
 
 FindServerConfigFile:
     $$extension = $$1;
     $$configFilename=getinistrw($iniServerConfig, "ServerConfig", $$extension);
     if($$configFilename==""){
-        message "言語サーバの設定がIniファイル中で見つかりません";
+        //message "言語サーバの設定がIniファイル中で見つかりません";
         return "";
     }
     $$absConfigFileName=$rootFolder+"\\"+$$configFilename;
@@ -75,24 +116,27 @@ InitializeGlobalVariable:
 
 
 CreateComObject:
-    $$absConfigFileName=$$1;
     ##obj = createobject($comClientFileName,$comServiceName);
     if(##obj==0){
         message "COMのロードに失敗しました";
-        return $comError;
+        return 0;
     }
     setcomdetachmethod ##obj,"Finalizer";
+    return ##obj;
+
+
+InitializeComObject:
+    ##obj              =##1;
+    $$absConfigFileName=$$2;
     ##n=member(##obj,"Initialize",$logFileName,$$absConfigFileName,directory2);
     if(##n==false){
         message "COMのInitializeに失敗";
-        return $comError;
+        return false;
     }
     ##serverCapabilities=member(##obj,"ServerCapabilities");
     execmacro currentmacrodirectory+@"/LspServerCapabilities.mac", "Store", str(##serverCapabilities);
-
-    setstaticvariable $comObjectName,str(##obj),#comObjectShareMode;
     keepobject ##obj, 2;
-    return ;
+    return true;
 
 
 GetAbsolutePathName:
