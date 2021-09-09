@@ -40,15 +40,9 @@ main:
     call FindServerConfigFile filetype;
     $$absConfigFileName=$$return;
     if($$absConfigFileName==""){
-        message "言語サーバの設定がIniファイル中で見つかりません";
-        return false;
-    }
-
-    if(! existfile($$absConfigFileName)){
-        message "ファイルが見つからない。"+$$absConfigFileName;
         return $comError;
     }
-    call InitializeComObject $$absConfigFileName;
+    call CreateComObject $$absConfigFileName;
     ##obj=##return;
     return str(##obj);
 
@@ -57,9 +51,14 @@ FindServerConfigFile:
     $$extension = $$1;
     $$configFilename=getinistrw($iniServerConfig, "ServerConfig", $$extension);
     if($$configFilename==""){
+        message "言語サーバの設定がIniファイル中で見つかりません";
         return "";
     }
     $$absConfigFileName=$rootFolder+"\\"+$$configFilename;
+    if(! existfile($$absConfigFileName)){
+        message "ファイルが見つからない。"+$$absConfigFileName;
+        return "";
+    }
     return $$absConfigFileName;
 
 
@@ -75,7 +74,7 @@ InitializeGlobalVariable:
     return ;
 
 
-InitializeComObject:
+CreateComObject:
     $$absConfigFileName=$$1;
     ##obj = createobject($comClientFileName,$comServiceName);
     if(##obj==0){
