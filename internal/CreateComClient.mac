@@ -22,7 +22,8 @@ $comError           ="";
 
 $stageStart           ="";
 $stageInitialized     ="Initialized";
-$stageCreatedComObject="CreateedComObject";
+$stageCreatedComObject="CreatedComObject";
+$stageInitializedBackEndService="InitializedBackEndService";
 $stageFindedConfig    ="FindedConfig";
 $stageFinish          ="Finish";
 
@@ -38,69 +39,75 @@ $iniServerConfig=$rootFolder+"\\server_config.ini";
 //    メイン処理
 /////////////////////////////////////////////////////////////////////////////
 call main;
-endmacro $$return;
+endmacro getstaticvariable($comObjectName,#comShareMode);
 
 
 main:
     $$stage = getstaticvariable($stageName,#comShareMode);
     if($$stage==$stageStart){
         call InitializeGlobalVariable;
+        if(! ##return){
+            return ;
+        }
         setstaticvariable $stageName,$stageInitialized,#comShareMode;
         call main;
-        return $$return;
+        return ;
 
     }else if($$stage==$stageInitialized){
         call CreateComObject;
-        ##obj=##return;
-        if(##obj==0){
-            return $comError;
+        if(! ##return){
+            return ;
         }
         setstaticvariable $stageName,$stageCreatedComObject,#comShareMode;
-        setstaticvariable $comObjectName,str(##obj),#comShareMode;
         call main;
-        return $$return;
+        return ;
 
     }else if($$stage==$stageCreatedComObject){
-        call FindServerConfigFile filetype;
-        $$absConfigFileName=$$return;
-        if($$absConfigFileName==""){
-            return $comError;
+        call InitializeBackEndService;
+        if(! ##return){
+            return ;
         }
-        setstaticvariable $configName,$$absConfigFileName,#comShareMode;
+        setstaticvariable $stageName,$stageInitializedBackEndService,#comShareMode;
+        call main;
+        return;
+
+    }else if($$stage==$stageInitializedBackEndService){
+        call FindServerConfigFile;
+        if(! ##return){
+            return ;
+        }
         setstaticvariable $stageName,$stageFindedConfig,#comShareMode;
         call main;
-        return $$return;
-
+        return ;
     }else if($$stage==$stageFindedConfig){
-        $$obj              =getstaticvariable($comObjectName,#comShareMode);
-        $$absConfigFileName=getstaticvariable($configName,#comShareMode);
-        call InitializeComObject val($$obj),$$absConfigFileName;
-        if(##return == false){
-            return $comError;
+        call InitializeFrontEndService;
+        if(! ##return ){
+            return false;
         }
         setstaticvariable $stageName,$stageFinish,#comShareMode;
         call main;
-        return $$return;
+        return ;
 
     }else if($$stage==$stageFinish){
-        return getstaticvariable($comObjectName,#comShareMode);
+        return ;
     }
-    return $comError;
+    return ;
 
 
 FindServerConfigFile:
-    $$extension = $$1;
+    $$extension = filetype;
     $$configFilename=getinistrw($iniServerConfig, "ServerConfig", $$extension);
     if($$configFilename==""){
         //message "言語サーバの設定がIniファイル中で見つかりません";
-        return "";
+        return false;
     }
     $$absConfigFileName=$rootFolder+"\\"+$$configFilename;
     if(! existfile($$absConfigFileName)){
         message "ファイルが見つからない。"+$$absConfigFileName;
-        return "";
+        return false;
     }
-    return $$absConfigFileName;
+    setstaticvariable $configName,$$absConfigFileName,#comShareMode;
+    return true;
 
 
 InitializeGlobalVariable:
@@ -112,25 +119,37 @@ InitializeGlobalVariable:
 
     call GetAbsolutePathName $iniServerConfig;
     $iniServerConfig=$$return;
-    return ;
+    return true;
 
 
 CreateComObject:
     ##obj = createobject($comClientFileName,$comServiceName);
     if(##obj==0){
         message "COMのロードに失敗しました";
-        return 0;
+        return false;
     }
+    setstaticvariable $comObjectName,str(##obj),#comShareMode;
     setcomdetachmethod ##obj,"Finalizer";
-    return ##obj;
+    return true;
 
-
-InitializeComObject:
-    ##obj              =##1;
-    $$absConfigFileName=$$2;
-    ##n=member(##obj,"Initialize",$logFileName,$$absConfigFileName,directory2);
+InitializeBackEndService:
+    $$obj=getstaticvariable($comObjectName,#comShareMode);
+    ##obj=val($$obj);
+    ##n=member(##obj,"InitializeBackEndService",$logFileName);
     if(##n==false){
-        message "COMのInitializeに失敗";
+        message "[Failed] InitializeBackEndService";
+        return false;
+    }
+    return true;
+
+InitializeFrontEndService:
+    $$obj=getstaticvariable($comObjectName,#comShareMode);
+    ##obj=val($$obj);
+    $$absConfigFileName=getstaticvariable($configName,#comShareMode);
+
+    ##n=member(##obj,"InitializeFrontEndService",$$absConfigFileName,directory2);
+    if(##n==false){
+        message "[Failed] InitializeFrontEndService";
         return false;
     }
     ##serverCapabilities=member(##obj,"ServerCapabilities");

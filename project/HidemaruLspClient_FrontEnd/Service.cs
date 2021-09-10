@@ -272,12 +272,15 @@ namespace HidemaruLspClient_FrontEnd
             }
             return false;
         }
-        bool CreateWorker(string serverConfigFilename, string currentSourceCodeDirectory)
+        bool CreateWorkerMain(string serverConfigFilename, string currentSourceCodeDirectory)
         {
+            if(worker_ != null)
+            {
+                return true;
+            }
+
             try
             {
-                Debug.Assert(worker_ == null);
-
                 var options = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
                 if (options == null)
                 {
@@ -309,19 +312,20 @@ namespace HidemaruLspClient_FrontEnd
         DiagnosticsTask diagnosticsTask_ = null;
         HoverTask hoverTask_ = null;
 
-#region Public methods
-        public bool Initialize(string logFilename, string serverConfigFilename, string currentSourceCodeDirectory)
+        #region Public methods
+        public bool InitializeBackEndService(string logFilename)
         {
             UIThread.Initializer();
-
             Hidemaru.Initialize();
-
             if (!CreateComServer(logFilename))
             {
                 Finalizer();
                 return false;
             }
-            if (!CreateWorker(serverConfigFilename, currentSourceCodeDirectory))
+            return true;
+        }
+        public bool InitializeFrontEndService(string serverConfigFilename, string currentSourceCodeDirectory) {
+            if (!CreateWorkerMain(serverConfigFilename, currentSourceCodeDirectory))
             {
                 Finalizer();
                 return false;
