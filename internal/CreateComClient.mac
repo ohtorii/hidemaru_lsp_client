@@ -7,6 +7,8 @@
 //    グローバル変数
 /////////////////////////////////////////////////////////////////////////////
 
+#useAsync=true;
+
 //
 //LSP
 //
@@ -23,10 +25,13 @@ $labelIndexName="LabelIndex";
 $labelTable[0]="InitializeGlobalVariable";
 $labelTable[1]="CreateComObject";
 $labelTable[2]="InitializeBackEndService";
-$labelTable[3]="FindServerConfigFile";
-$labelTable[4]="InitializeFrontEndService";
-$labelTable[5]="Finish";
-$labelTable[6]="Nop";
+$labelTable[3]="CheckBackEndService";
+$labelTable[4]="FindServerConfigFile";
+$labelTable[5]="InitializeFrontEndService";
+$labelTable[6]="CheckFrontEndService";
+$labelTable[7]="StoreServerCapabilities";
+$labelTable[8]="Finish";
+$labelTable[9]="Nop";
 
 
 //
@@ -96,31 +101,54 @@ CreateComObject:
     }
     setstaticvariable $privateComObjectName,str(##obj),#comShareMode;
     setcomdetachmethod ##obj,"Finalizer";
+    keepobject ##obj, 2;
     return true;
 
 InitializeBackEndService:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
-    ##n=member(##obj,"InitializeBackEndService",$logFileName);
-    if(##n==false){
-        message "[Failed] InitializeBackEndService";
-        return false;
+    if(#useAsync){
+        ##n=member(##obj,"InitializeBackEndServiceAsync",$logFileName);
+    }else{
+        ##n=member(##obj,"InitializeBackEndService",$logFileName);
+        if(##n==false){
+            message "[Failed] InitializeBackEndService";
+            return false;
+        }
     }
     return true;
+
+CheckBackEndService:
+    $$obj=getstaticvariable($privateComObjectName,#comShareMode);
+    ##obj=val($$obj);
+    return member(##obj,"CheckBackEndService");
 
 InitializeFrontEndService:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
     $$absConfigFileName=getstaticvariable($configName,#comShareMode);
 
-    ##n=member(##obj,"InitializeFrontEndService",$$absConfigFileName,directory2);
-    if(##n==false){
-        message "[Failed] InitializeFrontEndService";
-        return false;
+    if(#useAsync){
+        ##n=member(##obj,"InitializeFrontEndServiceAsync",$$absConfigFileName,directory2);
+    }else{
+        ##n=member(##obj,"InitializeFrontEndService",$$absConfigFileName,directory2);
+        if(##n==false){
+            message "[Failed] InitializeFrontEndService";
+            return false;
+        }
     }
+    return true;
+
+CheckFrontEndService:
+    $$obj=getstaticvariable($privateComObjectName,#comShareMode);
+    ##obj=val($$obj);
+    return member(##obj,"CheckFrontEndService");
+
+StoreServerCapabilities:
+    $$obj=getstaticvariable($privateComObjectName,#comShareMode);
+    ##obj=val($$obj);
     ##serverCapabilities=member(##obj,"ServerCapabilities");
     execmacro currentmacrodirectory+@"/LspServerCapabilities.mac", "Store", str(##serverCapabilities);
-    keepobject ##obj, 2;
     return true;
 
 Finish:
