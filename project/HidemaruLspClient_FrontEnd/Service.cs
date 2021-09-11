@@ -19,9 +19,15 @@ namespace HidemaruLspClient_FrontEnd
     {
         static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
 
-        IHidemaruLspBackEndServer server_ = null;
-        IWorker worker_                   = null;
-        ILspClientLogger logger_          = null;
+        class Context
+        {
+            public IHidemaruLspBackEndServer server { get; set; }
+            public IWorker worker { get; set; }
+        }
+        Context context_ =new Context();
+        ILspClientLogger logger_=null;
+
+
 
         class Document
         {
@@ -106,15 +112,13 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
-                Debug.Assert(worker_ != null);
-
                 if (openedFile_.Filename == absFilename)
                 {
                     return DigOpenStatus.AlreadyOpened;
                 }
                 var text = Hidemaru.GetTotalTextUnicode();
                 const int contentsVersion = 1;
-                worker_.DidOpen(absFilename, text, contentsVersion);
+                context_.worker.DidOpen(absFilename, text, contentsVersion);
                 openedFile_.Setup(absFilename,
                                  new Uri(absFilename),
                                  contentsVersion,
@@ -134,7 +138,6 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
-                Debug.Assert(worker_ != null);
                 Debug.Assert(string.IsNullOrEmpty(openedFile_.Filename) == false);
 
                 var text        = Hidemaru.GetTotalTextUnicode();
@@ -144,7 +147,7 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     return DigChangeStatus.NoChanged;
                 }
-                worker_.DidChange(openedFile_.Filename, text, openedFile_.ContentsVersion);
+                context_.worker.DidChange(openedFile_.Filename, text, openedFile_.ContentsVersion);
 
                 openedFile_.SetContentsHash(currentHash);
                 openedFile_.IncrementContentsVersion();
@@ -160,10 +163,12 @@ namespace HidemaruLspClient_FrontEnd
         }
         void DidClose()
         {
-            Debug.Assert(worker_ != null);
             Debug.Assert(string.IsNullOrEmpty(openedFile_.Filename) == false);
-
-            worker_.DidClose(openedFile_.Filename);
+            if (context_.worker == null)
+            {
+                return;
+            }
+            context_.worker.DidClose(openedFile_.Filename);
             openedFile_.Clear();
         }
         /// <summary>
@@ -235,7 +240,7 @@ namespace HidemaruLspClient_FrontEnd
 
         bool CreateComServer(string logFilename)
         {
-            if (server_ != null)
+            if (context_.server != null)
             {
                 return true;
             }
@@ -249,22 +254,22 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     Marshal.ThrowExceptionForHR(hr);
                 }
-                server_ = (IHidemaruLspBackEndServer)obj;
-                var ret = Convert.ToBoolean(server_.Initialize(logFilename));
+                context_.server = (IHidemaruLspBackEndServer)obj;
+                var ret = Convert.ToBoolean(context_.server.Initialize(logFilename));
                 if (ret)
                 {
-                    logger_ = server_.GetLogger();
+                    logger_ = context_.server.GetLogger();
                     Configuration.Initialize(logger_);
                 }
                 else
                 {
-                    server_ = null;
+                    context_.server = null;
                 }
                 return ret;
             }
             catch (Exception e)
             {
-                server_ = null;
+                context_.server = null;
                 if (logger_ != null)
                 {
                     logger_.Error(e.ToString());
@@ -274,7 +279,7 @@ namespace HidemaruLspClient_FrontEnd
         }
         bool CreateWorkerMain(string serverConfigFilename, string currentSourceCodeDirectory)
         {
-            if(worker_ != null)
+            if(context_.worker != null)
             {
                 return true;
             }
@@ -287,14 +292,14 @@ namespace HidemaruLspClient_FrontEnd
                     return false;
                 }
                 var hidemaruProcess = System.Diagnostics.Process.GetCurrentProcess();
-                worker_ = server_.CreateWorker(
+                context_.worker = context_.server.CreateWorker(
                             options.ServerName,
                             options.ExcutablePath,
                             options.Arguments,
                             options.RootUri,
                             options.WorkspaceConfig,
                             hidemaruProcess.Id);
-                if (worker_ == null)
+                if (context_.worker == null)
                 {
                     return false;
                 }
@@ -306,17 +311,76 @@ namespace HidemaruLspClient_FrontEnd
             }
             return false;
         }
+        void FinalizeContext()
+        {
+            if ((context_.server != null) && (context_.worker != null))
+            {
+                if (string.IsNullOrEmpty(openedFile_.Filename) == false)
+                {
+                    DidClose();
+                }
+                context_.server.DestroyWorker(context_.worker);
+            }
+            context_.worker = null;
+            context_.server = null;
+        }
 
-
-        CancellationTokenSource tokenSource_=null;
+        CancellationTokenSource tokenSource_=new CancellationTokenSource();
         DiagnosticsTask diagnosticsTask_ = null;
         HoverTask hoverTask_ = null;
 
         #region Public methods
-        public bool InitializeBackEndService(string logFilename)
+        public Service()
         {
             UIThread.Initializer();
             Hidemaru.Initialize();
+        }
+        /// <summary>
+        /// BackEndを初期化する（非同期版）
+        /// </summary>
+        /// <param name="logFilename"></param>
+        public void InitializeBackEndServiceAsync(string logFilename)
+        {
+            var _ = Task.Run(() => {
+                lock (context_)
+                {
+                    InitializeBackEndService(logFilename);
+                }
+            }, tokenSource_.Token);
+        }
+        /// <summary>
+        /// back endの初期化が終了したか調べる
+        /// </summary>
+        /// <returns></returns>
+        public bool CheckBackEndService()
+        {
+            bool token = false;
+            try
+            {
+                Monitor.TryEnter(context_, ref token);
+                if (token)
+                {
+                    if (context_.server == null)
+                    {
+                        return false;
+                    }
+                    return true;
+                }
+            }finally{
+                if (token)
+                {
+                    Monitor.Exit(context_);
+                }
+            }
+            return false;
+        }
+        /// <summary>
+        /// BackEndを初期化する（同期版）
+        /// </summary>
+        /// <param name="logFilename"></param>
+        /// <returns></returns>
+        public bool InitializeBackEndService(string logFilename)
+        {
             if (!CreateComServer(logFilename))
             {
                 Finalizer();
@@ -324,23 +388,66 @@ namespace HidemaruLspClient_FrontEnd
             }
             return true;
         }
+        /// <summary>
+        /// front endを初期化する（非同期版）
+        /// </summary>
+        /// <param name="serverConfigFilename"></param>
+        /// <param name="currentSourceCodeDirectory"></param>
+        public void InitializeFrontEndServiceAsync(string serverConfigFilename, string currentSourceCodeDirectory)
+        {
+            var _ = Task.Run(() =>
+            {
+                lock (context_)
+                {
+                    InitializeFrontEndService(serverConfigFilename, currentSourceCodeDirectory);
+                }
+            }, tokenSource_.Token);
+        }
+        /// <summary>
+        /// front endの初期化が終了したか調べる
+        /// </summary>
+        /// <returns></returns>
+        public bool CheckFrontEndService()
+        {
+            bool token = false;
+            try
+            {
+                Monitor.TryEnter(context_, ref token);
+                if (token)
+                {
+                    if (context_.worker == null)
+                    {
+                        return false;
+                    }
+                    return true;
+                }
+            }
+            finally
+            {
+                Monitor.Exit(context_);
+            }
+
+            return false;
+        }
+        /// <summary>
+        /// front endを初期化する（同期版）
+        /// </summary>
+        /// <param name="serverConfigFilename"></param>
+        /// <param name="currentSourceCodeDirectory"></param>
+        /// <returns></returns>
         public bool InitializeFrontEndService(string serverConfigFilename, string currentSourceCodeDirectory) {
             if (!CreateWorkerMain(serverConfigFilename, currentSourceCodeDirectory))
             {
                 Finalizer();
                 return false;
             }
-            if(tokenSource_==null)
-            {
-                tokenSource_ = new CancellationTokenSource();
-            }
             if (diagnosticsTask_ == null)
             {
-                diagnosticsTask_ = new DiagnosticsTask(worker_, logger_, tokenSource_.Token);
+                diagnosticsTask_ = new DiagnosticsTask(context_.worker, logger_, tokenSource_.Token);
             }
             if (hoverTask_ == null)
             {
-                hoverTask_=new HoverTask(this, worker_, logger_, tokenSource_.Token);
+                hoverTask_=new HoverTask(this, context_.worker, logger_, tokenSource_.Token);
             }
             return true;
         }
@@ -355,7 +462,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
-                return server_.Add(x, y);
+                return context_.server.Add(x, y);
             }
             catch (System.Exception)
             {
@@ -371,13 +478,9 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     tokenSource_.Cancel();
                 }
-                if ((server_ != null) && (worker_ != null))
+                lock (context_)
                 {
-                    if (string.IsNullOrEmpty(openedFile_.Filename) == false)
-                    {
-                        DidClose();
-                    }
-                    server_.DestroyWorker(worker_);
+                    FinalizeContext();
                 }
                 UIThread.Finalizer();
             }
@@ -388,10 +491,9 @@ namespace HidemaruLspClient_FrontEnd
 
             tokenSource_ = null;
             diagnosticsTask_ = null;
-            worker_      = null;
-            server_      = null;
             dasmr_       = null;
             openedFile_  = null;
+            context_ = null;
 
             logger_?.Trace("Leave Finalizer");
             logger_ = null;
@@ -399,10 +501,13 @@ namespace HidemaruLspClient_FrontEnd
 #region ServerCapabilities
         public ServerCapabilitiesImpl ServerCapabilities()
         {
+            if (context_.worker == null)
+            {
+                return null;
+            }
             try
             {
-                Debug.Assert(worker_ != null);
-                return new ServerCapabilitiesImpl(worker_.ServerCapabilities);
+                return new ServerCapabilitiesImpl(context_.worker.ServerCapabilities);
             }
             catch (Exception e)
             {
@@ -479,7 +584,6 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
-                Debug.Assert(worker_ != null);
                 var _ = FileProc();
             }catch(Exception e)
             {
@@ -498,10 +602,12 @@ namespace HidemaruLspClient_FrontEnd
         /// <returns>一時的な辞書ファイル名（ファイルはCOM側で一定時間後に削除します）</returns>
         public string Completion(long hidemaruLine, long hidemaruColumn)
         {
+            if (context_.worker == null)
+            {
+                return "";
+            }
             try
             {
-                Debug.Assert(worker_ != null);
-
                 var absFileName=FileProc();
                 if (String.IsNullOrEmpty(absFileName))
                 {
@@ -509,7 +615,7 @@ namespace HidemaruLspClient_FrontEnd
                 }
                 long line, character;
                 Hidemaru.HidemaruToZeroBase(out line, out character, hidemaruLine, hidemaruColumn);
-                return worker_.Completion(absFileName, line, character);
+                return context_.worker.Completion(absFileName, line, character);
             }
             catch(Exception e)
             {
@@ -524,8 +630,6 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
-                Debug.Assert(worker_ != null);
-
                 var absFileName = FileProc();
                 if (String.IsNullOrEmpty(absFileName))
                 {
@@ -651,32 +755,54 @@ namespace HidemaruLspClient_FrontEnd
 
         public LocationContainerImpl Declaration(long hidemaruLine, long hidemaruColumn)
         {
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.Declaration);
+            if (context_.worker == null){
+                return null;
+            }
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Declaration);
         }
         public LocationContainerImpl Definition(long hidemaruLine, long hidemaruColumn)
         {
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.Definition);
+            if (context_.worker == null)
+            {
+                return null;
+            }
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Definition);
         }
         public LocationContainerImpl TypeDefinition(long hidemaruLine, long hidemaruColumn)
         {
-            return CommonImplementationsOfGoto(hidemaruLine,hidemaruColumn, worker_.TypeDefinition);
+            if (context_.worker == null)
+            {
+                return null;
+            }
+            return CommonImplementationsOfGoto(hidemaruLine,hidemaruColumn, context_.worker.TypeDefinition);
         }
         public LocationContainerImpl Implementation(long hidemaruLine, long hidemaruColumn)
         {
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.Implementation);
+            if (context_.worker == null)
+            {
+                return null;
+            }
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Implementation);
         }
         public LocationContainerImpl References(long hidemaruLine, long hidemaruColumn)
         {
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, worker_.References);
+            if (context_.worker == null)
+            {
+                return null;
+            }
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.References);
         }
 
 #region Hover
         public string Hover(long hidemaruLine, long hidemaruColumn)
         {
+            if (context_.worker == null)
+            {
+                return "";
+            }
+
             try
             {
-                Debug.Assert(worker_ != null);
-
                 var absFileName = FileProc();
                 if (String.IsNullOrEmpty(absFileName))
                 {
@@ -684,7 +810,7 @@ namespace HidemaruLspClient_FrontEnd
                 }
                 long line, character;
                 Hidemaru.HidemaruToZeroBase(out line, out character, hidemaruLine, hidemaruColumn);
-                var hover = worker_.Hover(absFileName, line, character);
+                var hover = context_.worker.Hover(absFileName, line, character);
                 if (hover == null)
                 {
                     return "";
