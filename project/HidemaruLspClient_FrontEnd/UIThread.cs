@@ -17,11 +17,15 @@ namespace HidemaruLspClient_FrontEnd
             }
             protected override bool ShowWithoutActivation => true;
         }
+
+        static int mainThreadId_;
         static HiddenForm form_;
+
         public static void Initializer()
         {
             if (form_ == null)
             {
+                mainThreadId_ = System.Threading.Thread.CurrentThread.ManagedThreadId;
                 form_ = new HiddenForm();
                 //Memo: Formを表示するとInvokeを呼べる
 #if false
@@ -40,6 +44,9 @@ namespace HidemaruLspClient_FrontEnd
                 form_ = null;
             }
         }
+
+        static bool IsMainThread => System.Threading.Thread.CurrentThread.ManagedThreadId == mainThreadId_;
+
         /// <summary>
         /// デリゲートをUIスレッドで実行する
         /// </summary>
@@ -48,7 +55,14 @@ namespace HidemaruLspClient_FrontEnd
         public static object Invoke(Delegate method)
         {
             Debug.Assert(form_!=null);
-            return form_.Invoke(method);
+            if (IsMainThread)
+            {
+                return method.DynamicInvoke();
+            }
+            else
+            {
+                return form_.Invoke(method);
+            }
         }
 
     }

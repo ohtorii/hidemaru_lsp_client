@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Configuration.cs" />
     <Compile Include="DiagnosticsTask.cs" />
+    <Compile Include="DidChangeTask.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="DllAssemblyResolver.cs" />
     <Compile Include="Hidemaru\Hidemaru.cs" />

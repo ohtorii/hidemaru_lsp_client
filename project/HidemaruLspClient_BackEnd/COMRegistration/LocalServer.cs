@@ -17,7 +17,7 @@ namespace COMRegistration
         {
             Register(clsid, progId, exePath, tlbPath, true);
         }
-        
+
         static void Register(Guid clsid, ProgIdAttribute progId, string exePath, string tlbPath, bool perUser)
         {
             // Register local server
@@ -132,9 +132,10 @@ namespace COMRegistration
             // This sample does not handle lifetime management of the server.
             // For details around ref counting and locking of out-of-proc COM servers, see
             // https://docs.microsoft.com/windows/win32/com/out-of-process-server-implementation-helpers
-            Trace.WriteLine($"[Create]Run");
+            Trace.WriteLine($"================================");
+            Trace.WriteLine($"Press ENTER to exit.");
+            Trace.WriteLine($"================================");
             Console.ReadLine();
-            Trace.WriteLine($"[Finish]Run");
         }
 
         public void Dispose()
@@ -150,6 +151,6 @@ namespace COMRegistration
 
             Trace.Unindent();
         }
-    }    
+    }
 }
 

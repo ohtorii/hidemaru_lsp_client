@@ -108,7 +108,7 @@ InitializeBackEndService:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
     if(#useAsync){
-        ##n=member(##obj,"InitializeBackEndServiceAsync",$logFileName);
+        ##_=member(##obj,"InitializeBackEndServiceAsync",$logFileName);
     }else{
         ##n=member(##obj,"InitializeBackEndService",$logFileName);
         if(##n==false){
@@ -129,7 +129,7 @@ InitializeFrontEndService:
     $$absConfigFileName=getstaticvariable($configName,#comShareMode);
 
     if(#useAsync){
-        ##n=member(##obj,"InitializeFrontEndServiceAsync",$$absConfigFileName,directory2);
+        ##_=member(##obj,"InitializeFrontEndServiceAsync",$$absConfigFileName,directory2);
     }else{
         ##n=member(##obj,"InitializeFrontEndService",$$absConfigFileName,directory2);
         if(##n==false){

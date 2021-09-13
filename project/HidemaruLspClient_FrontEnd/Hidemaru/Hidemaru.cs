@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using static HidemaruLspClient_FrontEnd.UnsafeNativeMethods;
 
 namespace HidemaruLspClient_FrontEnd
 {
+	/// <summary>
+	/// 秀丸エディタの機能を呼び出す
+	/// （重要）秀丸エディタはマルチスレッドに対応していないため、各機能はメインスレッドから呼びだすこと。
+	/// </summary>
     class Hidemaru
     {
 		static bool initialized_ = false;

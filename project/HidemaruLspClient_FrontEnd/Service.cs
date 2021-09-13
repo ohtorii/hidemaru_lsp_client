@@ -15,7 +15,7 @@ namespace HidemaruLspClient_FrontEnd
     /// </summary>
     [ComVisible(true)]
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
-    public partial class Service
+    public class Service
     {
         static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
 
@@ -309,6 +309,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 logger_.Error(e.ToString());
             }
+            context_.worker = null;
             return false;
         }
         void FinalizeContext()
@@ -328,6 +329,7 @@ namespace HidemaruLspClient_FrontEnd
         CancellationTokenSource tokenSource_=new CancellationTokenSource();
         DiagnosticsTask diagnosticsTask_ = null;
         HoverTask hoverTask_ = null;
+        DidChangeTask didChangeTask_ = null;
 
         #region Public methods
         public Service()
@@ -424,7 +426,10 @@ namespace HidemaruLspClient_FrontEnd
             }
             finally
             {
-                Monitor.Exit(context_);
+                if (token)
+                {
+                    Monitor.Exit(context_);
+                }
             }
 
             return false;
@@ -441,14 +446,21 @@ namespace HidemaruLspClient_FrontEnd
                 Finalizer();
                 return false;
             }
-            if (diagnosticsTask_ == null)
+            UIThread.Invoke((MethodInvoker)delegate
             {
-                diagnosticsTask_ = new DiagnosticsTask(context_.worker, logger_, tokenSource_.Token);
-            }
-            if (hoverTask_ == null)
-            {
-                hoverTask_=new HoverTask(this, context_.worker, logger_, tokenSource_.Token);
-            }
+                if (diagnosticsTask_ == null)
+                {
+                    diagnosticsTask_ = new DiagnosticsTask(context_.worker, logger_, tokenSource_.Token);
+                }
+                if (hoverTask_ == null)
+                {
+                    hoverTask_ = new HoverTask(this, context_.worker, logger_, tokenSource_.Token);
+                }
+                if (didChangeTask_ == null)
+                {
+                    didChangeTask_ = new DidChangeTask(this, logger_, tokenSource_.Token);
+                }
+            });
             return true;
         }
 
@@ -489,8 +501,11 @@ namespace HidemaruLspClient_FrontEnd
                 logger_?.Error(e.ToString());
             }
 
-            tokenSource_ = null;
             diagnosticsTask_ = null;
+            hoverTask_ = null;
+            didChangeTask_ = null;
+
+            tokenSource_ = null;
             dasmr_       = null;
             openedFile_  = null;
             context_ = null;
@@ -577,7 +592,7 @@ namespace HidemaruLspClient_FrontEnd
 #endregion
 
         /// <summary>
-        /// 秀丸エディタのテキストとサーバ側のテキストを同期する（デバッグ用途）
+        /// 秀丸エディタのテキストとサーバ側のテキストを明示的に同期する（デバッグ用途）
         /// </summary>
         /// <returns></returns>
         public bool SyncDocument()
