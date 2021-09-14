@@ -57,13 +57,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
-    <Compile Include="DiagnosticsTask.cs" />
-    <Compile Include="DidChangeTask.cs" />
+    <Compile Include="Task\DiagnosticsTask.cs" />
+    <Compile Include="Task\DidChangeTask.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="DllAssemblyResolver.cs" />
     <Compile Include="Hidemaru\Hidemaru.cs" />
     <Compile Include="Hidemaru\HmOutputPane.cs" />
-    <Compile Include="HoverTask.cs" />
+    <Compile Include="Task\HoverTask.cs" />
     <Compile Include="Ole32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service.cs" />
