@@ -59,16 +59,16 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="Task\DiagnosticsTask.cs" />
     <Compile Include="Task\DidChangeTask.cs" />
-    <Compile Include="NativeMethods.cs" />
+    <Compile Include="Native\NativeMethods.cs" />
     <Compile Include="DllAssemblyResolver.cs" />
     <Compile Include="Hidemaru\Hidemaru.cs" />
     <Compile Include="Hidemaru\HmOutputPane.cs" />
     <Compile Include="Task\HoverTask.cs" />
-    <Compile Include="Ole32.cs" />
+    <Compile Include="Native\Ole32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="UIThread.cs" />
-    <Compile Include="UnsafeNativeMethods.cs" />
+    <Compile Include="Native\UnsafeNativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LanguageServerProcess\LanguageServerProcess.csproj">
