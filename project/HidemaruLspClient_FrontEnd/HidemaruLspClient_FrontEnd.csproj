@@ -57,6 +57,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="IniFile.cs" />
+    <Compile Include="IService.cs" />
+    <Compile Include="LocationContainerImpl.cs" />
+    <Compile Include="ServiceAsync.cs" />
     <Compile Include="Task\DiagnosticsTask.cs" />
     <Compile Include="Task\DidChangeTask.cs" />
     <Compile Include="Native\NativeMethods.cs" />

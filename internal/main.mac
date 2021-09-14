@@ -48,7 +48,6 @@ CreateMenuArray:
         $$capabilitiePrvides[3]="TypeDefinitionProvider";
         $$capabilitiePrvides[4]="ImplementationProvider";
         $$capabilitiePrvides[5]="ReferencesProvider"    ;
-        $$capabilitiePrvides[6]="HoverProvider"         ;
         ##capabilitiesNum=7;
 
 
@@ -58,7 +57,6 @@ CreateMenuArray:
         $$labels[3]="TypeDefinition";
         $$labels[4]="Implementation";
         $$labels[5]="References"    ;
-        $$labels[6]="Hover"         ;
 
         ##i=0;
         while(##i<##capabilitiesNum){
@@ -115,12 +113,6 @@ MenuImplementation:
 MenuReferences:
     call LspGoto "References", ##1;
     return ##return;
-
-MenuHover:
-    ##comObject=##1;
-    $$content=member(##comObject,"Hover",lineno,column_wcs);
-    message $$content;
-    return ;
 
 MenuSyncDocument:
     ##comObject=##1;
