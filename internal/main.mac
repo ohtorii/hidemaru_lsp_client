@@ -20,7 +20,7 @@ main:
     }
     ##comObject=val($$obj);
 
-    call CreateMenuArray;
+    call CreateMenuArray ##comObject;
     menuarray $g_menuName,#g_menuNum;
     if(result==0){
         return false;
@@ -30,10 +30,12 @@ main:
 
 
 CreateMenuArray:
+    ##comObject=##1;
+    ##serverCapabilities=member(##comObject,"ServerCapabilities");
+
     $g_menuName[0]     ="";
     #g_menuNum         =0;
     $g_menuJumpLabel[0]="";
-
     {
         /*注意
 
@@ -42,14 +44,13 @@ CreateMenuArray:
             - $$capabilitiePrvides[]
             - $$labels
         */
-        $$capabilitiePrvides[0]="CompletionProvider"    ;
-        $$capabilitiePrvides[1]="DeclarationProvider"   ;
-        $$capabilitiePrvides[2]="DefinitionProvider"    ;
-        $$capabilitiePrvides[3]="TypeDefinitionProvider";
-        $$capabilitiePrvides[4]="ImplementationProvider";
-        $$capabilitiePrvides[5]="ReferencesProvider"    ;
-        ##capabilitiesNum=7;
-
+        ##capabilitiesNum=0;
+        $$capabilitiePrvides[0]="CompletionProvider"    ;   ##capabilitiesNum = ##capabilitiesNum + 1;
+        $$capabilitiePrvides[1]="DeclarationProvider"   ;   ##capabilitiesNum = ##capabilitiesNum + 1;
+        $$capabilitiePrvides[2]="DefinitionProvider"    ;   ##capabilitiesNum = ##capabilitiesNum + 1;
+        $$capabilitiePrvides[3]="TypeDefinitionProvider";   ##capabilitiesNum = ##capabilitiesNum + 1;
+        $$capabilitiePrvides[4]="ImplementationProvider";   ##capabilitiesNum = ##capabilitiesNum + 1;
+        $$capabilitiePrvides[5]="ReferencesProvider"    ;   ##capabilitiesNum = ##capabilitiesNum + 1;
 
         $$labels[0]="Completion"    ;
         $$labels[1]="Declaration"   ;
@@ -60,8 +61,7 @@ CreateMenuArray:
 
         ##i=0;
         while(##i<##capabilitiesNum){
-            execmacro currentmacrodirectory+@"\LspServerCapabilities.mac", "Load", $$capabilitiePrvides[##i];
-            ##enable = val(getresultex(-1));
+            ##enable=member(##serverCapabilities,$$capabilitiePrvides[##i]);
             if(##enable){
                 $g_menuName[#g_menuNum]     =$$labels[##i];
                 $g_menuJumpLabel[#g_menuNum]="Menu"+$$labels[##i];

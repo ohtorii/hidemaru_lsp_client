@@ -4,6 +4,7 @@
     {
         int Add(int x, int y);
         void Finalizer(int reason = 0);
+        ServerCapabilitiesImpl ServerCapabilities();
         bool SyncDocument();
         string Completion(long hidemaruLine, long hidemaruColumn);
         LocationContainerImpl Declaration(long hidemaruLine, long hidemaruColumn);

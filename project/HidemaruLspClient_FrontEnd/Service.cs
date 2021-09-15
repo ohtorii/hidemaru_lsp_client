@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -10,13 +11,13 @@ using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient_FrontEnd
 {
- 
+
     /// <summary>
     /// 秀丸エディタへ公開するクラス（同期版）
     /// </summary>
     [ComVisible(true)]
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
-    public class Service: IService
+    public partial class Service: IService
     {
         static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
 
@@ -327,16 +328,66 @@ namespace HidemaruLspClient_FrontEnd
             context_.server = null;
         }
 
+        /// <summary>
+        /// iniファイルからサーバ設定ファイルを見付ける
+        /// </summary>
+        /// <param name="fileExtension">ファイル拡張子(".c", ".cpp" ...)</param>
+        /// <returns>サーバ設定ファイル（絶対パス）、または空文字</returns>
+        string FindServerConfigFile(string fileExtension)
+        {
+            try
+            {
+                var path = iniReader_.Read(fileExtension, "ServerConfig");
+                if (path == "")
+                {
+                    return "";
+                }
+                if (Path.IsPathRooted(path))
+                {
+                    return path;
+                }
+                //iniFileからの相対パス→絶対パス
+                var absFileName = Path.Combine(iniFileDirectory_, path);
+                return absFileName;
+            }
+            catch (Exception e)
+            {
+                logger_?.Error(e.ToString());
+            }
+            return "";
+        }
+
         CancellationTokenSource tokenSource_=new CancellationTokenSource();
         DiagnosticsTask diagnosticsTask_ = null;
         HoverTask hoverTask_ = null;
         DidChangeTask didChangeTask_ = null;
+
+        IniFile iniReader_=null;
+        string iniFileDirectory_ = null;
 
         #region Public methods
         public Service()
         {
             UIThread.Initializer();
             Hidemaru.Initialize();
+        }
+
+        public bool Initialize(string iniFileName)
+        {
+            try
+            {
+                if (! File.Exists(iniFileName))
+                {
+                    return false;
+                }
+                iniReader_ = new IniFile(iniFileName);
+                iniFileDirectory_= Path.GetDirectoryName(iniReader_.Filename);
+                return true;
+            }catch(Exception e)
+            {
+                logger_?.Error(e.ToString());
+            }
+            return false;
         }
         /// <summary>
         /// BackEndを初期化する（非同期版）
@@ -396,13 +447,13 @@ namespace HidemaruLspClient_FrontEnd
         /// </summary>
         /// <param name="serverConfigFilename"></param>
         /// <param name="currentSourceCodeDirectory"></param>
-        public void InitializeFrontEndServiceAsync(string serverConfigFilename, string currentSourceCodeDirectory)
+        public void InitializeFrontEndServiceAsync(string fileExtension, string currentSourceCodeDirectory)
         {
             var _ = Task.Run(() =>
             {
                 lock (context_)
                 {
-                    InitializeFrontEndService(serverConfigFilename, currentSourceCodeDirectory);
+                    InitializeFrontEndService(fileExtension,currentSourceCodeDirectory);
                 }
             }, tokenSource_.Token);
         }
@@ -432,7 +483,6 @@ namespace HidemaruLspClient_FrontEnd
                     Monitor.Exit(context_);
                 }
             }
-
             return false;
         }
         /// <summary>
@@ -441,7 +491,13 @@ namespace HidemaruLspClient_FrontEnd
         /// <param name="serverConfigFilename"></param>
         /// <param name="currentSourceCodeDirectory"></param>
         /// <returns></returns>
-        public bool InitializeFrontEndService(string serverConfigFilename, string currentSourceCodeDirectory) {
+        public bool InitializeFrontEndService(string fileExtension, string currentSourceCodeDirectory) {
+            var serverConfigFilename=FindServerConfigFile(fileExtension);
+            if (serverConfigFilename == "")
+            {
+                Finalizer();
+                return false;
+            }
             if (!CreateWorkerMain(serverConfigFilename, currentSourceCodeDirectory))
             {
                 Finalizer();
@@ -464,7 +520,52 @@ namespace HidemaruLspClient_FrontEnd
             });
             return true;
         }
+#if false
+        bool StoreServerCapabilities()
+        {
+            if (context_.worker == null)
+            {
+                return false;
+            }
 
+            string[] providers={
+                "CompletionProvider"              ,
+                "HoverProvider"                   ,
+                "SignatureHelpProvider"           ,
+                "DeclarationProvider"             ,
+                "DefinitionProvider"              ,
+                "TypeDefinitionProvider"          ,
+                "ImplementationProvider"          ,
+                "ReferencesProvider"              ,
+                "DocumentHighlightProvider"       ,
+                "DocumentSymbolProvider"          ,
+                "CodeActionProvider"              ,
+                "CodeLensProvider"                ,
+                "DocumentLinkProvider"            ,
+                "ColorProvider"                   ,
+                "DocumentFormattingProvider"      ,
+                "DocumentRangeFormattingProvider" ,
+                "DocumentOnTypeFormattingProvider",
+                "RenameProvider"                  ,
+                "FoldingRangeProvider"            ,
+                "ExecuteCommandProvider"          ,
+                "SelectionRangeProvider"          ,
+                "LinkedEditingRangeProvider"      ,
+                "CallHierarchyProvider"           ,
+                "SemanticTokensProvider"          ,
+                "MonikerProvider"                 ,
+                "WorkspaceSymbolProvider"         ,
+            };
+
+            var instance = context_.worker.ServerCapabilities;
+            var instanceType= instance.GetType();
+            foreach(var name in providers){
+                var propertyObject = instanceType.GetProperty(name).GetValue(instance);
+                var xxx=(sbyte)propertyObject;
+            }
+            return true;
+        }
+#endif
         /// <summary>
         /// テスト用のメソッド
         /// </summary>
@@ -511,10 +612,13 @@ namespace HidemaruLspClient_FrontEnd
             openedFile_  = null;
             context_ = null;
 
+            iniReader_ = null;
+            iniFileDirectory_ = null;
+
             logger_?.Trace("Leave Finalizer");
             logger_ = null;
         }
-#region ServerCapabilities
+
         public ServerCapabilitiesImpl ServerCapabilities()
         {
             if (context_.worker == null)
@@ -531,66 +635,6 @@ namespace HidemaruLspClient_FrontEnd
             }
             return null;
         }
-        public sealed class ServerCapabilitiesImpl : HidemaruLspClient_BackEndContract.IServerCapabilities
-        {
-            HidemaruLspClient_BackEndContract.IServerCapabilities serverCapabilities_;
-            public ServerCapabilitiesImpl(HidemaruLspClient_BackEndContract.IServerCapabilities serverCapabilities)
-            {
-                serverCapabilities_ = serverCapabilities;
-            }
-            public sbyte CompletionProvider => serverCapabilities_.CompletionProvider;
-
-            public sbyte HoverProvider => serverCapabilities_.HoverProvider;
-
-            public sbyte SignatureHelpProvider => serverCapabilities_.SignatureHelpProvider;
-
-            public sbyte DeclarationProvider => serverCapabilities_.DeclarationProvider;
-
-            public sbyte DefinitionProvider => serverCapabilities_.DefinitionProvider;
-
-            public sbyte TypeDefinitionProvider => serverCapabilities_.TypeDefinitionProvider;
-
-            public sbyte ImplementationProvider => serverCapabilities_.ImplementationProvider;
-
-            public sbyte ReferencesProvider => serverCapabilities_.ReferencesProvider;
-
-            public sbyte DocumentHighlightProvider => serverCapabilities_.DocumentHighlightProvider;
-
-            public sbyte DocumentSymbolProvider => serverCapabilities_.DocumentSymbolProvider;
-
-            public sbyte CodeActionProvider => serverCapabilities_.CodeActionProvider;
-
-            public sbyte CodeLensProvider => serverCapabilities_.CodeLensProvider;
-
-            public sbyte DocumentLinkProvider => serverCapabilities_.DocumentLinkProvider;
-
-            public sbyte ColorProvider => serverCapabilities_.ColorProvider;
-
-            public sbyte DocumentFormattingProvider => serverCapabilities_.DocumentFormattingProvider;
-
-            public sbyte DocumentRangeFormattingProvider => serverCapabilities_.DocumentRangeFormattingProvider;
-
-            public sbyte DocumentOnTypeFormattingProvider => serverCapabilities_.DocumentOnTypeFormattingProvider;
-
-            public sbyte RenameProvider => serverCapabilities_.RenameProvider;
-
-            public sbyte FoldingRangeProvider => serverCapabilities_.FoldingRangeProvider;
-
-            public sbyte ExecuteCommandProvider => serverCapabilities_.ExecuteCommandProvider;
-
-            public sbyte SelectionRangeProvider => serverCapabilities_.SelectionRangeProvider;
-
-            public sbyte LinkedEditingRangeProvider => serverCapabilities_.LinkedEditingRangeProvider;
-
-            public sbyte CallHierarchyProvider => serverCapabilities_.CallHierarchyProvider;
-
-            public sbyte SemanticTokensProvider => serverCapabilities_.SemanticTokensProvider;
-
-            public sbyte MonikerProvider => serverCapabilities_.MonikerProvider;
-
-            public sbyte WorkspaceSymbolProvider => serverCapabilities_.WorkspaceSymbolProvider;
-        }
-#endregion
 
         /// <summary>
         /// 秀丸エディタのテキストとサーバ側のテキストを明示的に同期する（デバッグ用途）

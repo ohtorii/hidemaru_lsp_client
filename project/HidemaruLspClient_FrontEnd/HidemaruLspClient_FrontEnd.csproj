@@ -60,6 +60,7 @@
     <Compile Include="IniFile.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="LocationContainerImpl.cs" />
+    <Compile Include="ServerCapabilitiesImpl.cs" />
     <Compile Include="ServiceAsync.cs" />
     <Compile Include="Task\DiagnosticsTask.cs" />
     <Compile Include="Task\DidChangeTask.cs" />

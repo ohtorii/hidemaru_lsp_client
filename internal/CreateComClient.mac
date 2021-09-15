@@ -18,20 +18,18 @@ $logFileName        =@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_client.log";
 $privateComObjectName ="lsp.client.private.obj";
 $publicComObjectName  ="lsp.client.public.obj";
 
-$configName         ="lsp.client.configname";
 #comShareMode       =2;
 
 $labelIndexName="LabelIndex";
 $labelTable[0]="InitializeGlobalVariable";
 $labelTable[1]="CreateComObject";
-$labelTable[2]="InitializeBackEndService";
-$labelTable[3]="CheckBackEndService";
-$labelTable[4]="FindServerConfigFile";
+$labelTable[2]="Initialize";
+$labelTable[3]="InitializeBackEndService";
+$labelTable[4]="CheckBackEndService";
 $labelTable[5]="InitializeFrontEndService";
 $labelTable[6]="CheckFrontEndService";
-$labelTable[7]="StoreServerCapabilities";
-$labelTable[8]="Finish";
-$labelTable[9]="Nop";
+$labelTable[7]="Finish";
+$labelTable[8]="Nop";
 
 
 //
@@ -54,6 +52,8 @@ main:
     }else{
         ##index=val($$index);
     }
+    debuginfo 1;
+    debuginfo $labelTable[##index];
     call $labelTable[##index];
     if(! ##return){
         return ;
@@ -63,22 +63,6 @@ main:
     setstaticvariable $labelIndexName,str(##index),#comShareMode;
     call main;
     return ;
-
-
-FindServerConfigFile:
-    $$extension = filetype;
-    $$configFilename=getinistrw($iniServerConfig, "ServerConfig", $$extension);
-    if($$configFilename==""){
-        //message "言語サーバの設定がIniファイル中で見つかりません";
-        return false;
-    }
-    $$absConfigFileName=$rootFolder+"\\"+$$configFilename;
-    if(! existfile($$absConfigFileName)){
-        message "ファイルが見つからない。"+$$absConfigFileName;
-        return false;
-    }
-    setstaticvariable $configName,$$absConfigFileName,#comShareMode;
-    return true;
 
 
 InitializeGlobalVariable:
@@ -104,6 +88,12 @@ CreateComObject:
     keepobject ##obj, 2;
     return true;
 
+Initialize:
+    $$obj=getstaticvariable($privateComObjectName,#comShareMode);
+    ##obj=val($$obj);
+    ##success=member(##obj,"Initialize",$iniServerConfig);
+    return ##success;
+
 InitializeBackEndService:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
@@ -123,15 +113,14 @@ CheckBackEndService:
     ##obj=val($$obj);
     return member(##obj,"CheckBackEndService");
 
+
 InitializeFrontEndService:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
-    $$absConfigFileName=getstaticvariable($configName,#comShareMode);
-
     if(#useAsync){
-        ##_=member(##obj,"InitializeFrontEndServiceAsync",$$absConfigFileName,directory2);
+        ##_=member(##obj,"InitializeFrontEndServiceAsync",filetype,directory2);
     }else{
-        ##n=member(##obj,"InitializeFrontEndService",$$absConfigFileName,directory2);
+        ##n=member(##obj,"InitializeFrontEndService",filetype,directory2);
         if(##n==false){
             message "[Failed] InitializeFrontEndService";
             return false;
@@ -143,13 +132,6 @@ CheckFrontEndService:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
     return member(##obj,"CheckFrontEndService");
-
-StoreServerCapabilities:
-    $$obj=getstaticvariable($privateComObjectName,#comShareMode);
-    ##obj=val($$obj);
-    ##serverCapabilities=member(##obj,"ServerCapabilities");
-    execmacro currentmacrodirectory+@"/LspServerCapabilities.mac", "Store", str(##serverCapabilities);
-    return true;
 
 Finish:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
