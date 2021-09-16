@@ -13,7 +13,10 @@
 //LSP
 //
 $comClientFileName  =@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_FrontEnd\bin\Debug\HidemaruLspClient_FrontEnd.dll";
-$comServiceName     ="HidemaruLspClient_FrontEnd.Service";
+$comService         =/*"{0B0A4550-A71F-4142-A4EC-BC6DF50B9590}";*/ "HidemaruLspClient_FrontEnd.Service";
+$comServiceAsync    ="HidemaruLspClient_FrontEnd.ServiceAsync";
+$comServiceName     ="";
+
 $logFileName        =@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_client.log";
 $privateComObjectName ="lsp.client.private.obj";
 $publicComObjectName  ="lsp.client.public.obj";
@@ -21,15 +24,41 @@ $publicComObjectName  ="lsp.client.public.obj";
 #comShareMode       =2;
 
 $labelIndexName="LabelIndex";
-$labelTable[0]="InitializeGlobalVariable";
-$labelTable[1]="CreateComObject";
-$labelTable[2]="Initialize";
-$labelTable[3]="InitializeBackEndService";
-$labelTable[4]="CheckBackEndService";
-$labelTable[5]="InitializeFrontEndService";
-$labelTable[6]="CheckFrontEndService";
-$labelTable[7]="Finish";
-$labelTable[8]="Nop";
+if(#useAsync){
+    if(false){
+        //非同期版
+        $comServiceName=$comServiceAsync;
+        $labelTable[0]="InitializeGlobalVariable";
+        $labelTable[1]="CreateComObject";
+        $labelTable[2]="Initialize";
+        $labelTable[3]="InitializeServiceAsync";
+        $labelTable[4]="CheckService";
+        $labelTable[5]="Finish";
+        $labelTable[6]="Nop";
+    }else{
+        //疑似非同期版
+        $comServiceName=$comService;
+        $labelTable[0]="InitializeGlobalVariable";
+        $labelTable[1]="CreateComObject";
+        $labelTable[2]="Initialize";
+        $labelTable[3]="InitializeBackEndServiceAsync";
+        $labelTable[4]="CheckBackEndService";
+        $labelTable[5]="InitializeFrontEndServiceAsync";
+        $labelTable[6]="CheckFrontEndService";
+        $labelTable[7]="Finish";
+        $labelTable[8]="Nop";
+    }
+}else{
+    //同期版
+    $comServiceName=$comService;
+    $labelTable[0]="InitializeGlobalVariable";
+    $labelTable[1]="CreateComObject";
+    $labelTable[2]="Initialize";
+    $labelTable[3]="InitializeBackEndService";
+    $labelTable[4]="InitializeFrontEndService";
+    $labelTable[5]="Finish";
+    $labelTable[6]="Nop";
+}
 
 
 //
@@ -66,19 +95,21 @@ main:
 
 
 InitializeGlobalVariable:
-    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $comClientFileName;
-    $comClientFileName=getresultex(-1);
-
-    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;
-    $logFileName=getresultex(-1);
-
-    call GetAbsolutePathName $iniServerConfig;
-    $iniServerConfig=$$return;
     return true;
 
+ShowComError:
+    ##success=##1;
+    ##hresult=##2;
+    message sprintf("##success=%d / ##hresult=0x%x",##success, ##hresult);
+    return ;
 
 CreateComObject:
-    ##obj = createobject($comClientFileName,$comServiceName);
+    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $comClientFileName;
+    $$filename=getresultex(-1);
+
+    message $$filename + "\n" + $comServiceName;
+    ##obj = createobject($$filename,$comServiceName);
+    call ShowComError getresultex(10),getresultex(11);
     if(##obj==0){
         message "COMのロードに失敗しました";
         return false;
@@ -89,43 +120,71 @@ CreateComObject:
     return true;
 
 Initialize:
+    call GetAbsolutePathName $iniServerConfig;
+    $$ini=$$return;
+
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
-    ##success=member(##obj,"Initialize",$iniServerConfig);
+    ##success=member(##obj,"Initialize",$$ini);
     return ##success;
 
 InitializeBackEndService:
+    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;
+    $$log=getresultex(-1);
+
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
-    if(#useAsync){
-        ##_=member(##obj,"InitializeBackEndServiceAsync",$logFileName);
-    }else{
-        ##n=member(##obj,"InitializeBackEndService",$logFileName);
-        if(##n==false){
-            message "[Failed] InitializeBackEndService";
-            return false;
-        }
+    ##n=member(##obj,"InitializeBackEndService",$$log);
+    if(##n==false){
+        message "[Failed] InitializeBackEndService";
+        return false;
     }
     return true;
+
+InitializeBackEndServiceAsync:
+    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;
+    $$log=getresultex(-1);
+
+    $$obj=getstaticvariable($privateComObjectName,#comShareMode);
+    ##obj=val($$obj);
+    ##_=member(##obj,"InitializeBackEndServiceAsync",$$log);
+    return true;
+
+InitializeServiceAsync:
+    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;
+    $$log=getresultex(-1);
+
+    $$obj=getstaticvariable($privateComObjectName,#comShareMode);
+    ##obj=val($$obj);
+    /*##_=member(##obj,"SetFileType",filetype);
+    ##_=member(##obj,"SetSourceCodeDirectory",directory2);*/
+    ##_=member(##obj,"InitializeServiceAsync",$$log,filetype,directory2);
+    return true;
+
+CheckService:
+    $$obj=getstaticvariable($privateComObjectName,#comShareMode);
+    ##obj=val($$obj);
+    return member(##obj,"CheckService");
 
 CheckBackEndService:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
     return member(##obj,"CheckBackEndService");
 
-
 InitializeFrontEndService:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
-    if(#useAsync){
-        ##_=member(##obj,"InitializeFrontEndServiceAsync",filetype,directory2);
-    }else{
-        ##n=member(##obj,"InitializeFrontEndService",filetype,directory2);
-        if(##n==false){
-            message "[Failed] InitializeFrontEndService";
-            return false;
-        }
+    ##n=member(##obj,"InitializeFrontEndService",filetype,directory2);
+    if(##n==false){
+        message "[Failed] InitializeFrontEndService";
+        return false;
     }
+    return true;
+
+InitializeFrontEndServiceAsync:
+    $$obj=getstaticvariable($privateComObjectName,#comShareMode);
+    ##obj=val($$obj);
+    ##_=member(##obj,"InitializeFrontEndServiceAsync",filetype,directory2);
     return true;
 
 CheckFrontEndService:

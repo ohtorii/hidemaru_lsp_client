@@ -18,7 +18,7 @@ namespace HidemaruLspClient_FrontEnd
             cancellationToken_ = cancellationToken;
 
             timer_ = new System.Windows.Forms.Timer();
-            timer_.Interval = 500;
+            timer_.Interval = 1000;
             timer_.Tick += MainLoop;
             timer_.Start();
         }
@@ -29,6 +29,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 if (cancellationToken_.IsCancellationRequested)
                 {
+                    timer_.Stop();
                     return;
                 }
                 service_.SyncDocument();
@@ -36,6 +37,7 @@ namespace HidemaruLspClient_FrontEnd
             catch (Exception exce)
             {
                 logger_.Error(exce.ToString());
+                timer_.Stop();
                 throw;
             }
         }

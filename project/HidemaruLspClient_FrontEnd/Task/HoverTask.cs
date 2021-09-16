@@ -138,6 +138,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 if (cancellationToken_.IsCancellationRequested)
                 {
+                    timer_.Stop();
                     this.Close();
                     return;
                 }

@@ -48,6 +48,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 if (cancellationToken_.IsCancellationRequested)
                 {
+                    timer_.Stop();
                     return;
                 }
                 var result = await Task.Run(() => PullDiagnosticsText(), cancellationToken_);
@@ -73,6 +74,7 @@ namespace HidemaruLspClient_FrontEnd
             catch (Exception exce)
             {
                 logger_.Error(exce.ToString());
+                timer_.Stop();
                 throw;
             }
         }

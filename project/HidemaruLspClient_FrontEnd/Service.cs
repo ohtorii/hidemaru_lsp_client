@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,7 +15,7 @@ namespace HidemaruLspClient_FrontEnd
     /// </summary>
     [ComVisible(true)]
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
-    public partial class Service: IService
+    public sealed class Service /*: IService*/
     {
         static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
 
@@ -26,7 +24,7 @@ namespace HidemaruLspClient_FrontEnd
             public IHidemaruLspBackEndServer server { get; set; }
             public IWorker worker { get; set; }
         }
-        Context context_ =new Context();
+        Context context_ =null;
         ILspClientLogger logger_=null;
 
 
@@ -77,7 +75,7 @@ namespace HidemaruLspClient_FrontEnd
                 ContentsHash_ = 0;
             }
         }
-        Document openedFile_ = new Document();
+        Document openedFile_ = null;
 
         enum DigOpenStatus
         {
@@ -357,7 +355,7 @@ namespace HidemaruLspClient_FrontEnd
             return "";
         }
 
-        CancellationTokenSource tokenSource_=new CancellationTokenSource();
+        CancellationTokenSource tokenSource_=null;
         DiagnosticsTask diagnosticsTask_ = null;
         HoverTask hoverTask_ = null;
         DidChangeTask didChangeTask_ = null;
@@ -368,6 +366,9 @@ namespace HidemaruLspClient_FrontEnd
         #region Public methods
         public Service()
         {
+            tokenSource_ = new CancellationTokenSource();
+            context_ = new Context();
+            openedFile_ = new Document();
             UIThread.Initializer();
             Hidemaru.Initialize();
         }
@@ -520,52 +521,6 @@ namespace HidemaruLspClient_FrontEnd
             });
             return true;
         }
-#if false
-        bool StoreServerCapabilities()
-        {
-            if (context_.worker == null)
-            {
-                return false;
-            }
-
-            string[] providers={
-                "CompletionProvider"              ,
-                "HoverProvider"                   ,
-                "SignatureHelpProvider"           ,
-                "DeclarationProvider"             ,
-                "DefinitionProvider"              ,
-                "TypeDefinitionProvider"          ,
-                "ImplementationProvider"          ,
-                "ReferencesProvider"              ,
-                "DocumentHighlightProvider"       ,
-                "DocumentSymbolProvider"          ,
-                "CodeActionProvider"              ,
-                "CodeLensProvider"                ,
-                "DocumentLinkProvider"            ,
-                "ColorProvider"                   ,
-                "DocumentFormattingProvider"      ,
-                "DocumentRangeFormattingProvider" ,
-                "DocumentOnTypeFormattingProvider",
-                "RenameProvider"                  ,
-                "FoldingRangeProvider"            ,
-                "ExecuteCommandProvider"          ,
-                "SelectionRangeProvider"          ,
-                "LinkedEditingRangeProvider"      ,
-                "CallHierarchyProvider"           ,
-                "SemanticTokensProvider"          ,
-                "MonikerProvider"                 ,
-                "WorkspaceSymbolProvider"         ,
-            };
-
-            var instance = context_.worker.ServerCapabilities;
-            var instanceType= instance.GetType();
-            foreach(var name in providers){
-                var propertyObject = instanceType.GetProperty(name).GetValue(instance);
-                var xxx=(sbyte)propertyObject;
-            }
-            return true;
-        }
-#endif
         /// <summary>
         /// テスト用のメソッド
         /// </summary>

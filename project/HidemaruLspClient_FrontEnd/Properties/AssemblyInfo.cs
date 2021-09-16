@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("HidemaruLspClient_dotNetFramework")]
-[assembly: AssemblyCopyright("Copyright ©  2021")]
+[assembly: AssemblyCopyright("Copyright ©  2021 ohtorii")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
