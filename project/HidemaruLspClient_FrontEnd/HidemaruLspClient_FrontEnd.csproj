@@ -34,7 +34,7 @@
   <ItemGroup>
     <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'AnyCPU'">
       <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'x64'">
       <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
@@ -56,30 +56,35 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\HidemaruLspClient_Contract\Contract.cs">
+      <Link>Contract.cs</Link>
+    </Compile>
     <Compile Include="Configuration.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="LocationContainerImpl.cs" />
-    <Compile Include="ServerCapabilitiesImpl.cs" />
-    <Compile Include="ServiceAsync.cs" />
-    <Compile Include="Task\DiagnosticsTask.cs" />
-    <Compile Include="Task\DidChangeTask.cs" />
     <Compile Include="Native\NativeMethods.cs" />
     <Compile Include="DllAssemblyResolver.cs" />
     <Compile Include="Hidemaru\Hidemaru.cs" />
     <Compile Include="Hidemaru\HmOutputPane.cs" />
-    <Compile Include="Task\HoverTask.cs" />
     <Compile Include="Native\Ole32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerCapabilitiesImpl.cs" />
     <Compile Include="Service.cs" />
-    <Compile Include="UIThread.cs" />
     <Compile Include="Native\UnsafeNativeMethods.cs" />
+    <Compile Include="ServiceAsync.cs" />
+    <Compile Include="Task\DiagnosticsTask.cs" />
+    <Compile Include="Task\DidChangeTask.cs" />
+    <Compile Include="Task\HoverTask.cs" />
+    <Compile Include="UIThread.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LanguageServerProcess\LanguageServerProcess.csproj">
       <Project>{65c8b342-bec1-4be8-a1a6-5e63122f5d92}</Project>
       <Name>LanguageServerProcess</Name>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

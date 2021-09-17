@@ -15,7 +15,7 @@ namespace HidemaruLspClient_FrontEnd
     /// </summary>
     [ComVisible(true)]
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
-    public sealed class Service /*: IService*/
+    public sealed class Service : IService
     {
         static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
 
@@ -247,7 +247,8 @@ namespace HidemaruLspClient_FrontEnd
 
             try
             {
-                var ServerClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
+                Debug.Assert(true);
+                var ServerClassGuid = LspContract.Constants.ServerClassGuid;    //new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
                 object obj;
                 int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
                 if (hr < 0)
@@ -363,7 +364,7 @@ namespace HidemaruLspClient_FrontEnd
         IniFile iniReader_=null;
         string iniFileDirectory_ = null;
 
-        #region Public methods
+#region Public methods
         public Service()
         {
             tokenSource_ = new CancellationTokenSource();
@@ -735,13 +736,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
-
-
-
 #endregion
-
-
 #endregion
-
     }
 }

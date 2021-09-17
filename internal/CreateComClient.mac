@@ -106,12 +106,11 @@ ShowComError:
 CreateComObject:
     execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $comClientFileName;
     $$filename=getresultex(-1);
-
-    message $$filename + "\n" + $comServiceName;
     ##obj = createobject($$filename,$comServiceName);
-    call ShowComError getresultex(10),getresultex(11);
+    ##success=getresultex(10);
+    ##hresult=getresultex(11);
     if(##obj==0){
-        message "COMのロードに失敗しました";
+        message sprintf("COMのロードに失敗しました\n##obj=%d / ##success=%d / ##hresult=0x%x",##obj, ##success, ##hresult);
         return false;
     }
     setstaticvariable $privateComObjectName,str(##obj),#comShareMode;

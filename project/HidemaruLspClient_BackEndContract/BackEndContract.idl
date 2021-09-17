@@ -15,7 +15,7 @@ typedef enum
 */
 [
     object,
-    oleautomation, 
+    oleautomation,
     uuid(318C52CD-4A12-4C98-892B-1830B026768D)
 ]
 interface ILspClientLogger :IDispatch {
@@ -88,9 +88,9 @@ interface IDiagnostic :IDispatch
 interface IPublishDiagnosticsParams :IDispatch
 {
     [propget] HRESULT uri([out, retval]BSTR* ret);
-    [propget] HRESULT version([out, retval]hyper* ret);    
+    [propget] HRESULT version([out, retval]hyper* ret);
     [propget] HRESULT Length([out,retval]hyper*length);
-    HRESULT Item([in]hyper index, [out,retval]IDiagnostic**ret);    
+    HRESULT Item([in]hyper index, [out,retval]IDiagnostic**ret);
 };
 
 [
@@ -202,10 +202,10 @@ interface IHover : IDispatch {
     oleautomation,
     uuid(E8153825-63C2-4C50-9889-0DEB4CFB4033)
 ]
-interface IWorker :IDispatch 
+interface IWorker :IDispatch
 {
     [propget] HRESULT ServerCapabilities([out, retval]IServerCapabilities** ret);
-    
+
     HRESULT DidOpen([in]BSTR absFilename, [in]BSTR text, [in]int contentsVersion);
     HRESULT DidChange([in]BSTR absFilename, [in]BSTR text, [in]int contentsVersion);
     HRESULT DidClose([in]BSTR absFilename);
@@ -225,7 +225,7 @@ interface IWorker :IDispatch
     uuid(9159F305-06A3-4231-B023-BFF30CE0D9E8)
 ]
 interface IHidemaruLspBackEndServer : IDispatch
-{    
+{
     HRESULT Initialize([in]BSTR logFileName, [out, retval] boolean* ret);
     HRESULT GetLogger([out,retval]ILspClientLogger** logger);
     HRESULT Add([in]int x, [in] int y, [out, retval] int* ret);
