@@ -25,39 +25,36 @@ $publicComObjectName  ="lsp.client.public.obj";
 
 $labelIndexName="LabelIndex";
 if(#useAsync){
-    if(false){
+    if(true){
         //非同期版
         $comServiceName=$comServiceAsync;
-        $labelTable[0]="InitializeGlobalVariable";
-        $labelTable[1]="CreateComObject";
-        $labelTable[2]="Initialize";
-        $labelTable[3]="InitializeServiceAsync";
-        $labelTable[4]="CheckService";
-        $labelTable[5]="Finish";
-        $labelTable[6]="Nop";
+        $labelTable[0]="CreateComObject";
+        $labelTable[1]="Initialize";
+        $labelTable[2]="InitializeServiceAsync";
+        $labelTable[3]="CheckService";
+        $labelTable[4]="Finish";
+        $labelTable[5]="Nop";
     }else{
         //疑似非同期版
         $comServiceName=$comService;
-        $labelTable[0]="InitializeGlobalVariable";
-        $labelTable[1]="CreateComObject";
-        $labelTable[2]="Initialize";
-        $labelTable[3]="InitializeBackEndServiceAsync";
-        $labelTable[4]="CheckBackEndService";
-        $labelTable[5]="InitializeFrontEndServiceAsync";
-        $labelTable[6]="CheckFrontEndService";
-        $labelTable[7]="Finish";
-        $labelTable[8]="Nop";
+        $labelTable[0]="CreateComObject";
+        $labelTable[1]="Initialize";
+        $labelTable[2]="InitializeBackEndServiceAsync";
+        $labelTable[3]="CheckBackEndService";
+        $labelTable[4]="InitializeFrontEndServiceAsync";
+        $labelTable[5]="CheckFrontEndService";
+        $labelTable[6]="Finish";
+        $labelTable[7]="Nop";
     }
 }else{
     //同期版
     $comServiceName=$comService;
-    $labelTable[0]="InitializeGlobalVariable";
-    $labelTable[1]="CreateComObject";
-    $labelTable[2]="Initialize";
-    $labelTable[3]="InitializeBackEndService";
-    $labelTable[4]="InitializeFrontEndService";
-    $labelTable[5]="Finish";
-    $labelTable[6]="Nop";
+    $labelTable[0]="CreateComObject";
+    $labelTable[1]="Initialize";
+    $labelTable[2]="InitializeBackEndService";
+    $labelTable[3]="InitializeFrontEndService";
+    $labelTable[4]="Finish";
+    $labelTable[5]="Nop";
 }
 
 
@@ -93,10 +90,6 @@ main:
     call main;
     return ;
 
-
-InitializeGlobalVariable:
-    return true;
-
 ShowComError:
     ##success=##1;
     ##hresult=##2;
@@ -125,7 +118,11 @@ Initialize:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
     ##success=member(##obj,"Initialize",$$ini);
-    return ##success;
+    if(! ##success){
+        message "[Failed] Initialize"
+        return false;
+    }
+    return true;
 
 InitializeBackEndService:
     execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;

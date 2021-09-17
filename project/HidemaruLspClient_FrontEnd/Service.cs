@@ -238,46 +238,6 @@ namespace HidemaruLspClient_FrontEnd
             return fncDidOpen(currentHidemaruFilePath);
         }
 
-        bool CreateComServer(string logFilename)
-        {
-            if (context_.server != null)
-            {
-                return true;
-            }
-
-            try
-            {
-                Debug.Assert(true);
-                var ServerClassGuid = LspContract.Constants.ServerClassGuid;    //new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
-                object obj;
-                int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
-                if (hr < 0)
-                {
-                    Marshal.ThrowExceptionForHR(hr);
-                }
-                context_.server = (IHidemaruLspBackEndServer)obj;
-                var ret = Convert.ToBoolean(context_.server.Initialize(logFilename));
-                if (ret)
-                {
-                    logger_ = context_.server.GetLogger();
-                    Configuration.Initialize(logger_);
-                }
-                else
-                {
-                    context_.server = null;
-                }
-                return ret;
-            }
-            catch (Exception e)
-            {
-                context_.server = null;
-                if (logger_ != null)
-                {
-                    logger_.Error(e.ToString());
-                }
-            }
-            return false;
-        }
         bool CreateWorkerMain(string serverConfigFilename, string currentSourceCodeDirectory)
         {
             if(context_.worker != null)
@@ -355,7 +315,84 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
+        bool InitializeBackEndServiceMain(string logFilename)
+        {
+            lock (context_)
+            {
+                if (context_.server != null)
+                {
+                    return true;
+                }
 
+                try
+                {
+                    Debug.Assert(true);
+                    var ServerClassGuid = LspContract.Constants.ServerClassGuid;    //new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
+                    object obj;
+                    int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
+                    if (hr < 0)
+                    {
+                        Marshal.ThrowExceptionForHR(hr);
+                    }
+                    context_.server = (IHidemaruLspBackEndServer)obj;
+                    var ret = Convert.ToBoolean(context_.server.Initialize(logFilename));
+                    if (ret)
+                    {
+                        logger_ = context_.server.GetLogger();
+                        Configuration.Initialize(logger_);
+                    }
+                    else
+                    {
+                        context_.server = null;
+                    }
+                    return ret;
+                }
+                catch (Exception e)
+                {
+                    context_.server = null;
+                    if (logger_ != null)
+                    {
+                        logger_.Error(e.ToString());
+                    }
+                }
+            }
+            return false;
+        }
+        bool InitializeFrontEndServiceMain(string fileExtension, string currentSourceCodeDirectory)
+        {
+            var serverConfigFilename = FindServerConfigFile(fileExtension);
+            if (serverConfigFilename == "")
+            {
+                return false;
+            }
+            lock (context_)
+            {
+                if (!CreateWorkerMain(serverConfigFilename, currentSourceCodeDirectory))
+                {
+                    return false;
+                }
+                UIThread.Invoke((MethodInvoker)delegate
+                {
+                    if (diagnosticsTask_ == null)
+                    {
+                        diagnosticsTask_ = new DiagnosticsTask(context_.worker, logger_, tokenSource_.Token);
+                    }
+                    if (hoverTask_ == null)
+                    {
+                        hoverTask_ = new HoverTask(this, context_.worker, logger_, tokenSource_.Token);
+                    }
+                    if (didChangeTask_ == null)
+                    {
+                        didChangeTask_ = new DidChangeTask(this, logger_, tokenSource_.Token);
+                    }
+                });
+            }
+            return true;
+        }
+        internal CancellationToken GetCancellationToken()
+        {
+            return tokenSource_.Token;
+        }
         CancellationTokenSource tokenSource_=null;
         DiagnosticsTask diagnosticsTask_ = null;
         HoverTask hoverTask_ = null;
@@ -398,10 +435,14 @@ namespace HidemaruLspClient_FrontEnd
         public void InitializeBackEndServiceAsync(string logFilename)
         {
             var _ = Task.Run(() => {
-                lock (context_)
+                if (InitializeBackEndServiceMain(logFilename))
                 {
-                    InitializeBackEndService(logFilename);
+                    return;
                 }
+                UIThread.Invoke((MethodInvoker)delegate
+                {
+                    Finalizer();
+                });
             }, tokenSource_.Token);
         }
         /// <summary>
@@ -410,6 +451,11 @@ namespace HidemaruLspClient_FrontEnd
         /// <returns></returns>
         public bool CheckBackEndService()
         {
+            if (tokenSource_.IsCancellationRequested)
+            {
+                return false;
+            }
+
             bool token = false;
             try
             {
@@ -437,7 +483,7 @@ namespace HidemaruLspClient_FrontEnd
         /// <returns></returns>
         public bool InitializeBackEndService(string logFilename)
         {
-            if (!CreateComServer(logFilename))
+            if (!InitializeBackEndServiceMain(logFilename))
             {
                 Finalizer();
                 return false;
@@ -453,10 +499,14 @@ namespace HidemaruLspClient_FrontEnd
         {
             var _ = Task.Run(() =>
             {
-                lock (context_)
+                if (InitializeFrontEndServiceMain(fileExtension, currentSourceCodeDirectory))
                 {
-                    InitializeFrontEndService(fileExtension,currentSourceCodeDirectory);
+                    return;
                 }
+                UIThread.Invoke((MethodInvoker)delegate
+                {
+                    Finalizer();
+                });
             }, tokenSource_.Token);
         }
         /// <summary>
@@ -465,6 +515,10 @@ namespace HidemaruLspClient_FrontEnd
         /// <returns></returns>
         public bool CheckFrontEndService()
         {
+            if (tokenSource_.IsCancellationRequested)
+            {
+                return false;
+            }
             bool token = false;
             try
             {
@@ -494,32 +548,13 @@ namespace HidemaruLspClient_FrontEnd
         /// <param name="currentSourceCodeDirectory"></param>
         /// <returns></returns>
         public bool InitializeFrontEndService(string fileExtension, string currentSourceCodeDirectory) {
-            var serverConfigFilename=FindServerConfigFile(fileExtension);
-            if (serverConfigFilename == "")
+
+            var success = InitializeFrontEndServiceMain(fileExtension, currentSourceCodeDirectory);
+            if (!success)
             {
                 Finalizer();
                 return false;
             }
-            if (!CreateWorkerMain(serverConfigFilename, currentSourceCodeDirectory))
-            {
-                Finalizer();
-                return false;
-            }
-            UIThread.Invoke((MethodInvoker)delegate
-            {
-                if (diagnosticsTask_ == null)
-                {
-                    diagnosticsTask_ = new DiagnosticsTask(context_.worker, logger_, tokenSource_.Token);
-                }
-                if (hoverTask_ == null)
-                {
-                    hoverTask_ = new HoverTask(this, context_.worker, logger_, tokenSource_.Token);
-                }
-                if (didChangeTask_ == null)
-                {
-                    didChangeTask_ = new DidChangeTask(this, logger_, tokenSource_.Token);
-                }
-            });
             return true;
         }
         /// <summary>
@@ -539,7 +574,7 @@ namespace HidemaruLspClient_FrontEnd
                 return -1;
             }
         }
-        public void Finalizer(int reason=0)
+        public void Finalizer(int reason = 0)
         {
             logger_?.Trace("Enter Finalizer");
             try
@@ -563,16 +598,20 @@ namespace HidemaruLspClient_FrontEnd
             hoverTask_ = null;
             didChangeTask_ = null;
 
-            tokenSource_ = null;
-            dasmr_       = null;
-            openedFile_  = null;
-            context_ = null;
+            dasmr_ = null;
+            openedFile_ = null;
 
+            if (false) {
+                tokenSource_ = null;
+                context_ = null;
+            }
             iniReader_ = null;
             iniFileDirectory_ = null;
 
             logger_?.Trace("Leave Finalizer");
             logger_ = null;
+
+            GC.Collect();
         }
 
         public ServerCapabilitiesImpl ServerCapabilities()

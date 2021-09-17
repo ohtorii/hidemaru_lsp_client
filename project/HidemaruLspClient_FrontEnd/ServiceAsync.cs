@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace HidemaruLspClient_FrontEnd
@@ -12,15 +8,16 @@ namespace HidemaruLspClient_FrontEnd
     /// 秀丸エディタへ公開するクラス（非同期版）
     /// </summary>
     [ComVisible(true)]
-    [Guid("d46f5c09-4b16-456c-b7c7-9ee172234251")]
-    sealed class ServiceAsync /*:IService*/
+    [Guid("0B0A4550-4B16-456C-B7C7-9EE172234251")]
+    public sealed class ServiceAsync :IService
     {
-#if false
+
         Service service_=null;
         Timer timer_ = null;
         string fileType_ = "";
         string logFilename_="";
         string sourceCodeDirectory_ = "";
+        System.Threading.CancellationToken cancellationToken_;
 
         enum InitializeStatus
         {
@@ -32,13 +29,13 @@ namespace HidemaruLspClient_FrontEnd
         };
         InitializeStatus initializeStatus_=InitializeStatus.InitializeBackend;
 
-
-        public ServiceAsync()
-        {
-            service_ = new Service();
-        }
         private void MainLoop(object sender, EventArgs e)
         {
+            if (cancellationToken_.IsCancellationRequested)
+            {
+                timer_.Stop();
+                return;
+            }
             switch (initializeStatus_)
             {
                 case InitializeStatus.InitializeBackend:
@@ -72,7 +69,12 @@ namespace HidemaruLspClient_FrontEnd
             }
         }
 
-#region Public Interface
+        #region Public Interface
+        public ServiceAsync()
+        {
+            service_ = new Service();
+            cancellationToken_ = service_.GetCancellationToken();
+        }
         public bool Initialize(string iniFileName)
         {
             return service_.Initialize(iniFileName);
@@ -87,6 +89,10 @@ namespace HidemaruLspClient_FrontEnd
         }
         public void InitializeServiceAsync(string logFilename, string fileExtension, string currentSourceCodeDirectory)
         {
+            logFilename_ = logFilename;
+            fileType_ = fileExtension;
+            sourceCodeDirectory_ = currentSourceCodeDirectory;
+
             if (timer_ == null)
             {
                 timer_ = new Timer();
@@ -94,9 +100,6 @@ namespace HidemaruLspClient_FrontEnd
                 timer_.Tick += MainLoop;
                 timer_.Start();
             }
-            logFilename_ = logFilename;
-            fileType_ = fileExtension;
-            sourceCodeDirectory_ = currentSourceCodeDirectory;
         }
         public bool CheckService()
         {
@@ -108,11 +111,16 @@ namespace HidemaruLspClient_FrontEnd
         }
         public void Finalizer(int reason = 0)
         {
-            timer_.Stop();
-            service_.Finalizer(reason);
-
-            timer_ = null;
-            service_ = null;
+            if (timer_ != null)
+            {
+                timer_.Stop();
+                timer_ = null;
+            }
+            if (service_ != null)
+            {
+                service_.Finalizer(reason);
+                service_ = null;
+            }
         }
 
         public int Add(int x, int y)
@@ -160,6 +168,5 @@ namespace HidemaruLspClient_FrontEnd
         }
 
 #endregion
-#endif
     }
 }
