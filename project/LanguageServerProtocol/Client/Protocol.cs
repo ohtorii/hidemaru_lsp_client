@@ -104,7 +104,7 @@ namespace LSP.Implementation
             //Todo: EventWaitHandle or Task で書き直す
             try
             {
-                int sleepTime = 10;
+                const int sleepTime = 10;
                 while (cancelToken_.IsCancellationRequested == false)
                 {
                     switch (mode_)

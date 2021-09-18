@@ -30,7 +30,7 @@ namespace HidemaruLspClient
             {
                 worker_ = w;
                 Used();
-            }            
+            }
             public Worker GetWorker()
             {
                 return worker_;
@@ -47,7 +47,7 @@ namespace HidemaruLspClient
                     return true;
                 }
                 return false;
-            }                        
+            }
             /// <summary>
             /// デバッグ用途
             /// </summary>
@@ -81,7 +81,7 @@ namespace HidemaruLspClient
         /// <summary>
         /// コンストラクタ
         /// (Memo)アウトプロセスサーバなので createobject するたびに呼ばれる
-        /// </summary>        
+        /// </summary>
         sbyte IHidemaruLspBackEndServer.Initialize(string logFileName)
         {
             if (lspClientLogger_ == null)
@@ -129,7 +129,7 @@ namespace HidemaruLspClient
             var logger = LogManager.GetCurrentClassLogger();
             try
             {
-                var holderKey = new LspKey(ServerName, RootUri);                
+                var holderKey = new LspKey(ServerName, RootUri);
                 if (workerHolder_.ContainsKey(holderKey))
                 {
                     var w = workerHolder_[holderKey];

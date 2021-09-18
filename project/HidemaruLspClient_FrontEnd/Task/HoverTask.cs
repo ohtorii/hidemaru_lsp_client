@@ -186,7 +186,15 @@ namespace HidemaruLspClient_FrontEnd
                                 HideToolTips();
                                 return;
                             }
-                            tooltipText = await Task.Run(() => service_.Hover(line, column), cancellationToken_);
+                            try
+                            {
+                                timer_.Stop();
+                                tooltipText = await Task.Run(() => service_.Hover(line, column), cancellationToken_);
+                            }
+                            finally
+                            {
+                                timer_.Start();
+                            }
                         }
                     }
                     else

@@ -16,6 +16,7 @@ namespace HidemaruLspClient_FrontEnd
         ILspClientLogger logger_;
         CancellationToken cancellationToken_;
         System.Windows.Forms.Timer timer_;
+
         /// <summary>
         /// 秀丸エディタのウインドウハンドル
         /// </summary>
@@ -51,7 +52,21 @@ namespace HidemaruLspClient_FrontEnd
                     timer_.Stop();
                     return;
                 }
-                var result = await Task.Run(() => PullDiagnosticsText(), cancellationToken_);
+
+                (bool pullEventOccurred, string text) result;
+                try
+                {
+                    /*
+                         * awaitでタスクの終了を待っている間に、タイマーイベントで繰り返し呼ばれタスクを生成し続けるため、タスクが終了するまでタイマーを止めている。
+                         */
+                    timer_.Stop();
+                    result = await Task.Run(() => PullDiagnosticsText(), cancellationToken_);
+                }
+                finally
+                {
+                    timer_.Start();
+                }
+
                 if (result.pullEventOccurred == false)
                 {
                     return;
