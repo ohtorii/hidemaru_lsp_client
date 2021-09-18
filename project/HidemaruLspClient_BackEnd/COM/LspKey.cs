@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 
 namespace HidemaruLspClient
-{    
+{
     class LspKey : IEquatable<LspKey>
     {
         public LspKey(string serverName, string rootUri)
         {
             ServerName = serverName;
-            RootUri = rootUri;
-            Hash = HashCode.Combine(ServerName, RootUri);
+            RootUri    = rootUri.ToLower();
+            Hash       = HashCode.Combine(ServerName, RootUri);
         }
 
         readonly string ServerName;
