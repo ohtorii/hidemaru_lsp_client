@@ -77,6 +77,14 @@ namespace HidemaruLspClient_FrontEnd
         }
         Document openedFile_ = null;
 
+        CancellationTokenSource tokenSource_ = null;
+        DiagnosticsTask diagnosticsTask_ = null;
+        HoverTask hoverTask_ = null;
+        DidChangeTask didChangeTask_ = null;
+
+        IniFile iniReader_ = null;
+        string iniFileDirectory_ = null;
+
         enum DigOpenStatus
         {
             /// <summary>
@@ -377,7 +385,8 @@ namespace HidemaruLspClient_FrontEnd
                     {
                         diagnosticsTask_ = new DiagnosticsTask(context_.worker, logger_, tokenSource_.Token);
                     }
-                    if (hoverTask_ == null)
+                    const sbyte False = 0;
+                    if ((hoverTask_ == null) && (context_.worker.ServerCapabilities.HoverProvider != False))
                     {
                         hoverTask_ = new HoverTask(this, context_.worker, logger_, tokenSource_.Token);
                     }
@@ -393,13 +402,6 @@ namespace HidemaruLspClient_FrontEnd
         {
             return tokenSource_.Token;
         }
-        CancellationTokenSource tokenSource_=null;
-        DiagnosticsTask diagnosticsTask_ = null;
-        HoverTask hoverTask_ = null;
-        DidChangeTask didChangeTask_ = null;
-
-        IniFile iniReader_=null;
-        string iniFileDirectory_ = null;
 
 #region Public methods
         public Service()
