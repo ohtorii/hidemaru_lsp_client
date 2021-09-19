@@ -6,6 +6,8 @@ using System.Drawing;
 using HidemaruLspClient_BackEndContract;
 using static HidemaruLspClient_FrontEnd.UnsafeNativeMethods;
 using static HidemaruLspClient_FrontEnd.NativeMethods;
+using System.Collections.Generic;
+using System.Text;
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -134,6 +136,112 @@ namespace HidemaruLspClient_FrontEnd
                 timer_.Start();
             }
 
+            #region WindowOrder
+            // Zオーダー順に収められた秀丸ハンドルのリスト
+            List<IntPtr> GetWindowHidemaruHandleList()
+            {
+                const uint GW_HWNDPREV = 3;
+                List<IntPtr> list = new List<IntPtr>();
+                IntPtr hCurWnd = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+                list.Add(hCurWnd);
+
+                // 自分より前方を走査
+                IntPtr hTmpWnd = hCurWnd;
+                while (true)
+                {
+                    // 次のウィンドウ
+                    hTmpWnd = GetWindow(hTmpWnd, GW_HWNDPREV);
+                    if (hTmpWnd == IntPtr.Zero)
+                    {
+                        break;
+                    }
+
+                    // タブモードななので親があるハズ。(非タブモードだとそもそも１つしかない)
+                    IntPtr hParent = GetParent(hTmpWnd);
+                    if (hParent == IntPtr.Zero)
+                    {
+                        break;
+                    }
+
+                    // クラス名で判断
+                    StringBuilder ClassName = new StringBuilder(256);
+                    int nRet = GetClassName(hTmpWnd, ClassName, ClassName.Capacity);
+
+                    // クラス名にHidemaru32Classが含まれる
+                    if (ClassName.ToString().Contains("Hidemaru32Class"))
+                    {
+
+                        list.Insert(0, hTmpWnd);
+                    }
+                }
+
+                // 一旦また自身のウィンドウハンドルにリセットして…
+                hTmpWnd = hCurWnd;
+
+                // 自分より後方を走査
+                const uint GW_HWNDNEXT = 2;
+                while (true)
+                {
+                    // 次のウィンドウ
+                    hTmpWnd = GetWindow(hTmpWnd, GW_HWNDNEXT);
+                    if (hTmpWnd == IntPtr.Zero)
+                    {
+                        break;
+                    }
+
+                    // タブモードななので親があるハズ。(非タブモードだとそもそも１つしかない)
+                    IntPtr hParent = GetParent(hTmpWnd);
+                    if (hParent == IntPtr.Zero)
+                    {
+                        break;
+                    }
+
+                    // クラス名で判断
+                    StringBuilder ClassName = new StringBuilder(256);
+                    int nRet = GetClassName(hTmpWnd, ClassName, ClassName.Capacity);
+
+                    // クラス名にHidemaru32Classが含まれる
+                    if (ClassName.ToString().Contains("Hidemaru32Class"))
+                    {
+
+                        list.Add(hTmpWnd);
+                    }
+                }
+
+                return list;
+            }
+            bool IsActiveWindowIsHidemaruMainWindow()
+            {
+                IntPtr hWnd = GetActiveWindow();
+                StringBuilder ClassName = new StringBuilder(256);
+                int nRet = GetClassName(hWnd, ClassName, ClassName.Capacity);
+                if (ClassName.ToString().Contains("Hidemaru32Class"))
+                {
+                    return true;
+                }
+                return false;
+            }
+            bool IsUnderWindowIsCurrentProcessWindow()
+            {
+
+                Point po;
+                if (GetCursorPos(out po))
+                {
+                    IntPtr hWnd = WindowFromPoint(po);
+
+                    int processID1 = 0;
+                    int threadID = GetWindowThreadProcessId(hWnd, out processID1);
+
+                    uint processID2 = GetCurrentProcessId();
+
+                    if (processID1 == processID2)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            #endregion
             async void MainLoop(object sender, EventArgs e)
             {
                 if (cancellationToken_.IsCancellationRequested)
