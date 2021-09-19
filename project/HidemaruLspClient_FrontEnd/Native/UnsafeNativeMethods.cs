@@ -26,8 +26,7 @@ namespace HidemaruLspClient_FrontEnd
 		[DllImport("kernel32.dll")]
 		public static extern IntPtr GlobalLock(IntPtr hMem);
 
-		[DllImport("kernel32.dll")]
-		[return: MarshalAs(UnmanagedType.Bool)]
+		[DllImport("kernel32.dll")] [return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool GlobalUnlock(IntPtr hMem);
 
 		[DllImport("kernel32.dll")]
@@ -38,6 +37,9 @@ namespace HidemaruLspClient_FrontEnd
 
 		[DllImport("kernel32.dll")]
 		public static extern bool CloseHandle(IntPtr handle);
+
+		[DllImport("kernel32.dll")]
+		public static extern uint GetCurrentProcessId();
 		#endregion
 
 
@@ -84,6 +86,40 @@ namespace HidemaruLspClient_FrontEnd
 
 		[DllImport("user32.dll")]
 		public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+		[DllImport("user32.dll")]
+		public static extern IntPtr GetWindow(IntPtr hWnd, uint wCmd);
+
+		[DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
+		public static extern IntPtr GetParent(IntPtr hWnd);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, IntPtr szTitle);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+		[DllImport("user32.dll")]
+		public static extern IntPtr WindowFromPoint(System.Drawing.Point p);
+
+		[DllImport("user32.dll")]
+		public static extern bool GetCursorPos(out System.Drawing.Point lpPoint);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+		[DllImport("user32.dll")]
+		public static extern IntPtr GetActiveWindow();
+
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+		[DllImport("user32.dll")]
+		public static extern IntPtr GetForegroundWindow();
+
+		[DllImport("user32.dll")]
+		public static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+
 		#endregion
 	}
 }
