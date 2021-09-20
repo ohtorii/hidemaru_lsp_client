@@ -223,7 +223,6 @@ namespace HidemaruLspClient_FrontEnd
             }
             bool IsUnderWindowIsCurrentProcessWindow()
             {
-
                 Point po;
                 if (GetCursorPos(out po))
                 {
@@ -231,15 +230,37 @@ namespace HidemaruLspClient_FrontEnd
 
                     int processID1 = 0;
                     int threadID = GetWindowThreadProcessId(hWnd, out processID1);
-
                     uint processID2 = GetCurrentProcessId();
-
                     if (processID1 == processID2)
                     {
                         return true;
                     }
                 }
                 return false;
+            }
+            /// <summary>
+            /// Tooltipを表示すべきかどうか調べる
+            /// </summary>
+            /// <returns></returns>
+            bool ShouldTooltipBeDisplayed()
+            {
+                if (!IsActiveWindowIsHidemaruMainWindow())
+                {
+                    return false;
+                }
+                if (!IsUnderWindowIsCurrentProcessWindow())
+                {
+                    return false;
+                }
+
+                // 自分が先頭ではない
+                IntPtr hWnd = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+                var list = GetWindowHidemaruHandleList();
+                if (list.Count > 0 && list[0] != hWnd)
+                {
+                    return false;
+                }
+                return true;
             }
             #endregion
             async void MainLoop(object sender, EventArgs e)
@@ -250,6 +271,12 @@ namespace HidemaruLspClient_FrontEnd
                     this.Close();
                     return;
                 }
+                if(ShouldTooltipBeDisplayed()==false)
+                {
+                    HideToolTips();
+                    return;
+                }
+
                 string tooltipText = null;
                 {
                     bool mouseMoved;
