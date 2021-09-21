@@ -63,6 +63,11 @@ namespace HidemaruLspClient_FrontEnd
                 SetFormAttr();
                 SetLabelAttr();
                 SetTimerAttr();
+                //Memo:
+                //Manual指定あり：formは意図した座標に表示される。
+                //Manual指定なし：formをShow()したときにformが一瞬左上に表示される。
+                this.StartPosition = FormStartPosition.Manual;
+
             }
 
             #region Attr
@@ -103,9 +108,11 @@ namespace HidemaruLspClient_FrontEnd
                     // 常に最前面に表示させる(topMostプロパティを使うと
                     // ShowWithoutActivationが効かないため
                     const int WS_EX_TOPMOST = 0x00000008;
+                    //拡張ウィンドウスタイルにWS_EX_COMPOSITEDを追加する
+                    const int WS_EX_COMPOSITED = 0x02000000;
 
                     CreateParams p = base.CreateParams;
-                    p.ExStyle |= WS_EX_TOPMOST;
+                    p.ExStyle |= WS_EX_TOPMOST| WS_EX_COMPOSITED;
                     return p;
                 }
             }
@@ -137,6 +144,7 @@ namespace HidemaruLspClient_FrontEnd
             }
 
             #region WindowOrder
+            const string Hidemaru32Class_ = "Hidemaru32Class";
             // Zオーダー順に収められた秀丸ハンドルのリスト
             List<IntPtr> GetWindowHidemaruHandleList()
             {
@@ -167,8 +175,7 @@ namespace HidemaruLspClient_FrontEnd
                     StringBuilder ClassName = new StringBuilder(256);
                     int nRet = GetClassName(hTmpWnd, ClassName, ClassName.Capacity);
 
-                    // クラス名にHidemaru32Classが含まれる
-                    if (ClassName.ToString().Contains("Hidemaru32Class"))
+                    if (ClassName.ToString().Contains(Hidemaru32Class_))
                     {
 
                         list.Insert(0, hTmpWnd);
@@ -200,8 +207,7 @@ namespace HidemaruLspClient_FrontEnd
                     StringBuilder ClassName = new StringBuilder(256);
                     int nRet = GetClassName(hTmpWnd, ClassName, ClassName.Capacity);
 
-                    // クラス名にHidemaru32Classが含まれる
-                    if (ClassName.ToString().Contains("Hidemaru32Class"))
+                    if (ClassName.ToString().Contains(Hidemaru32Class_))
                     {
 
                         list.Add(hTmpWnd);
@@ -215,7 +221,7 @@ namespace HidemaruLspClient_FrontEnd
                 IntPtr hWnd = GetActiveWindow();
                 StringBuilder ClassName = new StringBuilder(256);
                 int nRet = GetClassName(hWnd, ClassName, ClassName.Capacity);
-                if (ClassName.ToString().Contains("Hidemaru32Class"))
+                if (ClassName.ToString().Contains(Hidemaru32Class_))
                 {
                     return true;
                 }
@@ -363,10 +369,24 @@ namespace HidemaruLspClient_FrontEnd
             }
             void ShowToolTips(int screenX, int screenY, string text)
             {
+                //var l = this.Location;
+                //l.X = screenX;
+                //l.Y = screenY;
+                //this.Location = l;
+
                 this.Left = screenX;
                 this.Top = screenY;
                 this.label_.Text = text;
                 this.Show();
+                //Task.Run(()=> {
+                //    Task.Delay(100);
+                //    UIThread.Invoke((MethodInvoker)delegate
+                //    {
+                //        this.Show();
+                //    });
+                //});
+
+                //this.WindowState = FormWindowState.Normal;
             }
         }
         #endregion /*Tooltipform*/
