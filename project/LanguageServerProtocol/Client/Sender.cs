@@ -306,7 +306,7 @@ namespace LSP.Implementation
 		{
 			return TextDocumentGoto(param, "textDocument/implementation");
 		}
-		public RequestId TextDocumentReferences(IReferencesParams param)
+		public RequestId TextDocumentReferences(IReferenceParams param)
 		{
 			return TextDocumentGoto(param, "textDocument/references");
 		}

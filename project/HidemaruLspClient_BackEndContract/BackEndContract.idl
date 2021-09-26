@@ -115,6 +115,8 @@ interface IPublishDiagnosticsParamsContainer :IDispatch {
 interface ILocation : IDispatch {
     [propget] HRESULT uri([out, retval]BSTR* ret);
     [propget] HRESULT range([out,retval]IRange**ret);
+    //The content of the referenced line
+  //  [propget] HRESULT text([out, retval]BSTR* ret);
 };
 
 [

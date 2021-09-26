@@ -603,11 +603,12 @@ namespace HidemaruLspClient
 		ILocationContainer IWorker.Definition(string absFilename, long line, long column)
         {
 			var param = new DefinitionParams();
-            return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentDefinition((DefinitionParams)arg));
+			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentDefinition((DefinitionParams)arg));
 		}
         ILocationContainer IWorker.TypeDefinition(string absFilename, long line, long column)
         {
 			var param = new TypeDefinitionParams();
+
 			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentTypeDefinition((TypeDefinitionParams)arg));
 		}
         ILocationContainer IWorker.Implementation(string absFilename, long line, long column)
@@ -618,8 +619,9 @@ namespace HidemaruLspClient
 
         ILocationContainer IWorker.References(string absFilename, long line, long column)
         {
-			var param = new ReferencesParams();
-			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentReferences((ReferencesParams)arg));
+			var param = new ReferenceParams();
+			param.context.includeDeclaration = true;
+			return CommonProcessingOfGoto(absFilename, line, column, param, (ITextDocumentPositionParams arg) => client_.Send.TextDocumentReferences((ReferenceParams)arg));
 		}
 
         IServerCapabilities IWorker.ServerCapabilities

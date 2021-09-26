@@ -27,10 +27,10 @@ namespace LSP.Model
 		public DocumentFilter[] documentSelector { get; set; }
 		public bool workDoneProgress { get; set; }
 	}
-	interface IReferencesParams : ITextDocumentPositionParams,IWorkDoneProgressParams, IPartialResultParams {
+	interface IReferenceParams : ITextDocumentPositionParams,IWorkDoneProgressParams, IPartialResultParams {
 		IReferenceContext context { get;  }
 	}
-    class ReferencesParams : IReferencesParams
+    class ReferenceParams : IReferenceParams
     {
         public IReferenceContext context
         {
@@ -41,7 +41,7 @@ namespace LSP.Model
 					m_ReferenceContext = new ReferenceContext();
                 }
 				return m_ReferenceContext;
-			} 
+			}
 		}
 
 		public ITextDocumentIdentifier textDocument
@@ -85,6 +85,6 @@ namespace LSP.Model
 	}
     class ReferenceContext : IReferenceContext
     {
-        bool IReferenceContext.includeDeclaration { get; set; }
+        public bool includeDeclaration { get; set; }
     }
 }
