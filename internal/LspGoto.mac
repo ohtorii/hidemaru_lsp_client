@@ -2,7 +2,7 @@
 $g_locationAbsFilename[0] ="";
 #g_locationLine[0]        =0;
 #g_locationCharacter[0]   =0;
-
+$g_locationText[0]        ="";
 
 call main getarg(0),val(getarg(1));
 endmacro str(##return);
@@ -24,7 +24,7 @@ main:
     }else{
         ##i=0;
         while(##i < #g_locationNum){
-        	$$menu[##i]=sprintf(R"(%s(%d,%d))",$g_locationAbsFilename[##i],#g_locationLine[##i],#g_locationCharacter[##i]);
+        	$$menu[##i]=sprintf("%s(%d,%d)  %s",$g_locationAbsFilename[##i],#g_locationLine[##i],#g_locationCharacter[##i], $g_locationText[##i]);
         	##i = ##i + 1;
         }
         menuarray $$menu, #g_locationNum;
@@ -51,10 +51,10 @@ GotoLocation:
 LocationCallback:
     ##i=#g_locationNum;
 
-    $g_locationAbsFilename[##i]  =$$1;
-    #g_locationLine[##i]         =##2;
-    #g_locationCharacter[##i]    =##3 + 1;
-
+    $g_locationAbsFilename[##i] =$$1;
+    #g_locationLine[##i]        =##2;
+    #g_locationCharacter[##i]   =##3 + 1; //0 Base -> 1 Base.
+    $g_locationText[##i]        =$$4;
     #g_locationNum = #g_locationNum + 1;
     return ;
 
@@ -66,17 +66,20 @@ ForeachLocationContainer:
     ##i=0;
     while(##i < ##Length){
         ##Location      =member(##LocationContainer,"Item", ##i);
+
         $$absFilename   =member(##Location         ,"AbsFilename");
+        $$Text          =member(##Location         ,"Text");
+
         ##Range         =member(##Location         ,"range");
         ##PositionStart =member(##Range            ,"start");
         ##PositionEnd   =member(##Range            ,"end");
 
-        ##startLine     =member(##PositionStart    ,"line");
-        ##startCharacter=member(##PositionStart    ,"character");
-        ##endLine       =member(##PositionEnd      ,"line");
-        ##endCharacter  =member(##PositionEnd      ,"character");
+        ##StartLine     =member(##PositionStart    ,"line");
+        ##StartCharacter=member(##PositionStart    ,"character");
+        ##EndLine       =member(##PositionEnd      ,"line");
+        ##EndCharacter  =member(##PositionEnd      ,"character");
 
-        call $$callback, $$absFilename, ##startLine, ##startCharacter;
+        call $$callback, $$absFilename, ##StartLine, ##StartCharacter, $$Text;
 
         ##i = ##i + 1;
     }

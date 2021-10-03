@@ -1,10 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace HidemaruLspClient_FrontEnd
 {
     public sealed class LocationContainerImpl
     {
-        public LocationContainerImpl(HidemaruLspClient_BackEndContract.ILocationContainer locations)
+        public class WithContent
+        {
+            public WithContent(HidemaruLspClient_BackEndContract.ILocation location, string contentText="")
+            {
+                this.location = location;
+                this.text = contentText;
+            }
+            HidemaruLspClient_BackEndContract.ILocation location;
+
+            public string uri => location.uri;
+            public HidemaruLspClient_BackEndContract.IRange range => location.range;
+            public string text { get; set; }
+        }
+
+        public LocationContainerImpl(List<LocationContainerImpl.WithContent> locations)
         {
             locations_ = locations;
         }
@@ -14,7 +29,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 return null;
             }
-            return new LocationImpl(locations_.Item(index));
+            return new LocationImpl(locations_[(int)index]);
         }
 
         public long Length
@@ -25,11 +40,11 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     return 0;
                 }
-                return locations_.Length;
+                return locations_.Count;
             }
         }
 
-        readonly HidemaruLspClient_BackEndContract.ILocationContainer locations_;
+        readonly List<LocationContainerImpl.WithContent> locations_;
     }
 
     public sealed class PositionImpl
@@ -85,7 +100,7 @@ namespace HidemaruLspClient_FrontEnd
     }
     public sealed class LocationImpl
     {
-        public LocationImpl(HidemaruLspClient_BackEndContract.ILocation location)
+        public LocationImpl(LocationContainerImpl.WithContent location)
         {
             location_ = location;
         }
@@ -112,6 +127,22 @@ namespace HidemaruLspClient_FrontEnd
                 return new RangeImpl(location_.range);
             }
         }
-        readonly HidemaruLspClient_BackEndContract.ILocation location_;
+        /// <summary>
+        /// The content of the referenced line
+        ///(Memo)LSPには存在しない、秀丸エディタ独自の追加メソッド
+        /// </summary>
+        public string Text
+        {
+            get
+            {
+                if (location_ == null)
+                {
+                    return "";
+                }
+                return location_.text;
+            }
+        }
+
+        readonly LocationContainerImpl.WithContent location_;
     }
 }

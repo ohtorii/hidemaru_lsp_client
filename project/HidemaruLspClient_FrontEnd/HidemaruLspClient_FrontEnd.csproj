@@ -60,6 +60,7 @@
       <Link>Contract.cs</Link>
     </Compile>
     <Compile Include="Configuration.cs" />
+    <Compile Include="TextLines.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="LocationContainerImpl.cs" />

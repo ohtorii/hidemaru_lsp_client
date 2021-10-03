@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -683,7 +684,7 @@ namespace HidemaruLspClient_FrontEnd
 
 #region Impl
         delegate ILocationContainer InvokeWorker(string absFilename, long line, long character);
-        LocationContainerImpl CommonImplementationsOfGoto(long hidemaruLine, long hidemaruColumn, InvokeWorker invoke)
+        LocationContainerImpl CommonImplementationsOfGoto(long hidemaruLine, long hidemaruColumn, InvokeWorker invoke, bool useContentsOfLine)
         {
             try
             {
@@ -695,7 +696,16 @@ namespace HidemaruLspClient_FrontEnd
                 long line, character;
                 Hidemaru.HidemaruToZeroBase(out line, out character, hidemaruLine, hidemaruColumn);
                 var locations = invoke(absFileName, line, character);
-                return new LocationContainerImpl(locations);
+                List<LocationContainerImpl.WithContent> contents;
+                if (useContentsOfLine)
+                {
+                    contents = ConvertLocationsWidthContent(locations);
+                }
+                else
+                {
+                    contents = ConvertLocations(locations) ;
+                }
+                return new LocationContainerImpl(contents);
             }
             catch (Exception e)
             {
@@ -704,7 +714,41 @@ namespace HidemaruLspClient_FrontEnd
             return null;
         }
 
-#endregion
+        static List<LocationContainerImpl.WithContent> ConvertLocationsWidthContent(HidemaruLspClient_BackEndContract.ILocationContainer locations)
+        {
+            var result = new List<LocationContainerImpl.WithContent>();
+            {
+                var option = new TextLines.Option();
+                for (long i = 0; i < locations.Length; ++i)
+                {
+                    var UserData = new LocationContainerImpl.WithContent(locations.Item(i));
+                    result.Add(UserData);
+
+                    var location = locations.Item(i);
+                    option.Add(
+                        new Uri(location.uri).AbsolutePath,
+                        location.range.start.line,
+                        UserData);
+                }
+                foreach(var fileContent in TextLines.Gather(option).Values)
+                {
+                    foreach (var lineContent in fileContent)
+                    {
+                        ((LocationContainerImpl.WithContent)lineContent.UserData).text= lineContent.Text;
+                    }
+                }
+            }
+            return result;
+        }
+        static List<LocationContainerImpl.WithContent> ConvertLocations(HidemaruLspClient_BackEndContract.ILocationContainer locations) {
+            var result = new List<LocationContainerImpl.WithContent>();
+            for(long i=0;i< locations.Length; ++i)
+            {
+                result.Add(new LocationContainerImpl.WithContent(locations.Item(i)));
+            }
+            return result;
+        }
+        #endregion
 
 
         public LocationContainerImpl Declaration(long hidemaruLine, long hidemaruColumn)
@@ -712,7 +756,7 @@ namespace HidemaruLspClient_FrontEnd
             if (context_.worker == null){
                 return null;
             }
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Declaration);
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Declaration,false);
         }
         public LocationContainerImpl Definition(long hidemaruLine, long hidemaruColumn)
         {
@@ -720,7 +764,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 return null;
             }
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Definition);
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Definition, false);
         }
         public LocationContainerImpl TypeDefinition(long hidemaruLine, long hidemaruColumn)
         {
@@ -728,7 +772,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 return null;
             }
-            return CommonImplementationsOfGoto(hidemaruLine,hidemaruColumn, context_.worker.TypeDefinition);
+            return CommonImplementationsOfGoto(hidemaruLine,hidemaruColumn, context_.worker.TypeDefinition, false);
         }
         public LocationContainerImpl Implementation(long hidemaruLine, long hidemaruColumn)
         {
@@ -736,7 +780,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 return null;
             }
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Implementation);
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Implementation, false);
         }
         public LocationContainerImpl References(long hidemaruLine, long hidemaruColumn)
         {
@@ -744,7 +788,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 return null;
             }
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.References);
+            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.References,true);
         }
 
 #region Hover
