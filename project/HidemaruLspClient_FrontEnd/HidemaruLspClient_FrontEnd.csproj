@@ -88,4 +88,7 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>"%25ComSpec%25" /c $(SolutionDir)\Tools\CreateReleasePackage.bat "$(SolutionDir)\..\internal\bin\$(TargetName)\" "$(TargetDir)"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

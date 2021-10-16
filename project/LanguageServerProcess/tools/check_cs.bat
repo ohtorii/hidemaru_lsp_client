@@ -9,7 +9,7 @@ set INFILE=%1
 set CSC=C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe 
 set OUT=%TEMP%\hidemaru_lsp_check_cs_TEMP.dll
 
-"%CSC%" /out:%OUT% /target:library /reference:%~dp0/../bin/Debug/LanguageServerProcess.dll "%INFILE%"
+"%CSC%" /out:%OUT% /target:library /reference:%~dp0/../../../internal/bin/HidemaruLspClient_FrontEnd/LanguageServerProcess.dll "%INFILE%"
 if "%ERRORLEVEL%"=="0" (
     echo =====================================
 	echo ï∂ñ@ÉGÉâÅ[ÇÕå©Ç¬Ç©ÇËÇ‹ÇπÇÒÇ≈ÇµÇΩ

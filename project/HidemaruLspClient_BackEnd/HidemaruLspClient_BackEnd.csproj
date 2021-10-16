@@ -12,6 +12,11 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;0649</NoWarn>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="MethodDecorator.Fody" Version="1.1.1" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.2" />
@@ -35,5 +40,9 @@
   </ItemGroup>
 
   <Import Project="..\LanguageServerProtocol\LanguageServerProtocol.projitems" Label="Shared" />
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;%25ComSpec%25&quot; /c $(SolutionDir)\Tools\CreateReleasePackage.bat &quot;$(SolutionDir)\..\internal\bin\$(TargetName)\&quot; &quot;$(TargetDir)&quot;" />
+  </Target>
 
 </Project>
