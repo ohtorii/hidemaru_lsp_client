@@ -12,8 +12,7 @@
 //
 //LSP
 //
-$comClientFileName  =@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_FrontEnd\bin\Debug\HidemaruLspClient_FrontEnd.dll";
-$comService         =/*"{0B0A4550-A71F-4142-A4EC-BC6DF50B9590}";*/ "HidemaruLspClient_FrontEnd.Service";
+$comService         ="HidemaruLspClient_FrontEnd.Service";
 $comServiceAsync    ="HidemaruLspClient_FrontEnd.ServiceAsync";
 $comServiceName     ="";
 
@@ -97,9 +96,9 @@ ShowComError:
     return ;
 
 CreateComObject:
-    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $comClientFileName;
-    $$filename=getresultex(-1);
-    ##obj = createobject($$filename,$comServiceName);
+    call CreateComClientFilename;
+    $$comClientFileName=$$return;
+    ##obj = createobject($$comClientFileName,$comServiceName);
     ##success=getresultex(10);
     ##hresult=getresultex(11);
     if(##obj==0){
@@ -110,6 +109,16 @@ CreateComObject:
     setcomdetachmethod ##obj,"Finalizer";
     keepobject ##obj, 2;
     return true;
+
+CreateComClientFilename:
+    $$target="Release";
+    if(platform & 0x00080000){
+        $$platform="x64";
+    }else{
+        $$platform="x86";
+    }
+    return sprintf(@"%s\bin\HidemaruLspClient_FrontEnd_%s_%s\HidemaruLspClient_FrontEnd.dll",currentmacrodirectory, $$target, $$platform)
+
 
 Initialize:
     call GetAbsolutePathName $iniServerConfig;
