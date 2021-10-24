@@ -40,7 +40,7 @@ namespace HidemaruLspClient
                 {
                     tlbPath = tlbPath_x86;
                 }
-                
+
                 if (!File.Exists(tlbPath))
                 {
                     Trace.WriteLine($"Not found {tlbPath}");
@@ -49,7 +49,7 @@ namespace HidemaruLspClient
 
                 var ServerClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
                 if (args.Length == 1)
-                {                    
+                {
                     string regCommandMaybe = args[0];
                     var exePath = Process.GetCurrentProcess().MainModule.FileName;
 #if false
@@ -64,7 +64,7 @@ namespace HidemaruLspClient
                             return 0;
 
                         case "/unregserver":
-                        case "-unregserver":                    
+                        case "-unregserver":
                             LocalServer.UnregisterFromLocalMachine(ServerClassGuid, progId, tlbPath);
                             return 0;
 
@@ -74,10 +74,10 @@ namespace HidemaruLspClient
                             return 0;
 
                         case "/unregserverperuser":
-                        case "-unregserverperuser":                    
+                        case "-unregserverperuser":
                             LocalServer.UnregisterToCurrentUser(ServerClassGuid, progId, tlbPath);
                             return 0;
-                        
+
                         case "/?":
                         case "/h":
                         case "/help":
@@ -115,7 +115,7 @@ namespace HidemaruLspClient
 /unregserverperuser -unregserverperuser
 /? /help -h --help
 "
-); ; 
+); ;
         }
     }
 }
