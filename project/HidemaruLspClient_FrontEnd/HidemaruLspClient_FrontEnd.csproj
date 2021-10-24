@@ -34,7 +34,7 @@
   <ItemGroup>
     <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'AnyCPU'">
       <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'x64'">
       <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>

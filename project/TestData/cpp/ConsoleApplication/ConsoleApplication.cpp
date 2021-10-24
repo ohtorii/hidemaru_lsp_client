@@ -8,7 +8,7 @@
 int main()
 {
     auto message = std::string("Hello World!\n");
-    std::cout << message.
-    //auto h = Hoge();
+    std::cout << message.;
+    //Hoge h;h.
     return 0;
 }
