@@ -63,7 +63,7 @@
   <Import Project="..\LanguageServerProtocol\LanguageServerProtocol.projitems" Label="Shared" />
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="echo 出力ディレクトリをクリーンする&#xD;&#xA;exit /b 1&#xD;&#xA;&quot;$(SolutionDir)\Tools\CreateReleasePackage.bat&quot; &quot;$(TargetDir)&quot; $(ProjectName) $(ConfigurationName) $(PlatformName)&#xD;&#xA;&quot;$(SolutionDir)\Tools\CreateReleasePackage.bat&quot; &quot;$(SolutionDir)HidemaruLspClient_Contract\bin\$(PlatformName)\HidemaruLspClient_BackEndContract.tlb&quot; $(ProjectName) $(ConfigurationName) $(PlatformName)" />
+    <Exec Command="call $(ProjectDir)\Tools\PostbuildEvents.bat &quot;$(SolutionDir)&quot; &quot;$(TargetDir)&quot; $(ProjectName) $(ConfigurationName) $(PlatformName)" />
   </Target>
 
 </Project>

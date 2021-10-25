@@ -123,8 +123,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <None Include="Tools\PostbuildEvents.bat" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)\Tools\CreateReleasePackage.bat" "$(TargetDir)" $(ProjectName) $(ConfigurationName) $(PlatformName)</PostBuildEvent>
+    <PostBuildEvent>call $(ProjectDir)\Tools\PostbuildEvents.bat "$(SolutionDir)" "$(TargetDir)" $(ProjectName) $(ConfigurationName) $(PlatformName)</PostBuildEvent>
   </PropertyGroup>
 </Project>
