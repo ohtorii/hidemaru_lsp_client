@@ -25,35 +25,38 @@ $publicComObjectName  ="lsp.client.public.obj";
 $labelIndexName="LabelIndex";
 if(#useAsync){
     if(true){
-        //非同期版
+        //Async
         $comServiceName=$comServiceAsync;
-        $labelTable[0]="CreateComObject";
-        $labelTable[1]="Initialize";
-        $labelTable[2]="InitializeServiceAsync";
-        $labelTable[3]="CheckService";
-        $labelTable[4]="Finish";
-        $labelTable[5]="Nop";
+        $labelTable[0]="SpawnBackEndCOM";
+        $labelTable[1]="CreateFrontEndCOM";
+        $labelTable[2]="Initialize";
+        $labelTable[3]="InitializeServiceAsync";
+        $labelTable[4]="CheckService";
+        $labelTable[5]="Finish";
+        $labelTable[6]="Nop";
     }else{
-        //疑似非同期版
+        //Concurrent
         $comServiceName=$comService;
-        $labelTable[0]="CreateComObject";
-        $labelTable[1]="Initialize";
-        $labelTable[2]="InitializeBackEndServiceAsync";
-        $labelTable[3]="CheckBackEndService";
-        $labelTable[4]="InitializeFrontEndServiceAsync";
-        $labelTable[5]="CheckFrontEndService";
-        $labelTable[6]="Finish";
-        $labelTable[7]="Nop";
+        $labelTable[0]="SpawnBackEndCOM";
+        $labelTable[1]="CreateFrontEndCOM";
+        $labelTable[2]="Initialize";
+        $labelTable[3]="InitializeBackEndServiceAsync";
+        $labelTable[4]="CheckBackEndService";
+        $labelTable[5]="InitializeFrontEndServiceAsync";
+        $labelTable[6]="CheckFrontEndService";
+        $labelTable[7]="Finish";
+        $labelTable[8]="Nop";
     }
 }else{
-    //同期版
+    //Sync
     $comServiceName=$comService;
-    $labelTable[0]="CreateComObject";
-    $labelTable[1]="Initialize";
-    $labelTable[2]="InitializeBackEndService";
-    $labelTable[3]="InitializeFrontEndService";
-    $labelTable[4]="Finish";
-    $labelTable[5]="Nop";
+    $labelTable[0]="SpawnBackEndCOM";
+    $labelTable[1]="CreateFrontEndCOM";
+    $labelTable[2]="Initialize";
+    $labelTable[3]="InitializeBackEndService";
+    $labelTable[4]="InitializeFrontEndService";
+    $labelTable[5]="Finish";
+    $labelTable[6]="Nop";
 }
 
 
@@ -95,14 +98,32 @@ ShowComError:
     message sprintf("##success=%d / ##hresult=0x%x",##success, ##hresult);
     return ;
 
-CreateComObject:
+SpawnBackEndCOM:
+    return true;
+    runex "filename.exe"
+    		, 1 			//sync	  0:async 1:sync
+    		, 0, "" 		//stdin   0:none 1:auto 2:file 3:(reserve) 4:all 5:select
+    		, 1, "" 		//stdout  0:none 1:auto 2:file 3:add file  4:new 5:insert 6:replace
+    		, 0, "" 		//stderr  0:none 1:=out 2:file 3:add file  4:new 5:insert 6:replace
+    		, 0, "" 		//folder  0:none 1:current 2:specify 3:(reserve) 4:exe's folder
+    		, 1 			//show	  0:auto 1:show 2:hide
+    		, 1 			//nodraw  0:draw 1:no draw
+    		, 0 			//unicode 0:ansi 2:unicode
+    		;
+    return true;
+
+CreateFrontEndCOM:
     call CreateComClientFilename;
     $$comClientFileName=$$return;
+    if(! existfile($$comClientFileName)){
+        message "ファイルが存在しません\n"+$$comClientFileName;
+        return false;
+    }
     ##obj = createobject($$comClientFileName,$comServiceName);
     ##success=getresultex(10);
     ##hresult=getresultex(11);
     if(##obj==0){
-        message sprintf("COMのロードに失敗しました\n##obj=%d / ##success=%d / ##hresult=0x%x",##obj, ##success, ##hresult);
+        message sprintf("COMのロードに失敗しました\n##obj=%d / ##success=%d / ##hresult=0x%x\nFileName=%s",##obj, ##success, ##hresult, $$comClientFileName);
         return false;
     }
     setstaticvariable $privateComObjectName,str(##obj),#comShareMode;
@@ -112,12 +133,20 @@ CreateComObject:
 
 CreateComClientFilename:
     $$target="Release";
-    if(platform & 0x00080000){
-        $$platform="x64";
+    if(true){
+        $$platform="AnyCPU";
     }else{
-        $$platform="x86";
+        if(platform & 0x00080000){
+            $$platform="x64";
+        }else{
+            $$platform="x86";
+        }
     }
-    return sprintf(@"%s\bin\HidemaruLspClient_FrontEnd_%s_%s\HidemaruLspClient_FrontEnd.dll",currentmacrodirectory, $$target, $$platform)
+    /*call GetAbsolutePathName currentmacrodirectory+@"\..\project\HidemaruLspClient_FrontEnd\bin\Debug\HidemaruLspClient_FrontEnd.dll";
+    return $$return;*/
+    call GetAbsolutePathName currentmacrodirectory+@"\..\project\HidemaruLspClient_FrontEnd\bin\x64\Debug\HidemaruLspClient_FrontEnd.dll";
+    return $$return;
+    //return sprintf(@"%s\bin\HidemaruLspClient_FrontEnd_%s_%s\HidemaruLspClient_FrontEnd.dll",currentmacrodirectory, $$target, $$platform);
 
 
 Initialize:

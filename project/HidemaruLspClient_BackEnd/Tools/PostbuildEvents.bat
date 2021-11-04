@@ -14,14 +14,14 @@ set PlatformName=%~5
 set Tools=%SolutionDir%\Tools
 
 call "%Tools%\BuildPackageDirName.bat" %ProjectName% %ConfigurationName% %PlatformName%
-call "%Tools%\ClearDir.bat" "%PackageDir%"
-if "%errorlevel%" NEQ "0" (
-    exit /b 1
-)
-
-call "%Tools%\CopyPath.bat" "%TargetDir%" "%PackageDir%"
-if "%errorlevel%" NEQ "0" (
-    exit /b 1
-)
-call "%Tools%\CopyPath.bat" "%SolutionDir%\HidemaruLspClient_Contract\bin\%PlatformName%\HidemaruLspClient_BackEndContract.tlb" "%PackageDir%"
+REM call "%Tools%\ClearDir.bat" "%PackageDir%"
+REM if "%errorlevel%" NEQ "0" (
+    REM exit /b 1
+REM )
+REM 
+REM call "%Tools%\CopyPath.bat" "%TargetDir%" "%PackageDir%"
+REM if "%errorlevel%" NEQ "0" (
+    REM exit /b 1
+REM )
+call "%Tools%\CopyPath.bat" "%SolutionDir%\HidemaruLspClient_Contract\bin\%PlatformName%\HidemaruLspClient_BackEndContract.tlb" "%TargetDir%"
 exit /b %errorlevel%

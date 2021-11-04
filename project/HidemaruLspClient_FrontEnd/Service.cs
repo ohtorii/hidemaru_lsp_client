@@ -18,7 +18,7 @@ namespace HidemaruLspClient_FrontEnd
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
     public sealed class Service : IService
     {
-        static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
+        static DllAssemblyResolver dasmr_= new DllAssemblyResolver();
 
         class Context
         {
@@ -335,8 +335,7 @@ namespace HidemaruLspClient_FrontEnd
 
                 try
                 {
-                    Debug.Assert(true);
-                    var ServerClassGuid = LspContract.Constants.ServerClassGuid;    //new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
+                    var ServerClassGuid = LspContract.Constants.ServerClassGuid;
                     object obj;
                     int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
                     if (hr < 0)

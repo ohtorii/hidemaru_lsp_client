@@ -21,7 +21,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -67,18 +66,30 @@
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>FrontEnd.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>false</DelaySign>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'AnyCPU'">
       <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <Private>False</Private>
     </Reference>
     <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'x64'">
       <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <Private>False</Private>
     </Reference>
     <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'x86'">
       <HintPath>..\HidemaruLspClient_Contract\bin\x86\HidemaruLspClient_BackEndContract.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -124,10 +135,11 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <None Include="FrontEnd.snk" />
     <None Include="Tools\PostbuildEvents.bat" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>call $(ProjectDir)\Tools\PostbuildEvents.bat "$(SolutionDir)" "$(TargetDir)" $(ProjectName) $(ConfigurationName) $(PlatformName)</PostBuildEvent>
+    <PostBuildEvent>rem call $(ProjectDir)\Tools\PostbuildEvents.bat "$(SolutionDir)" "$(TargetDir)" $(ProjectName) $(ConfigurationName) $(PlatformName)</PostBuildEvent>
   </PropertyGroup>
 </Project>

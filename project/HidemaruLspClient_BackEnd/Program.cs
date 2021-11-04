@@ -21,8 +21,7 @@ namespace HidemaruLspClient
         //private static readonly string tlbPath = exePath;
         private static readonly string tlbPath="";
 #else
-        private static readonly string tlbPath_x86 = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_Contract\bin\x86\HidemaruLspClient_BackEndContract.tlb");
-        private static readonly string tlbPath_x64 = Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\GitHub\hidemaru_lsp_client\project\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.tlb");
+        private static readonly string tlbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb");
 #endif
 
         static int Main(string[] args)
@@ -30,16 +29,6 @@ namespace HidemaruLspClient
             using (var consoleTrace = new ConsoleTraceListener())
             {
                 Trace.Listeners.Add(consoleTrace);
-                Trace.WriteLine("[Create]exe");
-                string tlbPath;
-                if (Environment.Is64BitProcess)
-                {
-                    tlbPath = tlbPath_x64;
-                }
-                else
-                {
-                    tlbPath = tlbPath_x86;
-                }
 
                 if (!File.Exists(tlbPath))
                 {
@@ -106,7 +95,6 @@ namespace HidemaruLspClient
         }
         static void Usage()
         {
-            //Todo: Usage を書く
             Console.WriteLine(
 @"Usage:
 /regserver -regserver
