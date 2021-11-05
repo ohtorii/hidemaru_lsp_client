@@ -52,14 +52,14 @@ namespace HidemaruLspClient
                             LocalServer.RegisterToLocalMachine(ServerClassGuid, progId, exePath, tlbPath);
                             return 0;
 
-                        case "/unregserver":
-                        case "-unregserver":
-                            LocalServer.UnregisterFromLocalMachine(ServerClassGuid, progId, tlbPath);
-                            return 0;
-
                         case "/regserverperuser":
                         case "-regserverperuser":
                             LocalServer.RegisterToCurrentUser(ServerClassGuid, progId, exePath, tlbPath);
+                            return 0;
+
+                        case "/unregserver":
+                        case "-unregserver":
+                            LocalServer.UnregisterFromLocalMachine(ServerClassGuid, progId, tlbPath);
                             return 0;
 
                         case "/unregserverperuser":

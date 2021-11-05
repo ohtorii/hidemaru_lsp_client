@@ -34,7 +34,7 @@ namespace HidemaruLspClient_FrontEnd
             new Method { name="GetArguments",       action=(Option dst,object src)=>dst.Arguments       =src.ToString()  },
             new Method { name="GetRootUri",         action=(Option dst,object src)=>dst.RootUri         =src.ToString()  },
             new Method { name="GetWorkspaceConfig", action=(Option dst,object src)=>dst.WorkspaceConfig =src.ToString()  },
-        }; 
+        };
         static readonly string[] ReferencedAssemblies = new[]
         {
             "mscorlib.dll",
@@ -60,7 +60,7 @@ namespace HidemaruLspClient_FrontEnd
             logger_.Info(string.Format("filename={0}", serverConfigFilename));
 
             LanguageServerProcess.Environment.Initialize(currentSourceCodeDirectory);
-            
+
             {
                 var result = new Option();
                 {
@@ -100,12 +100,13 @@ namespace HidemaruLspClient_FrontEnd
                     }
                 }
                 return result;
-            }            
-        }    
+            }
+        }
         static string MakeCompilerOptions()
         {
             var sb = new StringBuilder();
             sb.Append("/target:library");
+            //sb.Append(" /platform:x64");
             sb.AppendFormat(" /reference:{0}", DllPath("LanguageServerProcess.dll"));
             return sb.ToString();
         }

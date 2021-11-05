@@ -1,0 +1,20 @@
+﻿/*HidemaruLspClient_BackEnd.exeのパスを取得する
+*/
+call main;
+endmacro $$return;
+
+main:
+    $$target="Release";
+    if(platform & 0x00080000){
+        $$platform="x64";
+    }else{
+        $$platform="x86";
+    }
+    call GetAbsolutePathName currentmacrodirectory + sprintf(@"\..\project\HidemaruLspClient_BackEnd\bin\%s\%s\net5.0\HidemaruLspClient_BackEnd.exe", $$platform, $$target);
+    return $$return;
+
+GetAbsolutePathName:
+    ##fso=createobject("Scripting.FileSystemObject");
+    $$abs_filename = member(##fso,"GetAbsolutePathName",$$1);
+    releaseobject ##fso;
+    return $$abs_filename;

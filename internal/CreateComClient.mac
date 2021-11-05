@@ -27,7 +27,7 @@ if(#useAsync){
     if(true){
         //Async
         $comServiceName=$comServiceAsync;
-        $labelTable[0]="SpawnBackEndCOM";
+        $labelTable[0]="SpawnBackEndCOMServer";
         $labelTable[1]="CreateFrontEndCOM";
         $labelTable[2]="Initialize";
         $labelTable[3]="InitializeServiceAsync";
@@ -37,7 +37,7 @@ if(#useAsync){
     }else{
         //Concurrent
         $comServiceName=$comService;
-        $labelTable[0]="SpawnBackEndCOM";
+        $labelTable[0]="SpawnBackEndCOMServer";
         $labelTable[1]="CreateFrontEndCOM";
         $labelTable[2]="Initialize";
         $labelTable[3]="InitializeBackEndServiceAsync";
@@ -50,7 +50,7 @@ if(#useAsync){
 }else{
     //Sync
     $comServiceName=$comService;
-    $labelTable[0]="SpawnBackEndCOM";
+    $labelTable[0]="SpawnBackEndCOMServer";
     $labelTable[1]="CreateFrontEndCOM";
     $labelTable[2]="Initialize";
     $labelTable[3]="InitializeBackEndService";
@@ -98,25 +98,34 @@ ShowComError:
     message sprintf("##success=%d / ##hresult=0x%x",##success, ##hresult);
     return ;
 
-SpawnBackEndCOM:
-    return true;
-    runex "filename.exe"
-    		, 1 			//sync	  0:async 1:sync
+SpawnBackEndCOMServer:
+    execmacro currentmacrodirectory+@"\GetBackEndExe.mac";
+    $$comServerFileName=getresultex(-1);
+    if(! existfile($$comServerFileName)){
+        message "[BackEnd]ファイルが存在しません\nファイル名="+$$comServerFileName;
+        return false;
+    }
+
+    //Memo: 標準入力が有効なのかすぐに終了する。
+    //run $$comServerFileName + " -regserverperuser";
+
+    runex $$comServerFileName + " -regserverperuser"
+    		, 0 			//sync	  0:async 1:sync
     		, 0, "" 		//stdin   0:none 1:auto 2:file 3:(reserve) 4:all 5:select
-    		, 1, "" 		//stdout  0:none 1:auto 2:file 3:add file  4:new 5:insert 6:replace
+    		, 0, "" 		//stdout  0:none 1:auto 2:file 3:add file  4:new 5:insert 6:replace
     		, 0, "" 		//stderr  0:none 1:=out 2:file 3:add file  4:new 5:insert 6:replace
     		, 0, "" 		//folder  0:none 1:current 2:specify 3:(reserve) 4:exe's folder
-    		, 1 			//show	  0:auto 1:show 2:hide
+    		, 2 			//show	  0:auto 1:show 2:hide
     		, 1 			//nodraw  0:draw 1:no draw
     		, 0 			//unicode 0:ansi 2:unicode
     		;
     return true;
 
 CreateFrontEndCOM:
-    call CreateComClientFilename;
-    $$comClientFileName=$$return;
+    execmacro currentmacrodirectory+@"\GetFrontEndDLL.mac";
+    $$comClientFileName=getresultex(-1);
     if(! existfile($$comClientFileName)){
-        message "ファイルが存在しません\n"+$$comClientFileName;
+        message "[FrontEnd]ファイルが存在しません\nファイル名="+$$comClientFileName;
         return false;
     }
     ##obj = createobject($$comClientFileName,$comServiceName);
