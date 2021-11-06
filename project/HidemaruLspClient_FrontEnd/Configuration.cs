@@ -57,7 +57,7 @@ namespace HidemaruLspClient_FrontEnd
         /// <param name="serverConfigFilename"></param>
         public static Option Eval(string serverConfigFilename, string currentSourceCodeDirectory)
         {
-            logger_.Info(string.Format("filename={0}", serverConfigFilename));
+            logger_?.Info(string.Format("filename={0}", serverConfigFilename));
 
             LanguageServerProcess.Environment.Initialize(currentSourceCodeDirectory);
 
@@ -70,21 +70,21 @@ namespace HidemaruLspClient_FrontEnd
                         CompilerOptions  = MakeCompilerOptions(),
                         GenerateInMemory = true,
                     };
-                    logger_.Debug(string.Format("CompilerOptions={0}", compileParameters.CompilerOptions));
+                    logger_?.Debug(string.Format("CompilerOptions={0}", compileParameters.CompilerOptions));
                     compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);
-                    if (Convert.ToBoolean(logger_.IsDebugEnabled))
+                    if (Convert.ToBoolean(logger_?.IsDebugEnabled))
                     {
-                        logger_.Debug(string.Format("compileParameters.ReferencedAssemblies[]={0}", ReferencedAssemblies.ToList()));
+                        logger_?.Debug(string.Format("compileParameters.ReferencedAssemblies[]={0}", ReferencedAssemblies.ToList()));
                     }
 
-                    logger_.Info(string.Format("filename={0}", serverConfigFilename));
+                    logger_?.Info(string.Format("filename={0}", serverConfigFilename));
 
                     var code = File.ReadAllText(serverConfigFilename);
                     var cr = codeDom.CompileAssemblyFromSource(compileParameters, code);
                     if (0 < cr.Errors.Count)
                     {
                         foreach (var err in cr.Errors){
-                            logger_.Error(err.ToString());
+                            logger_?.Error(err.ToString());
                         }
                         return null;
                     }
@@ -96,7 +96,7 @@ namespace HidemaruLspClient_FrontEnd
                         var mi = t.GetMethod(method.name);
                         var s = mi.Invoke(instance, null);
                         method.action(result, s);
-                        logger_.Info(string.Format("{0}={1}",method.name,s));
+                        logger_?.Info(string.Format("{0}={1}",method.name,s));
                     }
                 }
                 return result;
