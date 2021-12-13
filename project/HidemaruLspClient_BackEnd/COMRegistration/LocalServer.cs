@@ -127,17 +127,6 @@ namespace COMRegistration
             Trace.WriteLine($"[Finish]Registering class object:");
         }
 
-        public void Run()
-        {
-            // This sample does not handle lifetime management of the server.
-            // For details around ref counting and locking of out-of-proc COM servers, see
-            // https://docs.microsoft.com/windows/win32/com/out-of-process-server-implementation-helpers
-            Trace.WriteLine($"================================");
-            Trace.WriteLine($"Press ENTER to exit.");
-            Trace.WriteLine($"================================");
-            Console.ReadLine();
-        }
-
         public void Dispose()
         {
             Trace.WriteLine($"Revoking class object registrations:");

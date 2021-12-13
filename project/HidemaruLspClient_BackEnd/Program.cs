@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using COMRegistration;
 using HidemaruLspClient_BackEndContract;
@@ -87,11 +88,24 @@ namespace HidemaruLspClient
                 using (var server = new LocalServer())
                 {
                     server.RegisterClass<HidemaruLspBackEndServer>(ServerClassGuid);
-                    server.Run();
+                    WaitServerUsingEvent();
+                    //WaitServerUsingStdio();
                 }
                 Trace.WriteLine("[Finish]exe");
                 return 0;
             }
+        }
+        async static void WaitServerUsingEvent()
+        {
+            var autoEvent = new AutoResetEvent(false);
+            autoEvent.WaitOne();
+        }
+        static void WaitServerUsingStdio()
+        {
+            Trace.WriteLine($"================================");
+            Trace.WriteLine($"Press ENTER to exit.");
+            Trace.WriteLine($"================================");
+            Console.ReadLine();
         }
         static void Usage()
         {
