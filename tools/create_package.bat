@@ -14,13 +14,16 @@ setlocal enabledelayedexpansion
 REM --------------------------------------------------------------------
 REM 変数設定
 REM --------------------------------------------------------------------
+set BAT_DIR=%~dp0
+set REPOSITORY=https://github.com/ohtorii/hidemaru_lsp_client.git
+
+REM 
 REM VisualStudiのバージョンに合わせてください
 REM set VSDEVCMD=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat
 set VSDEVCMD=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat
-set REPOSITORY=https://github.com/ohtorii/hidemaru_lsp_client.git
 
 call :SetupRootDir
-REM set ROOT_DIR=C:\Users\ikeuc\AppData\Local\Temp\tmp_hm_lspclient\20211122211013_32702
+
 set GIT_ROOT_DIR=%ROOT_DIR%\hidemaru_lsp_client
 set SOLUTION=%GIT_ROOT_DIR%\project\hidemaru_lsp_client.sln
 
@@ -38,7 +41,7 @@ set BIN_DST_FRONTEND_X86_RELEASE=%GIT_ROOT_DIR%\internal\bin\HidemaruLspClient_F
 REM --------------------------------------------------------------------
 REM メイン処理
 REM --------------------------------------------------------------------
-echo ROOT_DIR=%ROOT_DIR%
+REM echo ROOT_DIR=%ROOT_DIR%
 
 set ARG_VERSION=%1
 set ARG_OUTDIR=%2
@@ -190,8 +193,11 @@ REM バッチファイル中で使用するコマンドが存在するか調べる
         echo 失敗 DeleteUnnecessaryFiles
         exit /b 1
     )
-    
-
+    call :CopyPackageFiles
+    if ERRORLEVEL 1 (
+        echo 失敗 CopyPackageFiles
+        exit /b 1
+    )
     REM zipで固める
     md "%ARG_OUTDIR%"
     if not exist "%ARG_OUTDIR%" (
@@ -232,6 +238,11 @@ REM 不要なファイルを削除する
     del "%GIT_ROOT_DIR%\.gitattributes"
     del "%GIT_ROOT_DIR%\.gitignore"
     exit /b 0
+
+
+:CopyPackageFiles
+    xcopy "%BAT_DIR%\package_files\" "%GIT_ROOT_DIR%\" /Y /I /E
+    exit /b %ERRORLEVEL%
 
 
 :Usage
