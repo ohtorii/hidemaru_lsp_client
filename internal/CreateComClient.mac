@@ -119,7 +119,7 @@ SpawnBackEndCOMServer:
     		, 1 			//nodraw  0:draw 1:no draw
     		, 0 			//unicode 0:ansi 2:unicode
     		;
-    return true;
+    return result;
 
 CreateFrontEndCOM:
     execmacro currentmacrodirectory+@"\GetFrontEndDLL.mac";
@@ -139,24 +139,6 @@ CreateFrontEndCOM:
     setcomdetachmethod ##obj,"Finalizer";
     keepobject ##obj, 2;
     return true;
-
-CreateComClientFilename:
-    $$target="Release";
-    if(true){
-        $$platform="AnyCPU";
-    }else{
-        if(platform & 0x00080000){
-            $$platform="x64";
-        }else{
-            $$platform="x86";
-        }
-    }
-    /*call GetAbsolutePathName currentmacrodirectory+@"\..\project\HidemaruLspClient_FrontEnd\bin\Debug\HidemaruLspClient_FrontEnd.dll";
-    return $$return;*/
-    call GetAbsolutePathName currentmacrodirectory+@"\..\project\HidemaruLspClient_FrontEnd\bin\x64\Debug\HidemaruLspClient_FrontEnd.dll";
-    return $$return;
-    //return sprintf(@"%s\bin\HidemaruLspClient_FrontEnd_%s_%s\HidemaruLspClient_FrontEnd.dll",currentmacrodirectory, $$target, $$platform);
-
 
 Initialize:
     call GetAbsolutePathName $iniServerConfig;

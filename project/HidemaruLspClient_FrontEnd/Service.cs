@@ -253,34 +253,24 @@ namespace HidemaruLspClient_FrontEnd
             {
                 return true;
             }
-
-            try
+            var options = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
+            if (options == null)
             {
-                var options = Configuration.Eval(serverConfigFilename, currentSourceCodeDirectory);
-                if (options == null)
-                {
-                    return false;
-                }
-                var hidemaruProcess = System.Diagnostics.Process.GetCurrentProcess();
-                context_.worker = context_.server.CreateWorker(
-                            options.ServerName,
-                            options.ExcutablePath,
-                            options.Arguments,
-                            options.RootUri,
-                            options.WorkspaceConfig,
-                            hidemaruProcess.Id);
-                if (context_.worker == null)
-                {
-                    return false;
-                }
-                return true;
+                return false;
             }
-            catch (Exception e)
+            var hidemaruProcess = System.Diagnostics.Process.GetCurrentProcess();
+            context_.worker = context_.server.CreateWorker(
+                        options.ServerName,
+                        options.ExcutablePath,
+                        options.Arguments,
+                        options.RootUri,
+                        options.WorkspaceConfig,
+                        hidemaruProcess.Id);
+            if (context_.worker == null)
             {
-                logger_.Error(e.ToString());
+                return false;
             }
-            context_.worker = null;
-            return false;
+            return true;
         }
         void FinalizeContext()
         {
@@ -406,11 +396,18 @@ namespace HidemaruLspClient_FrontEnd
 #region Public methods
         public Service()
         {
-            tokenSource_ = new CancellationTokenSource();
-            context_ = new Context();
-            openedFile_ = new Document();
-            UIThread.Initializer();
-            Hidemaru.Initialize();
+            try
+            {
+                tokenSource_ = new CancellationTokenSource();
+                context_ = new Context();
+                openedFile_ = new Document();
+                UIThread.Initializer();
+                Hidemaru.Initialize();
+            }catch(Exception e)
+            {
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                logger_?.Error(e.ToString());
+            }
         }
 
         public bool Initialize(string iniFileName)
@@ -426,6 +423,7 @@ namespace HidemaruLspClient_FrontEnd
                 return true;
             }catch(Exception e)
             {
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
                 logger_?.Error(e.ToString());
             }
             return false;
@@ -437,14 +435,21 @@ namespace HidemaruLspClient_FrontEnd
         public void InitializeBackEndServiceAsync(string logFilename)
         {
             var _ = Task.Run(() => {
-                if (InitializeBackEndServiceMain(logFilename))
+                try
                 {
-                    return;
+                    if (InitializeBackEndServiceMain(logFilename))
+                    {
+                        return;
+                    }
+                    UIThread.Invoke((MethodInvoker)delegate
+                    {
+                        Finalizer();
+                    });
+                }catch(Exception e)
+                {
+                    HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                    logger_?.Error(e.ToString());
                 }
-                UIThread.Invoke((MethodInvoker)delegate
-                {
-                    Finalizer();
-                });
             }, tokenSource_.Token);
         }
         /// <summary>
@@ -470,7 +475,11 @@ namespace HidemaruLspClient_FrontEnd
                     }
                     return true;
                 }
-            }finally{
+            }catch(Exception e){
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                logger_?.Error(e.ToString());
+            }
+            finally{
                 if (token)
                 {
                     Monitor.Exit(context_);
@@ -485,12 +494,20 @@ namespace HidemaruLspClient_FrontEnd
         /// <returns></returns>
         public bool InitializeBackEndService(string logFilename)
         {
-            if (!InitializeBackEndServiceMain(logFilename))
+            try
             {
-                Finalizer();
-                return false;
+                if (!InitializeBackEndServiceMain(logFilename))
+                {
+                    Finalizer();
+                    return false;
+                }
+                return true;
+            }catch(Exception e)
+            {
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                logger_?.Error(e.ToString());
             }
-            return true;
+            return false;
         }
         /// <summary>
         /// front endを初期化する（非同期版）
@@ -501,14 +518,21 @@ namespace HidemaruLspClient_FrontEnd
         {
             var _ = Task.Run(() =>
             {
-                if (InitializeFrontEndServiceMain(fileExtension, currentSourceCodeDirectory))
+                try
                 {
-                    return;
+                    if (InitializeFrontEndServiceMain(fileExtension, currentSourceCodeDirectory))
+                    {
+                        return;
+                    }
+                    UIThread.Invoke((MethodInvoker)delegate
+                    {
+                        Finalizer();
+                    });
+                }catch(Exception e)
+                {
+                    HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(),e.ToString());
+                    logger_?.Error(e.ToString());
                 }
-                UIThread.Invoke((MethodInvoker)delegate
-                {
-                    Finalizer();
-                });
             }, tokenSource_.Token);
         }
         /// <summary>
@@ -533,9 +557,11 @@ namespace HidemaruLspClient_FrontEnd
                     }
                     return true;
                 }
+            }catch(Exception e){
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                logger_?.Error(e.ToString());
             }
-            finally
-            {
+            finally{
                 if (token)
                 {
                     Monitor.Exit(context_);
@@ -551,13 +577,21 @@ namespace HidemaruLspClient_FrontEnd
         /// <returns></returns>
         public bool InitializeFrontEndService(string fileExtension, string currentSourceCodeDirectory) {
 
-            var success = InitializeFrontEndServiceMain(fileExtension, currentSourceCodeDirectory);
-            if (!success)
+            try
             {
-                Finalizer();
-                return false;
+                var success = InitializeFrontEndServiceMain(fileExtension, currentSourceCodeDirectory);
+                if (!success)
+                {
+                    Finalizer();
+                    return false;
+                }
+                return true;
+            }catch(Exception e)
+            {
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                logger_?.Error(e.ToString());
             }
-            return true;
+            return false;
         }
         /// <summary>
         /// テスト用のメソッド
@@ -571,7 +605,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 return context_.server.Add(x, y);
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 return -1;
             }
@@ -593,6 +627,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             catch (Exception e)
             {
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
                 logger_?.Error(e.ToString());
             }
 
@@ -628,6 +663,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             catch (Exception e)
             {
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
                 logger_.Error(e.ToString());
             }
             return null;
@@ -644,6 +680,7 @@ namespace HidemaruLspClient_FrontEnd
                 var _ = FileProc();
             }catch(Exception e)
             {
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
                 logger_.Error(e.ToString());
                 return false;
             }
@@ -676,6 +713,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             catch(Exception e)
             {
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
                 logger_.Error(e.ToString());
             }
             return "";
@@ -752,54 +790,85 @@ namespace HidemaruLspClient_FrontEnd
 
         public LocationContainerImpl Declaration(long hidemaruLine, long hidemaruColumn)
         {
-            if (context_.worker == null){
-                return null;
+            try {
+                if (context_.worker == null){
+                    return null;
+                }
+                return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Declaration, false);
+            }catch(Exception e)
+            {
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                logger_?.Error(e.ToString());
             }
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Declaration,false);
+            return null;
         }
         public LocationContainerImpl Definition(long hidemaruLine, long hidemaruColumn)
         {
-            if (context_.worker == null)
+            try
             {
-                return null;
+                if (context_.worker == null)
+                {
+                    return null;
+                }
+                return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Definition, false);
+            }catch (Exception e){
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                logger_?.Error(e.ToString());
             }
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Definition, false);
+            return null;
         }
         public LocationContainerImpl TypeDefinition(long hidemaruLine, long hidemaruColumn)
         {
-            if (context_.worker == null)
-            {
-                return null;
+            try {
+                if (context_.worker == null)
+                {
+                    return null;
+                }
+                return CommonImplementationsOfGoto(hidemaruLine,hidemaruColumn, context_.worker.TypeDefinition, false);
+            }catch (Exception e){
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                logger_?.Error(e.ToString());
             }
-            return CommonImplementationsOfGoto(hidemaruLine,hidemaruColumn, context_.worker.TypeDefinition, false);
+            return null;
         }
         public LocationContainerImpl Implementation(long hidemaruLine, long hidemaruColumn)
         {
-            if (context_.worker == null)
-            {
-                return null;
+            try {
+                if (context_.worker == null)
+                {
+                    return null;
+                }
+                return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Implementation, false);
+            }catch (Exception e){
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                logger_?.Error(e.ToString());
             }
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.Implementation, false);
+            return null;
         }
         public LocationContainerImpl References(long hidemaruLine, long hidemaruColumn)
         {
-            if (context_.worker == null)
+            try
             {
-                return null;
+                if (context_.worker == null)
+                {
+                    return null;
+                }
+                return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.References, true);
+            }catch (Exception e){
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                logger_?.Error(e.ToString());
             }
-            return CommonImplementationsOfGoto(hidemaruLine, hidemaruColumn, context_.worker.References,true);
+            return null;
         }
 
 #region Hover
         internal string Hover(long hidemaruLine, long hidemaruColumn)
         {
-            if (context_.worker == null)
-            {
-                return "";
-            }
-
-            try
-            {
+            try {
+                if (context_.worker == null)
+                {
+                    return "";
+                }
                 var absFileName = FileProc();
                 if (String.IsNullOrEmpty(absFileName))
                 {
@@ -816,6 +885,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             catch (Exception e)
             {
+                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
                 logger_.Error(e.ToString());
             }
             return "";

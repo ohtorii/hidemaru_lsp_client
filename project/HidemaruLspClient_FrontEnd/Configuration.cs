@@ -64,11 +64,16 @@ namespace HidemaruLspClient_FrontEnd
             {
                 var result = new Option();
                 {
-                    var codeDom = CodeDomProvider.CreateProvider("CSharp" /*, new Dictionary<string, string>() { { "TargetFrameworkVersion", "v4.8" }}*/);
+                    var codeDom = CodeDomProvider.CreateProvider("CSharp", new Dictionary<string, string>() { { "TargetFrameworkVersion", "v4.8" }});
                     var compileParameters = new CompilerParameters
                     {
                         CompilerOptions  = MakeCompilerOptions(),
-                        GenerateInMemory = true,
+                        GenerateExecutable=false,
+                        TreatWarningsAsErrors =false,
+                        IncludeDebugInformation =false,
+                        /*Memo:メモリに生成すると GetType()==null となる*/
+                        GenerateInMemory = false,
+
                     };
                     logger_?.Debug(string.Format("CompilerOptions={0}", compileParameters.CompilerOptions));
                     compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);

@@ -7,8 +7,8 @@ call main;
 endmacro $$return;
 
 main:
-	$$target="Release";
-	//$$target="Debug";
+    $$target="Release";
+    //$$target="Debug";
     if(platform & 0x00080000){
         $$platform="x64";
     }else{
