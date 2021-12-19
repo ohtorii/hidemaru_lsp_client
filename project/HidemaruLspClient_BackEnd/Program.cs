@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using COMRegistration;
@@ -14,19 +14,22 @@ using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient
 {
-    class Program
+    partial class Program
     {
-        static DllAssemblyResolver dasmr = new DllAssemblyResolver();
-
-#if EMBEDDED_TYPE_LIBRARY
-        //private static readonly string tlbPath = exePath;
-        private static readonly string tlbPath="";
-#else
-        private static readonly string tlbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb");
-#endif
+        static DllAssemblyResolver dasmr          = new DllAssemblyResolver();
+        static readonly string tlbPath            = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb");
+        static readonly bool isConsoleApplication = IsConsoleApplication();
 
         static int Main(string[] args)
         {
+            var o = Options.Create(isConsoleApplication, args);
+            if (o == null)
+            {
+                return 1;
+            }
+            return Start(o)?1:0;
+        }
+        static bool Start(Options options) {
             using (var consoleTrace = new ConsoleTraceListener())
             {
                 Trace.Listeners.Add(consoleTrace);
@@ -34,68 +37,54 @@ namespace HidemaruLspClient
                 if (!File.Exists(tlbPath))
                 {
                     Trace.WriteLine($"Not found {tlbPath}");
-                    return 1;
+                    return false;
                 }
 
-                var ServerClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
-                if (args.Length == 1)
-                {
-                    string regCommandMaybe = args[0];
-                    var exePath = Process.GetCurrentProcess().MainModule.FileName;
+                var serverClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
+                var exePath = Process.GetCurrentProcess().MainModule.FileName;
 #if false
-                    ProgIdAttribute progId = Attribute.GetCustomAttribute(typeof(HidemaruLspBackEndServer), typeof(ProgIdAttribute)) as ProgIdAttribute;
+                ProgIdAttribute progId = Attribute.GetCustomAttribute(typeof(HidemaruLspBackEndServer), typeof(ProgIdAttribute)) as ProgIdAttribute;
 #else
-                    ProgIdAttribute progId = null;
+                ProgIdAttribute progId = null;
 #endif
-                    switch (regCommandMaybe.ToLower()) {
-                        case "/regserver":
-                        case "-regserver":
-                            LocalServer.RegisterToLocalMachine(ServerClassGuid, progId, exePath, tlbPath);
-                            return 0;
-
-                        case "/regserverperuser":
-                        case "-regserverperuser":
-                            LocalServer.RegisterToCurrentUser(ServerClassGuid, progId, exePath, tlbPath);
-                            return 0;
-
-                        case "/unregserver":
-                        case "-unregserver":
-                            LocalServer.UnregisterFromLocalMachine(ServerClassGuid, progId, tlbPath);
-                            return 0;
-
-                        case "/unregserverperuser":
-                        case "-unregserverperuser":
-                            LocalServer.UnregisterToCurrentUser(ServerClassGuid, progId, tlbPath);
-                            return 0;
-
-                        case "/?":
-                        case "/h":
-                        case "/help":
-                        case "-h":
-                        case "--help":
-                            Usage();
-                            return 0;
-#if true
-                        default:
-                            Console.WriteLine(string.Format("Unknown argument. {0}", regCommandMaybe));
-                            //Trace.WriteLine("Unknown argument. {0}", );
-                            //return 1;
-                            break;
-#endif
-                    }
+                switch (options.Mode) {
+                    case Options.RegistryMode.RegServer:
+                        LocalServer.RegisterToLocalMachine(serverClassGuid, progId, exePath, tlbPath);
+                        return true;
+                    case Options.RegistryMode.RegServerPerUser:
+                        LocalServer.RegisterToCurrentUser(serverClassGuid, progId, exePath, tlbPath);
+                        return true;
+                    case Options.RegistryMode.UnRegServer:
+                        LocalServer.UnregisterFromLocalMachine(serverClassGuid, progId, tlbPath);
+                        return true;
+                    case Options.RegistryMode.UnRegServerPerUser:
+                        LocalServer.UnregisterToCurrentUser(serverClassGuid, progId, tlbPath);
+                        return true;
+                    case Options.RegistryMode.Unknown:
+                        goto default;
+                    default:
+                        StartServer(serverClassGuid);
+                        return true;
                 }
-
-                using (var server = new LocalServer())
-                {
-                    server.RegisterClass<HidemaruLspBackEndServer>(ServerClassGuid);
-                    WaitServerUsingEvent();
-                    //WaitServerUsingStdio();
-                }
-                Trace.WriteLine("[Finish]exe");
-                return 0;
             }
         }
-        async static void WaitServerUsingEvent()
+        static void StartServer(Guid serverClassGuid)
+        {
+            using (var server = new LocalServer())
+            {
+                server.RegisterClass<HidemaruLspBackEndServer>(serverClassGuid);
+                if (IsConsoleApplication())
+                {
+                    WaitServerUsingStdio();
+                }
+                else
+                {
+                    WaitServerUsingEvent();
+                }
+            }
+            Trace.WriteLine("[Finish]exe");
+        }
+        static void WaitServerUsingEvent()
         {
             var autoEvent = new AutoResetEvent(false);
             autoEvent.WaitOne();
@@ -107,17 +96,22 @@ namespace HidemaruLspClient
             Trace.WriteLine($"================================");
             Console.ReadLine();
         }
-        static void Usage()
+
+
+
+        static bool IsConsoleApplication()
         {
-            Console.WriteLine(
-@"Usage:
-/regserver -regserver
-/unregserver -unregserver
-/regserverperuser -regserverperuser
-/unregserverperuser -unregserverperuser
-/? /help -h --help
-"
-); ;
+            try
+            {
+                var _ = Console.BufferWidth;
+            }
+            catch (IOException)
+            {
+                //Windows application.
+                return false;
+            }
+            //Console application.
+            return true;
         }
     }
 }
