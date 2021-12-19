@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Diagnostics;
 using CommandLine;
 
 
@@ -16,13 +17,13 @@ namespace HidemaruLspClient
                 StringWriter helpTextWriter = null;
                 if (isConsoleApplication)
                 {
-                    parser = Parser.Default;
+                    parser = new Parser(config=> { config.HelpWriter = Console.Out; });
                 }
                 else
                 {
                     helpTextBuilder = new StringBuilder();
-                    helpTextWriter  = new StringWriter(helpTextBuilder);
-                    parser          = new Parser(config => config.HelpWriter = helpTextWriter);
+                    helpTextWriter = new StringWriter(helpTextBuilder);
+                    parser = new Parser(config => { config.HelpWriter = helpTextWriter; });
                 }
                 parser.ParseArguments<Options>(args)
                     .WithParsed<Options>(o =>
@@ -43,8 +44,6 @@ namespace HidemaruLspClient
             }
             return result;
         }
-
-
         internal enum RegistryMode{
             RegServer,
             UnRegServer,
@@ -55,6 +54,9 @@ namespace HidemaruLspClient
 
         [Option('m', "mode", HelpText = "RegServer, UnRegServer, RegServerPerUser, UnRegServerPerUser", Default = RegistryMode.Unknown)]
         public RegistryMode Mode { get; set; }
+
+        [Option('l', "log", HelpText = "Log filename.")]
+        public StreamWriter logStreamWriter { get; set; }
 
         //[CommandLine.Option('s',"show", HelpText ="Show window.")]
         //public bool Show { get; set; }

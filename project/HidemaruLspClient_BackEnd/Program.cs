@@ -29,47 +29,63 @@ namespace HidemaruLspClient
             }
             return Start(o)?1:0;
         }
+        static TraceListener CreateTracer(Options options)
+        {
+            if (options.logStreamWriter == null)
+            {
+                return new ConsoleTraceListener();
+            }
+            return new TextWriterTraceListener(options.logStreamWriter);
+        }
         static bool Start(Options options) {
-            using (var consoleTrace = new ConsoleTraceListener())
+
+            using (var consoleTrace = CreateTracer(options))
             {
                 Trace.Listeners.Add(consoleTrace);
-
-                if (!File.Exists(tlbPath))
+                try
                 {
-                    Trace.WriteLine($"Not found {tlbPath}");
-                    return false;
-                }
+                    if (!File.Exists(tlbPath))
+                    {
+                        Trace.WriteLine($"Not found {tlbPath}");
+                        return false;
+                    }
 
-                var serverClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
-                var exePath = Process.GetCurrentProcess().MainModule.FileName;
+                    var serverClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
+                    var exePath = Process.GetCurrentProcess().MainModule.FileName;
 #if false
-                ProgIdAttribute progId = Attribute.GetCustomAttribute(typeof(HidemaruLspBackEndServer), typeof(ProgIdAttribute)) as ProgIdAttribute;
+                    ProgIdAttribute progId = Attribute.GetCustomAttribute(typeof(HidemaruLspBackEndServer), typeof(ProgIdAttribute)) as ProgIdAttribute;
 #else
-                ProgIdAttribute progId = null;
+                    ProgIdAttribute progId = null;
 #endif
-                switch (options.Mode) {
-                    case Options.RegistryMode.RegServer:
-                        LocalServer.RegisterToLocalMachine(serverClassGuid, progId, exePath, tlbPath);
-                        return true;
-                    case Options.RegistryMode.RegServerPerUser:
-                        LocalServer.RegisterToCurrentUser(serverClassGuid, progId, exePath, tlbPath);
-                        return true;
-                    case Options.RegistryMode.UnRegServer:
-                        LocalServer.UnregisterFromLocalMachine(serverClassGuid, progId, tlbPath);
-                        return true;
-                    case Options.RegistryMode.UnRegServerPerUser:
-                        LocalServer.UnregisterToCurrentUser(serverClassGuid, progId, tlbPath);
-                        return true;
-                    case Options.RegistryMode.Unknown:
-                        goto default;
-                    default:
-                        StartServer(serverClassGuid);
-                        return true;
+                    switch (options.Mode)
+                    {
+                        case Options.RegistryMode.RegServer:
+                            LocalServer.RegisterToLocalMachine(serverClassGuid, progId, exePath, tlbPath);
+                            return true;
+                        case Options.RegistryMode.RegServerPerUser:
+                            LocalServer.RegisterToCurrentUser(serverClassGuid, progId, exePath, tlbPath);
+                            return true;
+                        case Options.RegistryMode.UnRegServer:
+                            LocalServer.UnregisterFromLocalMachine(serverClassGuid, progId, tlbPath);
+                            return true;
+                        case Options.RegistryMode.UnRegServerPerUser:
+                            LocalServer.UnregisterToCurrentUser(serverClassGuid, progId, tlbPath);
+                            return true;
+                        case Options.RegistryMode.Unknown:
+                            goto default;
+                        default:
+                            return StartServer(serverClassGuid);
+                    }
+                }
+                finally
+                {
+                    Trace.Listeners.Remove(consoleTrace);
                 }
             }
         }
-        static void StartServer(Guid serverClassGuid)
+        static bool StartServer(Guid serverClassGuid)
         {
+            Trace.WriteLine("StartServer");
             using (var server = new LocalServer())
             {
                 server.RegisterClass<HidemaruLspBackEndServer>(serverClassGuid);
@@ -83,9 +99,14 @@ namespace HidemaruLspClient
                 }
             }
             Trace.WriteLine("[Finish]exe");
+            return true;
         }
         static void WaitServerUsingEvent()
         {
+            Trace.WriteLine($"================================");
+            Trace.WriteLine($"Main thread is Sleeping.");
+            Trace.WriteLine($"================================");
+            Trace.Flush();
             var autoEvent = new AutoResetEvent(false);
             autoEvent.WaitOne();
         }
@@ -94,6 +115,7 @@ namespace HidemaruLspClient
             Trace.WriteLine($"================================");
             Trace.WriteLine($"Press ENTER to exit.");
             Trace.WriteLine($"================================");
+            Trace.Flush();
             Console.ReadLine();
         }
 

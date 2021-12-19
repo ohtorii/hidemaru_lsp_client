@@ -26,6 +26,6 @@ namespace HidemaruLspClient
         }
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern MessageBoxResult MessageBox(IntPtr hWnd, String text, String caption, int options);
-        
+
     }
 }

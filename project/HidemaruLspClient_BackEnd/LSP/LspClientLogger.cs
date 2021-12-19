@@ -24,7 +24,7 @@ namespace HidemaruLspClient
 				var logfile = new NLog.Targets.FileTarget("logfile") { FileName = logFilename };
 				//var logconsole = new NLog.Targets.ConsoleTarget("logconsole");
 
-				// Rules for mapping loggers to targets            
+				// Rules for mapping loggers to targets
 				//config.AddRule(LogLevel.Info, LogLevel.Fatal, logconsole);
 				config.AddRule(LogLevel.Trace, LogLevel.Fatal, logfile);
 
@@ -69,5 +69,5 @@ namespace HidemaruLspClient
 		{
 			logger.Warn(message);
 		}
-	}	
+	}
 }

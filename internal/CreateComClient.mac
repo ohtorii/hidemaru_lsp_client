@@ -16,7 +16,8 @@ $comService         ="HidemaruLspClient_FrontEnd.Service";
 $comServiceAsync    ="HidemaruLspClient_FrontEnd.ServiceAsync";
 $comServiceName     ="";
 
-$logFileName        =@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_client.log";
+$frontEndLogFileName  =@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_frontend.log";
+$backEndLogFileName   =@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_backend.log";
 $privateComObjectName ="lsp.client.private.obj";
 $publicComObjectName  ="lsp.client.public.obj";
 
@@ -106,10 +107,12 @@ SpawnBackEndCOMServer:
         return false;
     }
 
+    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $backEndLogFileName;
+    $$log=getresultex(-1);
     //Memo: 標準入力が有効なのかすぐに終了する。
     //run $$comServerFileName + " -regserverperuser";
 
-    runex $$comServerFileName + " -regserverperuser"
+    runex $$comServerFileName + " --mode RegServerPerUser --log " + $$log
     		, 0 			//sync	  0:async 1:sync
     		, 0, "" 		//stdin   0:none 1:auto 2:file 3:(reserve) 4:all 5:select
     		, 0, "" 		//stdout  0:none 1:auto 2:file 3:add file  4:new 5:insert 6:replace
@@ -154,7 +157,7 @@ Initialize:
     return true;
 
 InitializeBackEndService:
-    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;
+    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $frontEndLogFileName;
     $$log=getresultex(-1);
 
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
@@ -167,7 +170,7 @@ InitializeBackEndService:
     return true;
 
 InitializeBackEndServiceAsync:
-    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;
+    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $frontEndLogFileName;
     $$log=getresultex(-1);
 
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
@@ -176,7 +179,7 @@ InitializeBackEndServiceAsync:
     return true;
 
 InitializeServiceAsync:
-    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $logFileName;
+    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $frontEndLogFileName;
     $$log=getresultex(-1);
 
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);

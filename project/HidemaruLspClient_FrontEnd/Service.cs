@@ -325,14 +325,16 @@ namespace HidemaruLspClient_FrontEnd
 
                 try
                 {
-                    var ServerClassGuid = LspContract.Constants.ServerClassGuid;
-                    object obj;
-                    int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
-                    if (hr < 0)
                     {
-                        Marshal.ThrowExceptionForHR(hr);
+                        var ServerClassGuid = LspContract.Constants.ServerClassGuid;
+                        object obj;
+                        int hr = Ole32.CoCreateInstance(ServerClassGuid, IntPtr.Zero, Ole32.CLSCTX_LOCAL_SERVER, typeof(IHidemaruLspBackEndServer).GUID, out obj);
+                        if (hr < 0)
+                        {
+                            Marshal.ThrowExceptionForHR(hr);
+                        }
+                        context_.server = (IHidemaruLspBackEndServer)obj;
                     }
-                    context_.server = (IHidemaruLspBackEndServer)obj;
                     var ret = Convert.ToBoolean(context_.server.Initialize(logFilename));
                     if (ret)
                     {
