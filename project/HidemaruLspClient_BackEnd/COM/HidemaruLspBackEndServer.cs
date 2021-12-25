@@ -82,11 +82,11 @@ namespace HidemaruLspClient
         /// コンストラクタ
         /// (Memo)アウトプロセスサーバなので createobject するたびに呼ばれる
         /// </summary>
-        sbyte IHidemaruLspBackEndServer.Initialize(string logFileName)
+        sbyte IHidemaruLspBackEndServer.Initialize()
         {
             if (lspClientLogger_ == null)
             {
-                lspClientLogger_ = new LspClientLogger(logFileName);
+                lspClientLogger_ = new LspClientLogger();
             }
 
             var logger = LogManager.GetCurrentClassLogger();

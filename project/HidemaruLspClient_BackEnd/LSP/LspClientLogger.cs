@@ -9,15 +9,11 @@ namespace HidemaruLspClient
 {
     class LspClientLogger : LSP.Implementation.ILogger
 	{
-		NLog.Logger logger = null;
-		public NLog.Logger GetLogger()
-        {
-			return logger;
-        }
+		public NLog.Logger logger {get; private set;}
 
-		public LspClientLogger(string logFilename)
+		public LspClientLogger(/*string logFilename*/)
 		{
-			{
+			/*{
 				var config = new NLog.Config.LoggingConfiguration();
 
 				// Targets where to log to: File and Console
@@ -30,7 +26,7 @@ namespace HidemaruLspClient
 
 				// Apply config
 				NLog.LogManager.Configuration = config;
-			}
+			}*/
 			logger = NLog.LogManager.GetCurrentClassLogger();
 		}
 		public bool IsFatalEnabled { get { return logger.IsFatalEnabled; } }

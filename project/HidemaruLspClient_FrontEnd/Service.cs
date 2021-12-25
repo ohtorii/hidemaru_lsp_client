@@ -314,7 +314,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
-        bool InitializeBackEndServiceMain(string logFilename)
+        bool InitializeBackEndServiceMain()
         {
             lock (context_)
             {
@@ -335,7 +335,7 @@ namespace HidemaruLspClient_FrontEnd
                         }
                         context_.server = (IHidemaruLspBackEndServer)obj;
                     }
-                    var ret = Convert.ToBoolean(context_.server.Initialize(logFilename));
+                    var ret = Convert.ToBoolean(context_.server.Initialize());
                     if (ret)
                     {
                         logger_ = context_.server.GetLogger();
@@ -434,12 +434,12 @@ namespace HidemaruLspClient_FrontEnd
         /// BackEndを初期化する（非同期版）
         /// </summary>
         /// <param name="logFilename"></param>
-        public void InitializeBackEndServiceAsync(string logFilename)
+        public void InitializeBackEndServiceAsync()
         {
             var _ = Task.Run(() => {
                 try
                 {
-                    if (InitializeBackEndServiceMain(logFilename))
+                    if (InitializeBackEndServiceMain())
                     {
                         return;
                     }
@@ -494,11 +494,11 @@ namespace HidemaruLspClient_FrontEnd
         /// </summary>
         /// <param name="logFilename"></param>
         /// <returns></returns>
-        public bool InitializeBackEndService(string logFilename)
+        public bool InitializeBackEndService()
         {
             try
             {
-                if (!InitializeBackEndServiceMain(logFilename))
+                if (!InitializeBackEndServiceMain())
                 {
                     Finalizer();
                     return false;

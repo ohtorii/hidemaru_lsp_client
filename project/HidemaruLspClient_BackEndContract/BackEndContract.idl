@@ -226,7 +226,7 @@ interface IWorker :IDispatch
 ]
 interface IHidemaruLspBackEndServer : IDispatch
 {
-    HRESULT Initialize([in]BSTR logFileName, [out, retval] boolean* ret);
+    HRESULT Initialize(/*[in]BSTR logFileName,*/ [out, retval] boolean* ret);
     HRESULT GetLogger([out,retval]ILspClientLogger** logger);
     HRESULT Add([in]int x, [in] int y, [out, retval] int* ret);
     HRESULT CreateWorker([in]BSTR ServerName,

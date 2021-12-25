@@ -16,7 +16,6 @@ $comService         ="HidemaruLspClient_FrontEnd.Service";
 $comServiceAsync    ="HidemaruLspClient_FrontEnd.ServiceAsync";
 $comServiceName     ="";
 
-$frontEndLogFileName  =@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_frontend.log";
 $backEndLogFileName   =@"%HOMEDRIVE%%HOMEPATH%\hidemaru_lsp_backend.log";
 $privateComObjectName ="lsp.client.private.obj";
 $publicComObjectName  ="lsp.client.public.obj";
@@ -157,12 +156,9 @@ Initialize:
     return true;
 
 InitializeBackEndService:
-    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $frontEndLogFileName;
-    $$log=getresultex(-1);
-
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
-    ##n=member(##obj,"InitializeBackEndService",$$log);
+    ##n=member(##obj,"InitializeBackEndService");
     if(##n==false){
         message "[Failed] InitializeBackEndService";
         return false;
@@ -170,23 +166,15 @@ InitializeBackEndService:
     return true;
 
 InitializeBackEndServiceAsync:
-    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $frontEndLogFileName;
-    $$log=getresultex(-1);
-
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
-    ##_=member(##obj,"InitializeBackEndServiceAsync",$$log);
+    ##_=member(##obj,"InitializeBackEndServiceAsync");
     return true;
 
 InitializeServiceAsync:
-    execmacro currentmacrodirectory+@"\expand_environment_strings.mac", $frontEndLogFileName;
-    $$log=getresultex(-1);
-
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
-    /*##_=member(##obj,"SetFileType",filetype);
-    ##_=member(##obj,"SetSourceCodeDirectory",directory2);*/
-    ##_=member(##obj,"InitializeServiceAsync",$$log,filetype,directory2);
+    ##_=member(##obj,"InitializeServiceAsync",filetype,directory2);
     return true;
 
 CheckService:

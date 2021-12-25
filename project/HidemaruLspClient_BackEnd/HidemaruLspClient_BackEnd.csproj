@@ -64,6 +64,12 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <Import Project="..\LanguageServerProtocol\LanguageServerProtocol.projitems" Label="Shared" />
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

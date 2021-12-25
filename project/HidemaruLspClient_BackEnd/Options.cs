@@ -9,6 +9,7 @@ namespace HidemaruLspClient
 {
     internal class Options
     {
+        internal static Options Default = new Options();
         internal static Options Create(bool isConsoleApplication, string [] args) {
             Options result=null;
             {
@@ -53,10 +54,10 @@ namespace HidemaruLspClient
         }
 
         [Option('m', "mode", HelpText = "RegServer, UnRegServer, RegServerPerUser, UnRegServerPerUser", Default = RegistryMode.Unknown)]
-        public RegistryMode Mode { get; set; }
+        public RegistryMode Mode { get; set; } = RegistryMode.Unknown;
 
         [Option('l', "log", HelpText = "Log filename.")]
-        public StreamWriter logStreamWriter { get; set; }
+        public StreamWriter logStreamWriter { get; set; } = null;
 
         //[CommandLine.Option('s',"show", HelpText ="Show window.")]
         //public bool Show { get; set; }

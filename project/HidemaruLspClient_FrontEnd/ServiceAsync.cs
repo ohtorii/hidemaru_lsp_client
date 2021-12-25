@@ -15,7 +15,6 @@ namespace HidemaruLspClient_FrontEnd
         Service service_=null;
         Timer timer_ = null;
         string fileType_ = "";
-        string logFilename_="";
         string sourceCodeDirectory_ = "";
         System.Threading.CancellationToken cancellationToken_;
 
@@ -39,7 +38,7 @@ namespace HidemaruLspClient_FrontEnd
             switch (initializeStatus_)
             {
                 case InitializeStatus.InitializeBackend:
-                    service_.InitializeBackEndServiceAsync(logFilename_);
+                    service_.InitializeBackEndServiceAsync();
                     initializeStatus_++;
                     goto case InitializeStatus.CheckBackend;
 
@@ -87,9 +86,8 @@ namespace HidemaruLspClient_FrontEnd
         {
             sourceCodeDirectory_ = sourceCodeDirectory;
         }
-        public void InitializeServiceAsync(string logFilename, string fileExtension, string currentSourceCodeDirectory)
+        public void InitializeServiceAsync(string fileExtension, string currentSourceCodeDirectory)
         {
-            logFilename_ = logFilename;
             fileType_ = fileExtension;
             sourceCodeDirectory_ = currentSourceCodeDirectory;
 

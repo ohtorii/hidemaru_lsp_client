@@ -16,29 +16,58 @@ namespace HidemaruLspClient
 {
     partial class Program
     {
-        static DllAssemblyResolver dasmr          = new DllAssemblyResolver();
-        static readonly string tlbPath            = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb");
+        static DllAssemblyResolver dasmr = new DllAssemblyResolver();
+        static readonly string tlbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb");
         static readonly bool isConsoleApplication = IsConsoleApplication();
 
         static int Main(string[] args)
         {
-            var o = Options.Create(isConsoleApplication, args);
-            if (o == null)
+            if (args.Any())
             {
-                return 1;
+                Trace.WriteLine(string.Format("HidemaruLspClient_BackEnd: args[{0}]={{{1}}}", args.Count(), string.Join(',', args)));
             }
-            return Start(o)?1:0;
+            else
+            {
+                Trace.WriteLine(string.Format("HidemaruLspClient_BackEnd: args[{0}]={{}}", 0));
+            }
+            Trace.Flush();
+
+            Options options;
+            if (LaunchedviaCoCreateInstance(args))
+            {
+                options = Options.Default;
+            }
+            else
+            {
+                options = Options.Create(isConsoleApplication, args);
+            }
+            return Start(options) ? 1 : 0;
         }
+        /// <summary>
+        /// このプロセスがCoCreateInstance経由で起動されたかどうか
+        /// </summary>
+        /// <param name="args">Mainに渡されたコマンドライン引数</param>
+        /// <returns></returns>
+        static bool LaunchedviaCoCreateInstance(string[] args){
+            if((args.Count() == 1) && (args[0] == "-Embedding")){
+                return true;
+            }
+            return false;
+        }
+
         static TraceListener CreateTracer(Options options)
         {
-            if (options.logStreamWriter == null)
+            if ((options==null) || (options.logStreamWriter == null))
             {
                 return new ConsoleTraceListener();
             }
             return new TextWriterTraceListener(options.logStreamWriter);
         }
         static bool Start(Options options) {
-
+            if (options == null)
+            {
+                return false;
+            }
             using (var consoleTrace = CreateTracer(options))
             {
                 Trace.Listeners.Add(consoleTrace);
