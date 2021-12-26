@@ -11,13 +11,12 @@ using System.Threading.Tasks;
 using COMRegistration;
 using HidemaruLspClient_BackEndContract;
 
-
 namespace HidemaruLspClient
 {
     partial class Program
     {
-        static DllAssemblyResolver dasmr = new DllAssemblyResolver();
-        static readonly string tlbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb");
+        static DllAssemblyResolver dasmr          = new DllAssemblyResolver();
+        static readonly string tlbPath            = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb");
         static readonly bool isConsoleApplication = IsConsoleApplication();
 
         static int Main(string[] args)
@@ -41,7 +40,10 @@ namespace HidemaruLspClient
             {
                 options = Options.Create(isConsoleApplication, args);
             }
-            return Start(options) ? 1 : 0;
+
+            const int success = 0;
+            const int error = 1;
+            return Start(options) ? success : error;
         }
         /// <summary>
         /// このプロセスがCoCreateInstance経由で起動されたかどうか
@@ -54,23 +56,14 @@ namespace HidemaruLspClient
             }
             return false;
         }
-
-        static TraceListener CreateTracer(Options options)
-        {
-            if ((options==null) || (options.logStreamWriter == null))
-            {
-                return new ConsoleTraceListener();
-            }
-            return new TextWriterTraceListener(options.logStreamWriter);
-        }
         static bool Start(Options options) {
             if (options == null)
             {
                 return false;
             }
-            using (var consoleTrace = CreateTracer(options))
+            using (var tracer = new LoggingOutToOneLocation())
             {
-                Trace.Listeners.Add(consoleTrace);
+                Trace.Listeners.Add(tracer);
                 try
                 {
                     if (!File.Exists(tlbPath))
@@ -108,7 +101,7 @@ namespace HidemaruLspClient
                 }
                 finally
                 {
-                    Trace.Listeners.Remove(consoleTrace);
+                    Trace.Listeners.Remove(tracer);
                 }
             }
         }
