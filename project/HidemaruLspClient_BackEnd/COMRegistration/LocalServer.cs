@@ -17,15 +17,31 @@ namespace COMRegistration
         {
             Register(clsid, progId, exePath, tlbPath, true);
         }
-
+        /// <summary>
+        /// Registering server
+        /// </summary>
+        /// <param name="clsid"></param>
+        /// <param name="progId"></param>
+        /// <param name="exePath"></param>
+        /// <param name="tlbPath"></param>
+        /// <param name="perUser"></param>
         static void Register(Guid clsid, ProgIdAttribute progId, string exePath, string tlbPath, bool perUser)
         {
             // Register local server
-            Trace.WriteLine($"Registering server:");
+            Trace.WriteLine("[Enter]LocalServer.Register");
             Trace.Indent();
-            Trace.WriteLine($"CLSID: {clsid:B}");
-            Trace.WriteLine($"Executable: {exePath}");
-            Trace.Unindent();
+            try
+            {
+                Trace.WriteLine($"CLSID     : {clsid:B}");
+                Trace.WriteLine($"progId    : {progId?.Value}");
+                Trace.WriteLine($"Executable: {exePath}");
+                Trace.WriteLine($"tlbPath   : {tlbPath}");
+                Trace.WriteLine($"perUser   : {perUser}");
+            }
+            finally
+            {
+                Trace.Unindent();
+            }
 
             RegistryKey dst;
             if (perUser)
@@ -54,6 +70,7 @@ namespace COMRegistration
             {
                 TypeLib.Register(tlbPath, perUser);
             }
+            Trace.WriteLine("[Leave]LocalServer.Register");
         }
         public static void UnregisterFromLocalMachine(Guid clsid, ProgIdAttribute progId, string tlbPath)
         {
@@ -63,12 +80,28 @@ namespace COMRegistration
         {
             Unregister(clsid,progId, tlbPath,true);
         }
+        /// <summary>
+        /// Unregistering server
+        /// </summary>
+        /// <param name="clsid"></param>
+        /// <param name="progId"></param>
+        /// <param name="tlbPath"></param>
+        /// <param name="perUser"></param>
         static void Unregister(Guid clsid, ProgIdAttribute progId, string tlbPath, bool perUser)
         {
-            Trace.WriteLine($"Unregistering server:");
+            Trace.WriteLine("[Enter]LocalServer.Unregister");
             Trace.Indent();
-            Trace.WriteLine($"CLSID: {clsid:B}");
-            Trace.Unindent();
+            try
+            {
+                Trace.WriteLine($"CLSID: {clsid:B}");
+                Trace.WriteLine($"progId    : {progId?.Value}");
+                Trace.WriteLine($"tlbPath   : {tlbPath}");
+                Trace.WriteLine($"perUser   : {perUser}");
+            }
+            finally
+            {
+                Trace.Unindent();
+            }
 
             RegistryKey dst;
             if (perUser)
@@ -95,50 +128,71 @@ namespace COMRegistration
             {
                 TypeLib.Unregister(tlbPath, perUser);
             }
+            Trace.WriteLine("[Leave]LocalServer.Unregister");
         }
 
         private readonly List<int> registrationCookies = new List<int>();
-
+        /// <summary>
+        /// Registering class object
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="clsid"></param>
         public void RegisterClass<T>(Guid clsid) where T : new()
         {
-            Trace.WriteLine($"[Create]Registering class object:");
+            Trace.WriteLine("[Enter]LocalServer.RegisterClass");
             Trace.Indent();
-            Trace.WriteLine($"CLSID: {clsid:B}");
-            Trace.WriteLine($"Type: {typeof(T)}");
-
-            int cookie;
-            int hr = Ole32.CoRegisterClassObject(ref clsid, new BasicClassFactory<T>(), Ole32.CLSCTX_LOCAL_SERVER, Ole32.REGCLS_MULTIPLEUSE | Ole32.REGCLS_SUSPENDED, out cookie);
-            if (hr < 0)
+            try
             {
-                Trace.WriteLine("Exception @1");
-                Marshal.ThrowExceptionForHR(hr);
+                Trace.WriteLine($"CLSID: {clsid:B}");
+                Trace.WriteLine($"Type: {typeof(T)}");
+
+                int cookie;
+                int hrRegister = Ole32.CoRegisterClassObject(ref clsid, new BasicClassFactory<T>(), Ole32.CLSCTX_LOCAL_SERVER, Ole32.REGCLS_MULTIPLEUSE | Ole32.REGCLS_SUSPENDED, out cookie);
+                if (hrRegister < 0)
+                {
+                    Trace.WriteLine(string.Format($"Marshal.ThrowExceptionForHR(hrRegister={hrRegister})"));
+                    Marshal.ThrowExceptionForHR(hrRegister);
+                }
+                Trace.WriteLine($"Cookie: {cookie}");
+                registrationCookies.Add(cookie);
+            }
+            finally
+            {
+                Trace.Unindent();
             }
 
-            registrationCookies.Add(cookie);
-            Trace.WriteLine($"Cookie: {cookie}");
-            Trace.Unindent();
-
-            hr = Ole32.CoResumeClassObjects();
-            if (hr < 0)
+            int hrResume = Ole32.CoResumeClassObjects();
+            if (hrResume < 0)
             {
-                Trace.WriteLine("Exception @2");
-                Marshal.ThrowExceptionForHR(hr);
+                Trace.WriteLine($"Marshal.ThrowExceptionForHR(hrResume={hrResume})");
+                Marshal.ThrowExceptionForHR(hrResume);
             }
-            Trace.WriteLine($"[Finish]Registering class object:");
+            Trace.WriteLine("[Leave]LocalServer.RegisterClass");
         }
 
+        /// <summary>
+        /// Revoking class object registrations
+        /// </summary>
         public void Dispose()
         {
-            Trace.WriteLine($"Revoking class object registrations:");
+            Trace.WriteLine("[Enter]LocalServer.Dispose");
             Trace.Indent();
-            foreach (int cookie in registrationCookies)
+            try
             {
-                Trace.WriteLine($"Cookie: {cookie}");
-                int hr = Ole32.CoRevokeClassObject(cookie);
-                Debug.Assert(hr >= 0, $"CoRevokeClassObject failed ({hr:x}). Cookie: {cookie}");
+                foreach (int cookie in registrationCookies)
+                {
+                    Trace.WriteLine($"Cookie: {cookie}");
+                    int hr = Ole32.CoRevokeClassObject(cookie);
+                    if (hr < 0) {
+                        Trace.TraceError($"CoRevokeClassObject failed ({hr:x}). Cookie: {cookie}");
+                    }
+                }
             }
-
-            Trace.Unindent();
+            finally
+            {
+                Trace.Unindent();
+            }
+            Trace.WriteLine("[Leave]LocalServer.Dispose");
         }
     }
 }

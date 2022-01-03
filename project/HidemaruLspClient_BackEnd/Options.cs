@@ -10,12 +10,18 @@ namespace HidemaruLspClient
     internal class Options
     {
         internal static Options Default = new Options();
+        /// <summary>
+        /// コマンドライン引数からOptionsを生成する
+        /// </summary>
+        /// <param name="isConsoleApplication">コンソールアプリケーションかどうか</param>
+        /// <param name="args">コマンドライン引数</param>
+        /// <returns>--helpの場合はnullを返す</returns>
         internal static Options Create(bool isConsoleApplication, string [] args) {
             Options result=null;
             {
-                Parser parser = null;
-                StringBuilder helpTextBuilder=null;
-                StringWriter helpTextWriter = null;
+                Parser parser                 = null;
+                StringBuilder helpTextBuilder =null;
+                StringWriter helpTextWriter   = null;
                 if (isConsoleApplication)
                 {
                     parser = new Parser(config=> { config.HelpWriter = Console.Out; });
@@ -23,8 +29,8 @@ namespace HidemaruLspClient
                 else
                 {
                     helpTextBuilder = new StringBuilder();
-                    helpTextWriter = new StringWriter(helpTextBuilder);
-                    parser = new Parser(config => { config.HelpWriter = helpTextWriter; });
+                    helpTextWriter  = new StringWriter(helpTextBuilder);
+                    parser          = new Parser(config => { config.HelpWriter = helpTextWriter; });
                 }
                 parser.ParseArguments<Options>(args)
                     .WithParsed<Options>(o =>

@@ -40,14 +40,6 @@ namespace COMRegistration
 
         public void LockServer([MarshalAs(UnmanagedType.Bool)] bool fLock)
         {
-            if (fLock)
-            {
-                Debug.WriteLine("LockServer");
-            }
-            else
-            {
-                Debug.WriteLine("UnlockServer");
-            }
         }
 
         private static readonly Guid IID_IUnknown = Guid.Parse("00000000-0000-0000-C000-000000000046");

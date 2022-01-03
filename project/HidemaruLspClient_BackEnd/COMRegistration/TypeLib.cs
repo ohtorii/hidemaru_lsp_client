@@ -8,12 +8,23 @@ namespace COMRegistration
 {
     internal static class TypeLib
     {
+        /// <summary>
+        /// Registering type library:
+        /// </summary>
+        /// <param name="tlbPath"></param>
+        /// <param name="perUser"></param>
         public static void Register(string tlbPath, bool perUser)
         {
-            Trace.WriteLine($"Registering type library:");
+            Trace.WriteLine("[Enter]TypeLib.Register");
             Trace.Indent();
-            Trace.WriteLine(tlbPath);
-            Trace.Unindent();
+            try
+            {
+                Trace.WriteLine(tlbPath);
+            }
+            finally
+            {
+                Trace.Unindent();
+            }
 
             if (perUser)
             {
@@ -40,14 +51,25 @@ namespace COMRegistration
                     Marshal.ThrowExceptionForHR(hr);
                 }
             }
+            Trace.WriteLine("[Leave]TypeLib.Register");
         }
-        
+        /// <summary>
+        /// Unregistering type library
+        /// </summary>
+        /// <param name="tlbPath"></param>
+        /// <param name="perUser"></param>
         public static void Unregister(string tlbPath, bool perUser)
         {
-            Trace.WriteLine($"Unregistering type library:");
+            Trace.WriteLine("[Enter]TypeLib.Unregister");
             Trace.Indent();
-            Trace.WriteLine(tlbPath);
-            Trace.Unindent();
+            try
+            {
+                Trace.WriteLine(tlbPath);
+            }
+            finally
+            {
+                Trace.Unindent();
+            }
 
             ComTypes.ITypeLib typeLib;
             int hr = OleAut32.LoadTypeLibEx(tlbPath, OleAut32.REGKIND.REGKIND_NONE, out typeLib);
@@ -85,58 +107,7 @@ namespace COMRegistration
                     typeLib.ReleaseTLibAttr(attrPtr);
                 }
             }
-        }
-
-        private class OleAut32
-        {
-            // https://docs.microsoft.com/windows/api/oleauto/ne-oleauto-regkind
-            public enum REGKIND
-            {
-                REGKIND_DEFAULT = 0,
-                REGKIND_REGISTER = 1,
-                REGKIND_NONE = 2
-            }
-
-            // https://docs.microsoft.com/windows/api/oleauto/nf-oleauto-loadtypelibex
-            [DllImport(nameof(OleAut32), CharSet = CharSet.Unicode, ExactSpelling = true)]
-            public static extern int LoadTypeLibEx(
-                [In, MarshalAs(UnmanagedType.LPWStr)] string fileName,
-                REGKIND regKind,
-                out ComTypes.ITypeLib typeLib);
-            
-            [DllImport(nameof(OleAut32), CharSet = CharSet.Unicode, ExactSpelling = true)]
-            public static extern int LoadTypeLib(
-                [In, MarshalAs(UnmanagedType.LPWStr)] string fileName,
-                out ComTypes.ITypeLib typeLib);
-            
-            [DllImport(nameof(OleAut32), CharSet = CharSet.Unicode, ExactSpelling = true)]
-            public static extern int RegisterTypeLib(
-                ComTypes.ITypeLib ptlib,
-                [In, MarshalAs(UnmanagedType.LPWStr)] string pwszFullPath,
-                [In, MarshalAs(UnmanagedType.LPWStr)] string pwszHelpDir);
-
-            [DllImport(nameof(OleAut32), CharSet = CharSet.Unicode, ExactSpelling = true)]
-            public static extern int RegisterTypeLibForUser(
-                ComTypes.ITypeLib ptlib,
-                [In, MarshalAs(UnmanagedType.LPWStr)] string pwszFullPath,
-                [In, MarshalAs(UnmanagedType.LPWStr)] string pwszHelpDir);
-
-            // https://docs.microsoft.com/windows/api/oleauto/nf-oleauto-unregistertypelib
-            [DllImport(nameof(OleAut32))]
-            public static extern int UnRegisterTypeLib(
-                ref Guid id,
-                short majorVersion,
-                short minorVersion,
-                int lcid,
-                ComTypes.SYSKIND sysKind);
-
-            [DllImport(nameof(OleAut32))]
-            public static extern int UnRegisterTypeLibForUser(
-                ref Guid id,
-                short majorVersion,
-                short minorVersion,
-                int lcid,
-                ComTypes.SYSKIND sysKind);
+            Trace.WriteLine("[Leave]TypeLib.Unregister");
         }
     }
 }
