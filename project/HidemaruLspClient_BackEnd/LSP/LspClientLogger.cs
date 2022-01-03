@@ -21,35 +21,29 @@ namespace HidemaruLspClient
 		public bool IsInfoEnabled { get { return nlog_.IsInfoEnabled; } }
 		public bool IsDebugEnabled { get { return nlog_.IsDebugEnabled; } }
 		public bool IsTraceEnabled { get { return nlog_.IsTraceEnabled; } }
-
-		public void Debug(string message)
+        public void Fatal(string message)
+        {
+            nlog_.Fatal(message);
+        }
+        public void Error(string message)
+        {
+            nlog_.Error(message);
+        }
+        public void Warn(string message)
+        {
+            nlog_.Warn(message);
+        }
+        public void Info(string message)
+        {
+            nlog_.Info(message);
+        }
+        public void Debug(string message)
 		{
-			nlog_.Debug(message);
-		}
-
-		public void Error(string message)
-		{
-			nlog_.Error(message);
-		}
-
-		public void Fatal(string message)
-		{
-			nlog_.Fatal(message);
-		}
-
-		public void Info(string message)
-		{
-			nlog_.Info(message);
-		}
-
-		public void Trace(string message)
+            nlog_.Debug(message);
+        }
+        public void Trace(string message)
 		{
 			nlog_.Trace(message);
 		}
-
-		public void Warn(string message)
-		{
-			nlog_.Warn(message);
-		}
-	}
+    }
 }
