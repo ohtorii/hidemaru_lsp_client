@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient
