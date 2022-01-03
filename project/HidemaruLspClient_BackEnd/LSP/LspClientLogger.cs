@@ -9,61 +9,47 @@ namespace HidemaruLspClient
 {
     class LspClientLogger : LSP.Implementation.ILogger
 	{
-		public NLog.Logger logger {get; private set;}
+		public NLog.Logger nlog_ {get; private set;}
 
-		public LspClientLogger(/*string logFilename*/)
+		public LspClientLogger()
 		{
-			/*{
-				var config = new NLog.Config.LoggingConfiguration();
-
-				// Targets where to log to: File and Console
-				var logfile = new NLog.Targets.FileTarget("logfile") { FileName = logFilename };
-				//var logconsole = new NLog.Targets.ConsoleTarget("logconsole");
-
-				// Rules for mapping loggers to targets
-				//config.AddRule(LogLevel.Info, LogLevel.Fatal, logconsole);
-				config.AddRule(LogLevel.Trace, LogLevel.Fatal, logfile);
-
-				// Apply config
-				NLog.LogManager.Configuration = config;
-			}*/
-			logger = NLog.LogManager.GetCurrentClassLogger();
+			nlog_ = NLog.LogManager.GetCurrentClassLogger();
 		}
-		public bool IsFatalEnabled { get { return logger.IsFatalEnabled; } }
-		public bool IsErrorEnabled { get { return logger.IsErrorEnabled; } }
-		public bool IsWarnEnabled { get { return logger.IsWarnEnabled; } }
-		public bool IsInfoEnabled { get { return logger.IsInfoEnabled; } }
-		public bool IsDebugEnabled { get { return logger.IsDebugEnabled; } }
-		public bool IsTraceEnabled { get { return logger.IsTraceEnabled; } }
+		public bool IsFatalEnabled { get { return nlog_.IsFatalEnabled; } }
+		public bool IsErrorEnabled { get { return nlog_.IsErrorEnabled; } }
+		public bool IsWarnEnabled { get { return nlog_.IsWarnEnabled; } }
+		public bool IsInfoEnabled { get { return nlog_.IsInfoEnabled; } }
+		public bool IsDebugEnabled { get { return nlog_.IsDebugEnabled; } }
+		public bool IsTraceEnabled { get { return nlog_.IsTraceEnabled; } }
 
 		public void Debug(string message)
 		{
-			logger.Debug(message);
+			nlog_.Debug(message);
 		}
 
 		public void Error(string message)
 		{
-			logger.Error(message);
+			nlog_.Error(message);
 		}
 
 		public void Fatal(string message)
 		{
-			logger.Fatal(message);
+			nlog_.Fatal(message);
 		}
 
 		public void Info(string message)
 		{
-			logger.Info(message);
+			nlog_.Info(message);
 		}
 
 		public void Trace(string message)
 		{
-			logger.Trace(message);
+			nlog_.Trace(message);
 		}
 
 		public void Warn(string message)
 		{
-			logger.Warn(message);
+			nlog_.Warn(message);
 		}
 	}
 }
