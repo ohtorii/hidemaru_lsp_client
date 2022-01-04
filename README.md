@@ -26,7 +26,6 @@
 |カーソル位置のシンボルを参照している箇所へジャンプ|textDocument/references|○|
 |実装へ移動|textDocument/implementation|○|
 |Hover|textDocument/hover|○|
-||||
 
 
 ## 動作確認した言語サーバ
@@ -46,7 +45,31 @@ C#,C++,Lua,Python...の各言語サーバ(LSP)は各自で導入してくださ�
 
 # マクロの導入方法
 
+後で書く
+
 ## カスタマイズ
+
+マクロの一部動作をカスタマイズできます。
+
+## ログファイル
+
+以下の設定ファイルをテキストエディタで編集してください。
+
+\\hidemaru_lsp_client\\internal\\bin\\HidemaruLspClient_BackEnd-**[x64|x86]**-Release\\**NLog.config**
+
+x64,x86は秀丸エディタに依存します。
+
+***NLog.config***のカスタマイズ詳細はNLogのマニュアルを参照してください。
+
+- [https://nlog-project.org/](https://nlog-project.org/)
+
+
+# 困った時は
+
+動作ログをテキストエディタなどで確認してください。
+
+%USERPROFILE%\yyyy-mm-dd_hidemaru_lsp.log
+
 
 # 謝辞
 
@@ -66,4 +89,4 @@ C#,C++,Lua,Python...の各言語サーバ(LSP)は各自で導入してくださ�
 - <https://github.com/ohtorii>
 
 
-後で書く
+以上
