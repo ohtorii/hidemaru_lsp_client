@@ -22,7 +22,8 @@ REM VisualStudiのバージョンに合わせてください
 REM set VSDEVCMD=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat
 set VSDEVCMD=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat
 
-call :SetupRootDir
+REM call :SetupRootDir %TEMP%
+call :SetupRootDir d:\temp
 
 set GIT_ROOT_DIR=%ROOT_DIR%\hidemaru_lsp_client
 set SOLUTION=%GIT_ROOT_DIR%\project\hidemaru_lsp_client.sln
@@ -99,12 +100,12 @@ exit /b !ERRORLEVEL!
 
     exit /b !RET!
 
-
+REM %1 一時ディレクトリ
 :SetupRootDir
     setlocal
     set TEMP_TIME=%time: =0%
     set NOW=%date:/=%%TEMP_TIME:~0,2%%TEMP_TIME:~3,2%%TEMP_TIME:~6,2%
-    set ROOT_DIR=%TEMP%\tmp_hm_lspclient\%NOW%_%random%
+    set ROOT_DIR=%1\tmp_hm_lspclient\%NOW%_%random%
     endlocal && set ROOT_DIR=%ROOT_DIR%
     exit /b 0
 
