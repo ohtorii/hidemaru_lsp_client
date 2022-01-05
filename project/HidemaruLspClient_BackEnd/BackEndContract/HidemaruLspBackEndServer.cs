@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using HidemaruLspClient_BackEndContract;
-
+using System.IO;
 
 namespace HidemaruLspClient
 {
@@ -129,6 +129,15 @@ namespace HidemaruLspClient
             var logger = LogManager.GetCurrentClassLogger();
             try
             {
+                if(! File.Exists(ExcutablePath))
+                {
+                    logger.Info($"Not found '{ExcutablePath}'");
+                    return null;
+                }
+                if (! Directory.Exists(RootUri))
+                {
+                    logger.Info($"Not found '{RootUri}'");
+                }
                 var holderKey = new LspKey(ServerName, RootUri);
                 if (workerHolder_.ContainsKey(holderKey))
                 {

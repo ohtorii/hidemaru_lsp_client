@@ -298,6 +298,7 @@ namespace HidemaruLspClient_FrontEnd
                 var path = iniReader_.Read(fileExtension, "ServerConfig");
                 if (path == "")
                 {
+                    logger_?.Info(string.Format($"{fileExtension} not found in .ini file."));
                     return "";
                 }
                 if (Path.IsPathRooted(path))
@@ -365,6 +366,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 return false;
             }
+            logger_?.Debug(string.Format($"serverConfigFilename={serverConfigFilename}"));
             lock (context_)
             {
                 if (!CreateWorkerMain(serverConfigFilename, currentSourceCodeDirectory))

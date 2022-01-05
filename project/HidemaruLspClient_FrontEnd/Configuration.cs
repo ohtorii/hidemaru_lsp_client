@@ -57,7 +57,7 @@ namespace HidemaruLspClient_FrontEnd
         /// <param name="serverConfigFilename"></param>
         public static Option Eval(string serverConfigFilename, string currentSourceCodeDirectory)
         {
-            logger_?.Info(string.Format("filename={0}", serverConfigFilename));
+            logger_?.Trace($"filename={serverConfigFilename}");
 
             LanguageServerProcess.Environment.Initialize(currentSourceCodeDirectory);
 
