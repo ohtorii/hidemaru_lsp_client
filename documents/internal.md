@@ -15,8 +15,15 @@
 
 端的に言い表すと秀丸エディタにLSPを組み込むのは難しいです、そこで、秀丸エディタと各言語のLSPをIn-Prcess Server/Out-Of-Process Serverが仲介することで実現しています。
 
+#### プロジェクトのルートフォルダについて
+
+LSPサーバのプロセス（図中の.exe）はプロジェクトのルートフォルダ毎に存在します。
+
+※図中のProjectAフォルダ以下のファイル(Foo.cs,Bar.cs)を参照
+
+
 #### 捕捉
-そもそも、秀丸エディタはテキストエディタなので上記1,2の特長は妥当だと思います。😉
+そもそも、秀丸エディタはテキストエディタなので上記1,2の特長は妥当だと思います😉
 
 # プロジェクトフォルダの指定方法
 
@@ -32,34 +39,50 @@
 
 前述のフォルダ中の.csファイルが参照するLanguageServerProcess.DLLは ***LanguageServerProcess*** フォルダを参照してください
 
-# 各言語のLSPサーバと通信する
+# LSP本体
 
 ## モデル定義
 
 [Language Server Protocol Specification](https://microsoft.github.io/language-server-protocol/specification) を参照してC#版のコードを記述します。</p>
 **LanguageServerProtocol/Model/*.cs** を参照してください。
 
-## COMインターフェース定義
+## ソースコード説明
+
+|サーバ機能|ファイル|
+|--|--|
+|プロセス起動|LanguageServerProtocol\Client\LanguageClient.cs|
+|stdio通信|LanguageServerProtocol\Client\ServerProcess.cs|
+|TCP/IP通信|未実装|
+|レスポンス送受信|LanguageServerProtocol\Client\Protocol.cs|
+
+
+# HidemaruLspClient_BackEnd.exeの内部実装
+
+秀丸エディタとLSPサーバの仲介を行います。
+
+## ソースコード説明
+
+|機能|ファイル|
+|--|--|
+|インターフェースを記述|HidemaruLspClient_BackEndContract/BackEndContract.idl|
+|インターフェース実装|HidemaruLspClient_BackEnd\BackEndContract\\*|
+
+## COMインターフェース定義から実装まで
 
 	HidemaruLspClient_BackEndContract\BackEndContract.idl   //←出発点
 	↓
 	HidemaruLspClient_BackEndContract.tlb
 	↓
-	HidemaruLspClient_Contract\bin\tlb2dll.bat              //←.tlbを.dllへ変換
+	HidemaruLspClient_Contract\bin\tlb2dll.bat              //←.tlbを.dllへ変換(VisualStudioのビルド後イベントで実行)
 	↓
 	HidemaruLspClient_BackEndContract.dll                   //←HidemaruLspClient_BackEndプロジェクトでインターフェースを実装
 	                                                        //←HidemaruLspClient_FrontEndプロジェクトでインターフェース定義を参照
 
+# HidemaruLspClient_FrontEnd.DLLの内部実装
 
+## ソースコード説明
 
-## HidemaruLspClient_BackEnd.exeの内部実装
-
-IDLファイル(***HidemaruLspClient_BackEndContract/BackEndContract.idl***)でインターフェースを記述します。
-
-IDLファイルから生成したインターフェースの実装方法は***HidemaruLspClient_BackEnd\BackEndContract***を参照します。
-
-
-## HidemaruLspClient_FrontEnd.DLLの内部実装
+秀丸マクロに不足している機能を提供します。
 
 |機能|ファイル|
 |--|--|
@@ -68,6 +91,7 @@ IDLファイルから生成したインターフェースの実装方法は***Hi
 |インターフェースの実装（非同期版）|HidemaruLspClient_FrontEnd\ServiceAsync.cs|
 
 秀丸マクロの実装により非同期版、同期版のどちらかを呼びます。
+
 
 
 以上
