@@ -1,9 +1,12 @@
 ﻿if(version<900){
 	message
 	"秀丸エディタのバージョンが古いためマクロを実行できません。\n"	+
-	"本マクロのドキュメントに記載されたバージョン以降の秀丸エディタをお使いください。";
+	"ver9.00以降の秀丸エディタをお使いください。";
 	endmacro "0";
 }
+
+$g_CheckDotnetEnvironment="lsp.client.private.environment";
+#g_CheckDotnetEnvironmentShareMode=2;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -13,6 +16,17 @@ call main;
 endmacro str(##return);
 
 main:
+    {
+        $$success="1";
+        if(getstaticvariable($g_CheckDotnetEnvironment,#g_CheckDotnetEnvironmentShareMode) != $$success){
+            execmacro currentmacrodirectory+@"\CheckDotnetEnvironment.mac";
+            if(getresultex(-1) != $$success){
+                return false;
+            }
+            setstaticvariable $g_CheckDotnetEnvironment,$$success,#g_CheckDotnetEnvironmentShareModen;
+        }
+    }
+
     execmacro currentmacrodirectory+@"\CreateComClient.mac";
     $$obj = getresultex(-1);
     if($$obj==""){

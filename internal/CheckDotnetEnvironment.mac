@@ -1,0 +1,86 @@
+﻿/*必要なdotnet環境がインストールされているか確認する
+*/
+
+
+$labelTable[0]="WhereDotnet";
+$labelTable[1]="CheckDotnetVersion";
+
+disabledraw;
+setcompatiblemode 0x20000;
+call main;
+endmacro str(##return);
+
+main:
+    call WhereDotnet;
+    if(! ##return){
+        return false;
+    }
+    call CheckDotnetVersion;
+    if(! ##return){
+        return false;
+    }
+    return ##return;
+
+
+WhereDotnet:
+    runex "cmd.exe /c where dotnet"
+            , 1         //sync   0:async, 1:sync
+            , 0, ""     //stdin  0:none, 1:auto, 2:<file, 3:(reserved),
+                        //       4:current content, 5:selection
+            , 0, ""     //stdout 0:none, 1:auto, 2:>file 3:>>file, 4:new window,
+                        //       5:insert, 6:replace, 7:>output pane, 8:>>output pane
+            , 0, ""     //stderr 0:none, 1:auto or >>stdout, 2-8:same as stdout's param
+            , 1, ""     //folder 0:none, 1:current, 2:specify 3:(reserved), 4:exe's
+            , 2         //show   0:auto, 1:show, 2:hide, 3-13:ShellExecute()'s SW_*
+            , 1         //draw   0:draw, 1:no draw when stdout redirected
+            , 0         //encode 0:ansi, 2:utf-16, 6:utf-8
+            , 0         //extended flags
+        ;
+    if(result==false){
+        return false;
+    }
+    ##errorlevel=getresultex(9);
+    if(##errorlevel==0){
+        return true;
+    }
+    return false;
+
+CheckDotnetVersion:
+    ##old_hidemaru=hidemaruhandle(0);
+    {
+        openfile "/h";
+        if(result==false){
+            return false;
+        }
+        runex "dotnet --list-runtimes"
+            , 1         //sync   0:async, 1:sync
+            , 0, ""     //stdin  0:none, 1:auto, 2:<file, 3:(reserved),
+                        //       4:current content, 5:selection
+            , 5, ""     //stdout 0:none, 1:auto, 2:>file 3:>>file, 4:new window,
+                        //       5:insert, 6:replace, 7:>output pane, 8:>>output pane
+            , 1, ""     //stderr 0:none, 1:auto or >>stdout, 2-8:same as stdout's param
+            , 1, ""     //folder 0:none, 1:current, 2:specify 3:(reserved), 4:exe's
+            , 2         //show   0:auto, 1:show, 2:hide, 3-13:ShellExecute()'s SW_*
+            , 1         //draw   0:draw, 1:no draw when stdout redirected
+            , 0         //encode 0:ansi, 2:utf-16, 6:utf-8
+            , 0         //extended flags
+        ;
+        if(result==false){
+            setactivehidemaru ##old_hidemaru;
+            return false;
+        }
+        ##errorlevel=getresultex(9);
+        if(##errorlevel!=0){
+            setactivehidemaru ##old_hidemaru;
+            return false;
+        }
+    }
+    gofiletop;
+    ##foundTheString=false;
+    {
+        searchdown "Microsoft.NETCore.App 5.",nocasesense,nohilight;
+        ##foundTheString=result;
+    }
+    setactivehidemaru ##old_hidemaru;
+    return ##foundTheString;
+
