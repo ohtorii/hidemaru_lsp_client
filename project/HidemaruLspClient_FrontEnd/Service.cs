@@ -361,12 +361,21 @@ namespace HidemaruLspClient_FrontEnd
         }
         bool InitializeFrontEndServiceMain(string fileExtension, string currentSourceCodeDirectory)
         {
+            if (! Directory.Exists(currentSourceCodeDirectory))
+            {
+                logger_.Error($"Not Found: currentSourceCodeDirectory('{currentSourceCodeDirectory}')");
+                return false;
+            }
             var serverConfigFilename = FindServerConfigFile(fileExtension);
             if (serverConfigFilename == "")
             {
                 return false;
             }
-            logger_?.Debug(string.Format($"serverConfigFilename={serverConfigFilename}"));
+            if(!File.Exists(serverConfigFilename))
+            {
+                logger_.Error($"Not found: serverConfigFilename('{serverConfigFilename}'')");
+                return false;
+            }
             lock (context_)
             {
                 if (!CreateWorkerMain(serverConfigFilename, currentSourceCodeDirectory))

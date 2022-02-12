@@ -129,15 +129,6 @@ namespace HidemaruLspClient
             var logger = LogManager.GetCurrentClassLogger();
             try
             {
-                if(! File.Exists(ExcutablePath))
-                {
-                    logger.Info($"Not found '{ExcutablePath}'");
-                    return null;
-                }
-                if (! Directory.Exists(RootUri))
-                {
-                    logger.Info($"Not found '{RootUri}'");
-                }
                 var holderKey = new LspKey(ServerName, RootUri);
                 if (workerHolder_.ContainsKey(holderKey))
                 {
