@@ -332,3 +332,6 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 project/HidemaruLspClient_BackEnd/Properties/launchSettings.json
+project/GPATH
+project/GRTAGS
+project/GTAGS
