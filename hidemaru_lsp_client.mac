@@ -1,2 +1,9 @@
-﻿execmacro currentmacrodirectory+"\\internal\\main.mac";
+﻿if(version<900){
+	message
+	"秀丸エディタのバージョンが古いためマクロを実行できません。\n"	+
+	"ver9.00以降の秀丸エディタをお使いください。";
+	endmacro "0";
+}
+
+execmacro currentmacrodirectory+"\\internal\\main.mac";
 endmacro getresultex(-1);

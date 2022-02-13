@@ -37,22 +37,36 @@ WhereDotnet:
             , 0         //extended flags
         ;
     if(result==false){
+        message "cmd.exeの起動に失敗しました";
         return false;
     }
     ##errorlevel=getresultex(9);
-    if(##errorlevel==0){
-        return true;
+    if(##errorlevel!=0){
+        message "dotnetをインストールしてください";
+        return false;
     }
-    return false;
+    return true;
+
 
 CheckDotnetVersion:
     ##old_hidemaru=hidemaruhandle(0);
-    {
-        openfile "/h";
-        if(result==false){
-            return false;
-        }
-        runex "dotnet --list-runtimes"
+    openfile "/h";
+    if(result==false){
+        message "新しい秀丸エディタを開けません";
+        return false;
+    }
+    ##new_hidemaru=hidemaruhandle(0);
+
+    call CheckDotnetVersionMain;
+    ##isVersionOk=##return;
+
+    setactivehidemaru ##old_hidemaru;
+    closehidemaruforced ##new_hidemaru;
+    return ##isVersionOk;
+
+
+CheckDotnetVersionMain:
+    runex "dotnet --list-runtimes"
             , 1         //sync   0:async, 1:sync
             , 0, ""     //stdin  0:none, 1:auto, 2:<file, 3:(reserved),
                         //       4:current content, 5:selection
@@ -65,22 +79,20 @@ CheckDotnetVersion:
             , 0         //encode 0:ansi, 2:utf-16, 6:utf-8
             , 0         //extended flags
         ;
-        if(result==false){
-            setactivehidemaru ##old_hidemaru;
-            return false;
-        }
-        ##errorlevel=getresultex(9);
-        if(##errorlevel!=0){
-            setactivehidemaru ##old_hidemaru;
-            return false;
-        }
+    if(result==false){
+        message "dotnetコマンドの起動に失敗しました";
+        return false;
     }
-    gofiletop;
-    ##foundTheString=false;
-    {
-        searchdown "Microsoft.NETCore.App 5.",nocasesense,nohilight;
-        ##foundTheString=result;
+    ##errorlevel=getresultex(9);
+    if(##errorlevel!=0){
+        message "dotnetコマンドがエラーを返しました";
+        return false;
     }
-    setactivehidemaru ##old_hidemaru;
-    return ##foundTheString;
 
+    gofiletop;
+    searchdown "Microsoft.NETCore.App 5.",nocasesense,nohilight;
+    if(result==false){
+        message ".NETCore version 5がインストールされていません";
+        return false;
+    }
+    return true;
