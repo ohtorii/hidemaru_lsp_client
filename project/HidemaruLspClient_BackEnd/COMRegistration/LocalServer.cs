@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -9,13 +10,13 @@ namespace COMRegistration
 {
     sealed class LocalServer : IDisposable
     {
-        public static void RegisterToLocalMachine(Guid clsid, ProgIdAttribute progId, string exePath, string tlbPath)
+        public static bool RegisterToLocalMachine(Guid clsid, ProgIdAttribute progId, string exePath, string tlbPath)
         {
-            Register(clsid, progId, exePath, tlbPath, false);
+            return Register(clsid, progId, exePath, tlbPath, false);
         }
-        public static void RegisterToCurrentUser(Guid clsid, ProgIdAttribute progId, string exePath, string tlbPath)
+        public static bool RegisterToCurrentUser(Guid clsid, ProgIdAttribute progId, string exePath, string tlbPath)
         {
-            Register(clsid, progId, exePath, tlbPath, true);
+            return Register(clsid, progId, exePath, tlbPath, true);
         }
         /// <summary>
         /// Registering server
@@ -25,7 +26,7 @@ namespace COMRegistration
         /// <param name="exePath"></param>
         /// <param name="tlbPath"></param>
         /// <param name="perUser"></param>
-        static void Register(Guid clsid, ProgIdAttribute progId, string exePath, string tlbPath, bool perUser)
+        static bool Register(Guid clsid, ProgIdAttribute progId, string exePath, string tlbPath, bool perUser)
         {
             // Register local server
             Trace.WriteLine("[Enter]LocalServer.Register");
@@ -52,18 +53,53 @@ namespace COMRegistration
             {
                 dst = Registry.LocalMachine;
             }
-            string serverKey = string.Format(KeyFormat.LocalServer32, clsid);
-            using (var regKey = dst.CreateSubKey(serverKey))
+            Trace.WriteLine(string.Format("Target registory={0}",dst.Name));
+
+            //create "SOFTWARE\Classes\CLSID" if not exists.
+            using (var keyClasses = dst.OpenSubKey(KeyFormat.Classes, true))
             {
-                regKey.SetValue(null, exePath);
+                const string    keyCLSIDName    = "CLSID";
+                string          absClassesPath  = keyClasses.Name + @"\" + keyCLSIDName;
+
+                if (keyClasses.GetSubKeyNames().Contains(keyCLSIDName))
+                {
+                    Trace.WriteLine(absClassesPath + " is exists.");
+                }
+                else
+                {
+                    Trace.WriteLine(absClassesPath + " is not exists.");
+                    using (var keyCLSID = keyClasses.CreateSubKey(keyCLSIDName))
+                    {
+                        if (keyCLSID == null)
+                        {
+                            Trace.WriteLine(absClassesPath + " was not created.");
+                            return false;
+                        }
+                        else
+                        {
+                            Trace.WriteLine(absClassesPath + " was created.");
+                        }
+                    }
+                }
+            }
+
+            {
+                string serverKey = string.Format(KeyFormat.formatLocalServer32, clsid);
+                using (var regKey = dst.CreateSubKey(serverKey))
+                {
+                    regKey.SetValue(null, exePath);
+                    Trace.WriteLine(string.Format("[Write]\"{0}\" ← \"{1}\"", serverKey, exePath));
+                }
             }
 
             if (progId != null)
             {//Register ProgId
-                var progIdKey = string.Format(KeyFormat.ProgIdCLSID, progId.Value);
-                using (var sub = dst.CreateSubKey(progIdKey))
+                var progIdKeyName = string.Format(KeyFormat.formatProgIdCLSID, progId.Value);
+                using (var keyProgId = dst.CreateSubKey(progIdKeyName))
                 {
-                    sub.SetValue(null, string.Format("{{{0}}}", clsid));
+                    var clsidValue = string.Format("{{{0}}}", clsid);
+                    keyProgId.SetValue(null, clsidValue);
+                    Trace.WriteLine(string.Format("[Write]{0} ← {1}", keyProgId.Name, clsidValue));
                 }
             }
             if ((tlbPath != null) && (tlbPath != ""))
@@ -71,6 +107,7 @@ namespace COMRegistration
                 TypeLib.Register(tlbPath, perUser);
             }
             Trace.WriteLine("[Leave]LocalServer.Register");
+            return true;
         }
         public static void UnregisterFromLocalMachine(Guid clsid, ProgIdAttribute progId, string tlbPath)
         {
@@ -114,14 +151,14 @@ namespace COMRegistration
             }
             // Unregister local server
             {
-                string serverKey = string.Format(KeyFormat.CLSID, clsid);
+                string serverKey = string.Format(KeyFormat.formatCLSID, clsid);
                 dst.DeleteSubKeyTree(serverKey, throwOnMissingSubKey: false);
             }
 
             if (progId!=null)
             {
                 //Unregister ProgId
-                var progIdKey = string.Format(KeyFormat.ProgId, progId.Value);
+                var progIdKey = string.Format(KeyFormat.formatProgId, progId.Value);
                 dst.DeleteSubKeyTree(progIdKey, throwOnMissingSubKey: false);
             }
             if ((tlbPath != null) && (tlbPath != ""))

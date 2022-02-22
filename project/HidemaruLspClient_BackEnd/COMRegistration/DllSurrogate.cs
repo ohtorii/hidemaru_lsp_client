@@ -13,7 +13,7 @@ namespace COMRegistration
             Trace.WriteLine($"CLSID: {clsid:B}");
             Trace.Unindent();
 
-            string serverKey = string.Format(KeyFormat.CLSID, clsid);
+            string serverKey = string.Format(KeyFormat.formatCLSID, clsid);
 
             // Register App ID - use the CLSID as the App ID
             using (var regKey = Registry.LocalMachine.CreateSubKey(serverKey)) {
@@ -21,7 +21,7 @@ namespace COMRegistration
             }
 
             // Register DLL surrogate - empty string for system-supplied surrogate
-            string appIdKey = string.Format(KeyFormat.AppID, clsid);
+            string appIdKey = string.Format(KeyFormat.formatAppID, clsid);
             using (var appIdRegKey = Registry.LocalMachine.CreateSubKey(appIdKey))
             {
                 appIdRegKey.SetValue("DllSurrogate", string.Empty);
@@ -37,7 +37,7 @@ namespace COMRegistration
             Trace.Unindent();
 
             // Remove the App ID value
-            string serverKey = string.Format(KeyFormat.CLSID, clsid);
+            string serverKey = string.Format(KeyFormat.formatCLSID, clsid);
             using (var regKey = Registry.LocalMachine.OpenSubKey(serverKey, writable: true))
             {
                 if (regKey != null)
@@ -47,7 +47,7 @@ namespace COMRegistration
             }
 
             // Remove the App ID key
-            string appIdKey = string.Format(KeyFormat.AppID, clsid);
+            string appIdKey = string.Format(KeyFormat.formatAppID, clsid);
             Registry.LocalMachine.DeleteSubKey(appIdKey, throwOnMissingSubKey: false);
 
 

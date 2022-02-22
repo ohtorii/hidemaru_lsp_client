@@ -18,34 +18,22 @@ namespace HidemaruLspClient
         static readonly string tlbPath            = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb");
         static readonly bool isConsoleApplication = IsConsoleApplication();
 
+        const int success = 0;
+        const int error   = 1;
+
         static int Main(string[] args)
         {
-            const int success = 0;
-            const int error   = 1;
+            int exitCode = error;
+
             using (var tracer = new LoggingOutToOneLocation(new ConsoleTraceListener(), new NLogTraceListener {Name=applicationName }))
             {
                 Trace.AutoFlush = true;
                 Trace.Listeners.Add(tracer);
+
                 try
                 {
-                    Trace.WriteLine("======== Main ========");
-                    DumpArgs(args);
-                    tracer.WriteLine(string.Format("isConsoleApplication={0}", isConsoleApplication));
-                    Options options;
-                    if (LaunchedViaCoCreateInstance(args))
-                    {
-                        options = Options.Default;
-                    }
-                    else
-                    {
-                        options = Options.Create(isConsoleApplication, args);
-                        if (options == null)
-                        {
-                            //ヘルプが表示された。
-                            return success;
-                        }
-                    }
-                    return Start(options) ? success : error;
+                    exitCode= PostMain(args);
+                    return exitCode;
                 }
                 catch(Exception e)
                 {
@@ -53,10 +41,32 @@ namespace HidemaruLspClient
                 }
                 finally
                 {
+                    Trace.WriteLine(string.Format("Process exitCode={0}", exitCode));
                     Trace.Listeners.Remove(tracer);
                 }
             }
-            return error;
+            return exitCode;
+        }
+        static int PostMain(string[] args)
+        {
+            Trace.WriteLine("======== Main ========");
+            DumpArgs(args);
+            Trace.WriteLine(string.Format("isConsoleApplication={0}", isConsoleApplication));
+            Options options;
+            if (LaunchedViaCoCreateInstance(args))
+            {
+                options = Options.Default;
+            }
+            else
+            {
+                options = Options.Create(isConsoleApplication, args);
+                if (options == null)
+                {
+                    //ヘルプが表示された。
+                    return success;
+                }
+            }
+            return Start(options) ? success : error;
         }
         /// <summary>
         /// 引数をダンプする
@@ -98,24 +108,29 @@ namespace HidemaruLspClient
 #else
             ProgIdAttribute progId = null;
 #endif
-            switch (options.Mode)
+            try
             {
-                case Options.RegistryMode.RegServer:
-                    LocalServer.RegisterToLocalMachine(serverClassGuid, progId, exePath, tlbPath);
-                    return true;
-                case Options.RegistryMode.RegServerPerUser:
-                    LocalServer.RegisterToCurrentUser(serverClassGuid, progId, exePath, tlbPath);
-                    return true;
-                case Options.RegistryMode.UnRegServer:
-                    LocalServer.UnregisterFromLocalMachine(serverClassGuid, progId, tlbPath);
-                    return true;
-                case Options.RegistryMode.UnRegServerPerUser:
-                    LocalServer.UnregisterToCurrentUser(serverClassGuid, progId, tlbPath);
-                    return true;
-                case Options.RegistryMode.Unknown:
-                    goto default;
-                default:
-                    return StartServer(serverClassGuid);
+                switch (options.Mode)
+                {
+                    case Options.RegistryMode.RegServer:
+                        return LocalServer.RegisterToLocalMachine(serverClassGuid, progId, exePath, tlbPath);
+                    case Options.RegistryMode.RegServerPerUser:
+                        return LocalServer.RegisterToCurrentUser(serverClassGuid, progId, exePath, tlbPath);
+                    case Options.RegistryMode.UnRegServer:
+                        LocalServer.UnregisterFromLocalMachine(serverClassGuid, progId, tlbPath);
+                        return true;
+                    case Options.RegistryMode.UnRegServerPerUser:
+                        LocalServer.UnregisterToCurrentUser(serverClassGuid, progId, tlbPath);
+                        return true;
+                    case Options.RegistryMode.Unknown:
+                        goto default;
+                    default:
+                        return StartServer(serverClassGuid);
+                }
+            }catch(Exception e)
+            {
+                Trace.WriteLine("Exception:"+e.ToString());
+                return false;
             }
         }
         static bool StartServer(Guid serverClassGuid)

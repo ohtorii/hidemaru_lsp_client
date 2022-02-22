@@ -90,7 +90,7 @@ CheckDotnetVersionMain:
     }
 
     gofiletop;
-    searchdown "Microsoft.NETCore.App 5.",nocasesense,nohilight;
+    searchdown2 "Microsoft.NETCore.App 5.",noregular,nocasesense,nohilight;
     if(result==false){
         message ".NETCore version 5がインストールされていません";
         return false;

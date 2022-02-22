@@ -2,11 +2,13 @@
 {
     internal static class KeyFormat
     {
-        public const string CLSID = @"SOFTWARE\Classes\CLSID\{0:B}";
-        public const string AppID = @"SOFTWARE\Classes\AppID\{0:B}";
-        public const string ProgId= @"SOFTWARE\Classes\{0}";
-        public const string ProgIdCLSID = ProgId+@"\CLSID";
+        public const string Classes     = @"SOFTWARE\Classes";
+        public const string CLSID       = Classes + @"\CLSID";
+        public const string formatCLSID = CLSID + @"\{0:B}";
+        public const string formatAppID = @"SOFTWARE\Classes\AppID\{0:B}";
+        public const string formatProgId= @"SOFTWARE\Classes\{0}";
+        public const string formatProgIdCLSID = formatProgId+@"\CLSID";
 
-        public static readonly string LocalServer32 = $"{CLSID}\\LocalServer32";
+        public static readonly string formatLocalServer32 = $"{formatCLSID}\\LocalServer32";
     }
 }

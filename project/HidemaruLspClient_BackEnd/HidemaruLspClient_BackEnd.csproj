@@ -9,6 +9,7 @@
     <ApplicationIcon />
     <StartupObject />
     <Version>0.0.5</Version>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

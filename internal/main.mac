@@ -23,7 +23,7 @@ main:
             setstaticvariable $g_CheckDotnetEnvironment,$$success,#g_CheckDotnetEnvironmentShareModen;
         }
     }
-    return ;
+
     execmacro currentmacrodirectory+@"\CreateComClient.mac";
     $$obj = getresultex(-1);
     if($$obj==""){
