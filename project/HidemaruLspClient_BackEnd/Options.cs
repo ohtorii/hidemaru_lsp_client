@@ -59,9 +59,10 @@ namespace HidemaruLspClient
             Unknown,
         }
 
-        [Option('m', "mode", HelpText = "RegServer, UnRegServer, RegServerPerUser, UnRegServerPerUser", Default = RegistryMode.Unknown)]
+        [Option('m', "mode", Required = false, HelpText = "RegServer, UnRegServer, RegServerPerUser, UnRegServerPerUser", Default = RegistryMode.Unknown)]
         public RegistryMode Mode { get; set; } = RegistryMode.Unknown;
-
+        [Option('s',"start", Required = false, HelpText = "Start COM server.")]
+        public bool Start { get; set; } = false;
         //[CommandLine.Option('s',"show", HelpText ="Show window.")]
         //public bool Show { get; set; }
     }

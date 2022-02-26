@@ -62,7 +62,7 @@ namespace HidemaruLspClient
                 options = Options.Create(isConsoleApplication, args);
                 if (options == null)
                 {
-                    //ヘルプが表示された。
+                    //コマンドライン引数が不正なのでオプションが作れないが、代わりにヘルプが表示されるためsuccess扱いとした
                     return success;
                 }
             }
@@ -102,35 +102,49 @@ namespace HidemaruLspClient
             }
 
             var serverClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
-            var exePath         = Process.GetCurrentProcess().MainModule.FileName;
+            try
+            {
+                if (!ProcessRegistroy(serverClassGuid, options))
+                {
+                    return false;
+                }
+                if (options.Start)
+                {
+                    return StartServer(serverClassGuid);
+                }
+                return true;
+            }
+            catch(Exception e)
+            {
+                Trace.WriteLine("Exception:"+e.ToString());
+                return false;
+            }
+        }
+        static bool ProcessRegistroy(Guid serverClassGuid, Options options)
+        {
+            var exePath = Process.GetCurrentProcess().MainModule.FileName;
 #if false
             ProgIdAttribute progId = Attribute.GetCustomAttribute(typeof(HidemaruLspBackEndServer), typeof(ProgIdAttribute)) as ProgIdAttribute;
 #else
             ProgIdAttribute progId = null;
 #endif
-            try
+            switch (options.Mode)
             {
-                switch (options.Mode)
-                {
-                    case Options.RegistryMode.RegServer:
-                        return LocalServer.RegisterToLocalMachine(serverClassGuid, progId, exePath, tlbPath);
-                    case Options.RegistryMode.RegServerPerUser:
-                        return LocalServer.RegisterToCurrentUser(serverClassGuid, progId, exePath, tlbPath);
-                    case Options.RegistryMode.UnRegServer:
-                        LocalServer.UnregisterFromLocalMachine(serverClassGuid, progId, tlbPath);
-                        return true;
-                    case Options.RegistryMode.UnRegServerPerUser:
-                        LocalServer.UnregisterToCurrentUser(serverClassGuid, progId, tlbPath);
-                        return true;
-                    case Options.RegistryMode.Unknown:
-                        goto default;
-                    default:
-                        return StartServer(serverClassGuid);
-                }
-            }catch(Exception e)
-            {
-                Trace.WriteLine("Exception:"+e.ToString());
-                return false;
+                case Options.RegistryMode.RegServer:
+                    return LocalServer.RegisterToLocalMachine(serverClassGuid, progId, exePath, tlbPath);
+                case Options.RegistryMode.RegServerPerUser:
+                    return LocalServer.RegisterToCurrentUser(serverClassGuid, progId, exePath, tlbPath);
+                case Options.RegistryMode.UnRegServer:
+                    LocalServer.UnregisterFromLocalMachine(serverClassGuid, progId, tlbPath);
+                    return true;
+                case Options.RegistryMode.UnRegServerPerUser:
+                    LocalServer.UnregisterToCurrentUser(serverClassGuid, progId, tlbPath);
+                    return true;
+                case Options.RegistryMode.Unknown:
+                    return true;
+                default:
+                    Trace.TraceError($"Unknown mode. mode={options.Mode}");
+                    return false;
             }
         }
         static bool StartServer(Guid serverClassGuid)
@@ -139,26 +153,33 @@ namespace HidemaruLspClient
             using (var server = new LocalServer())
             {
                 server.RegisterClass<HidemaruLspBackEndServer>(serverClassGuid);
-                if (IsConsoleApplication())
-                {
-                    WaitServerUsingStdio();
-                }
-                else
-                {
-                    WaitServerUsingEvent();
-                }
+                SleepForever();
             }
             Trace.WriteLine("[Leave]StartServer");
             return true;
         }
+        static void SleepForever()
+        {
+            if (IsConsoleApplication())
+            {
+                WaitServerUsingStdio();
+            }
+            else
+            {
+                WaitServerUsingEvent();
+            }
+        }
+
         static void WaitServerUsingEvent()
         {
             Trace.WriteLine($"================================");
             Trace.WriteLine($"Main thread is Sleeping.");
             Trace.WriteLine($"================================");
             Trace.Flush();
-            var autoEvent = new AutoResetEvent(false);
-            autoEvent.WaitOne();
+            using (var autoEvent = new AutoResetEvent(false))
+            {
+                autoEvent.WaitOne();
+            }
         }
         static void WaitServerUsingStdio()
         {
