@@ -10,6 +10,17 @@
 
 地道にのんびりやってます～
 
+# スクリーンショット
+
+## LspServer起動 → completion
+
+![completion](documents/assets/screenshot.gif  "completion")
+
+## Hover
+
+![hover](documents/assets/screenshot_hover.gif "hover")
+
+
 # 予めのお断りとお願い
 
 このマクロを使用してみようと思う方は既にある程度のスキルを持っておられるものと推測し、このドキュメントもそのような方が読まれることを前提として書いてあります。 
@@ -50,6 +61,7 @@ C#,C++,Lua,Python...の各言語サーバ(LSP)は各自で導入してくださ�
 ## カスタマイズ
 
 マクロの一部動作をカスタマイズできます。
+後で書く
 
 ## ログファイル
 
