@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using HidemaruLspClient_BackEndContract;
 
+
 namespace HidemaruLspClient_FrontEnd
 {
 
@@ -411,6 +412,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
+                MicrosoftAppCenter.Start();
                 tokenSource_ = new CancellationTokenSource();
                 context_ = new Context();
                 openedFile_ = new Document();
