@@ -150,6 +150,12 @@ REM バッチファイル中で使用するコマンドが存在するか調べる
         echo MSBuildコマンドが見つかりません
         exit /b 1
     )
+    
+    where NuGet
+    if ERRORLEVEL 1 (
+        echo NuGetコマンドが見つかりません
+        exit /b 1
+    )
     exit /b 0
 
 
@@ -170,6 +176,12 @@ REM バッチファイル中で使用するコマンドが存在するか調べる
     dotnet restore "%SOLUTION%"
     if ERRORLEVEL 1 (
         echo dotnet restore失敗
+        exit /b 1
+    )
+    
+    nuget restore "%SOLUTION%"
+    if ERRORLEVEL 1 (
+        echo nuget restore失敗
         exit /b 1
     )
     
