@@ -7,11 +7,6 @@ namespace HidemaruLspClient_FrontEnd
 {
     class IniFile
     {
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
-        static extern long WritePrivateProfileString(string Section, string Key, string Value, string FilePath);
-
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
-        static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
 
         string Path_;
         public string Filename => Path_;
@@ -25,13 +20,13 @@ namespace HidemaruLspClient_FrontEnd
         {
             const int capacity = 256;
             var RetVal = new StringBuilder(capacity);
-            GetPrivateProfileString(Section, Key, "", RetVal, RetVal.Capacity, Path_);
+            Kernel32.GetPrivateProfileString(Section, Key, "", RetVal, RetVal.Capacity, Path_);
             return RetVal.ToString();
         }
 
         public void Write(string Key, string Value, string Section)
         {
-            WritePrivateProfileString(Section, Key, Value, Path_);
+            Kernel32.WritePrivateProfileString(Section, Key, Value, Path_);
         }
 
         public void DeleteKey(string Key, string Section)
