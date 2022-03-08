@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HidemaruLspClient_FrontEnd
+﻿namespace HidemaruLspClient_FrontEnd
 {
     partial class MicrosoftAppCenter
     {
