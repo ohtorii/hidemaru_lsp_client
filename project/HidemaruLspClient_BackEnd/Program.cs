@@ -23,6 +23,8 @@ namespace HidemaruLspClient
 
         static int Main(string[] args)
         {
+            MicrosoftAppCenter.Start();
+
             int exitCode = error;
 
             using (var tracer = new LoggingOutToOneLocation(new ConsoleTraceListener(), new NLogTraceListener {Name=applicationName }))
