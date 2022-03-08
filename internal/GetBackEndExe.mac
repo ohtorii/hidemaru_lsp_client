@@ -4,6 +4,9 @@ call main;
 endmacro $$return;
 
 main:
+    //$$framework="net5.0";
+    $$framework="net5.0-windows";
+
     $$target="Release";
     //$$target="Debug";
     if(platform & 0x00080000){
@@ -11,7 +14,7 @@ main:
     }else{
         $$platform="x86";
     }
-    call GetAbsolutePathName currentmacrodirectory + sprintf(@"\..\project\HidemaruLspClient_BackEnd\bin\%s\%s\net5.0\HidemaruLspClient_BackEnd.exe", $$platform, $$target);
+    call GetAbsolutePathName currentmacrodirectory + sprintf(@"\..\project\HidemaruLspClient_BackEnd\bin\%s\%s\%s\HidemaruLspClient_BackEnd.exe", $$platform, $$target, $$framework);
     return $$return;
 
 GetAbsolutePathName:
