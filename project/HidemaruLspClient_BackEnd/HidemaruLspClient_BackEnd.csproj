@@ -9,7 +9,7 @@
     <Platforms>AnyCPU;x64;x86</Platforms>
     <ApplicationIcon />
     <StartupObject />
-    <Version>0.0.5</Version>
+    <Version>0.5.0</Version>
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
