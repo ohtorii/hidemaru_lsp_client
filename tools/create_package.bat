@@ -28,9 +28,9 @@ call :SetupRootDir d:\temp
 set GIT_ROOT_DIR=%ROOT_DIR%\hidemaru_lsp_client
 set SOLUTION=%GIT_ROOT_DIR%\project\hidemaru_lsp_client.sln
 
-set BIN_SRC_BACKEND_X64_RELEASE=%GIT_ROOT_DIR%\project\HidemaruLspClient_BackEnd\bin\x64\Release\net5.0
+set BIN_SRC_BACKEND_X64_RELEASE=%GIT_ROOT_DIR%\project\HidemaruLspClient_BackEnd\bin\x64\Release\net5.0-windows
 set BIN_DST_BACKEND_X64_RELEASE=%GIT_ROOT_DIR%\internal\bin\HidemaruLspClient_BackEnd-x64-Release
-set BIN_SRC_BACKEND_X86_RELEASE=%GIT_ROOT_DIR%\project\HidemaruLspClient_BackEnd\bin\x86\Release\net5.0
+set BIN_SRC_BACKEND_X86_RELEASE=%GIT_ROOT_DIR%\project\HidemaruLspClient_BackEnd\bin\x86\Release\net5.0-windows
 set BIN_DST_BACKEND_X86_RELEASE=%GIT_ROOT_DIR%\internal\bin\HidemaruLspClient_BackEnd-x86-Release
 
 set BIN_SRC_FRONTEND_X64_RELEASE=%GIT_ROOT_DIR%\project\HidemaruLspClient_FrontEnd\bin\x64\Release
@@ -160,7 +160,13 @@ REM バッチファイル中で使用するコマンドが存在するか調べる
         echo gitコマンドが失敗しました。
         exit /b 1
     )
-
+    
+    call :CopyBuildFiles
+    if ERRORLEVEL 1 (
+        echo 失敗 CopyPackageFiles
+        exit /b 1
+    )
+    
     dotnet restore "%SOLUTION%"
     if ERRORLEVEL 1 (
         echo dotnet restore失敗
@@ -240,7 +246,10 @@ REM 不要なファイルを削除する
     del "%GIT_ROOT_DIR%\.gitignore"
     exit /b 0
 
-
+:CopyBuildFiles
+    xcopy "%BAT_DIR%\build_files\" "%GIT_ROOT_DIR%\" /Y /I /E
+    exit /b %ERRORLEVEL%
+    
 :CopyPackageFiles
     xcopy "%BAT_DIR%\package_files\" "%GIT_ROOT_DIR%\" /Y /I /E
     exit /b %ERRORLEVEL%
