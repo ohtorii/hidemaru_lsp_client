@@ -10,6 +10,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             Crashes.NotifyUserConfirmation(UserConfirmation.Send);
             AppCenter.Start(appSecret, typeof(Analytics), typeof(Crashes));
+            //Crashes.GenerateTestCrash();
         }
     }
 }
