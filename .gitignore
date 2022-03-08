@@ -335,3 +335,5 @@ project/HidemaruLspClient_BackEnd/Properties/launchSettings.json
 project/GPATH
 project/GRTAGS
 project/GTAGS
+tools/build_files/project/HidemaruLspClient_BackEnd/Microsoft.AppCenter/AppSecret.cs
+tools/build_files/project/HidemaruLspClient_FrontEnd/Microsoft.AppCenter/AppSecret.cs
