@@ -8,9 +8,17 @@ namespace HidemaruLspClient
     {
         public static void Start()
         {
+            if (string.IsNullOrEmpty(appSecret))
+            {
+                return;
+            }
             Crashes.NotifyUserConfirmation(UserConfirmation.Send);
             AppCenter.Start(appSecret, typeof(Analytics), typeof(Crashes));
-            //Crashes.GenerateTestCrash();
+
+#if false
+            //debug
+            Crashes.GenerateTestCrash();
+#endif
         }
     }
 }
