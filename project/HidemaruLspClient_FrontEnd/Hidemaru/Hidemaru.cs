@@ -87,6 +87,7 @@ namespace HidemaruLspClient_FrontEnd
 			public const int HIDEMARUINFO_GETSPACETAB = 2;
 			public const int HIDEMARUINFO_GETMANUALTAB = 3;
 			public const int HIDEMARUINFO_GETFILEFULLPATH = 4;
+			public const int HIDEMARUINFO_GETUPDATECOUNT = 7;
 		}
 
 		static public void Initialize()
@@ -136,5 +137,12 @@ namespace HidemaruLspClient_FrontEnd
 			hidemaruLine   =zerobaseLine		+ 1;
 			hidemaruColumn =zerobaseCharacter	/*+ 1*/;
 		}
+		public static int GetUpdateCount()
+        {
+			var hwndHidemaru = Hidemaru_GetCurrentWindowHandle();
+			var updateCount = SendMessage(hwndHidemaru, Constant.WM_HIDEMARUINFO, Constant.HIDEMARUINFO_GETUPDATECOUNT, 0);
+			return (int)updateCount;
+		}
+
 	}
 }

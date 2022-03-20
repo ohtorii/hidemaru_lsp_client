@@ -36,45 +36,33 @@ namespace HidemaruLspClient_FrontEnd
             string Filename_;
             Uri Uri_;
             int ContentsVersion_;
-            int ContentsHash_;
 
             public string Filename { get { return this.Filename_; } }
             public Uri Uri { get { return this.Uri_; } }
             public int ContentsVersion { get { return this.ContentsVersion_; } }
-            public int ContentsHash { get { return this.ContentsHash_; } }
-
-            public static int CalcTextHash(string text)
-            {
-                return text.GetHashCode();
-            }
+            
             public Document()
             {
                 Initialize();
             }
-            public void Setup(string filename, Uri uri, int contentsVersion, int contentsHash)
+            public void Setup(string filename, Uri uri, int contentsVersion)
             {
                 this.Filename_ = filename;
                 this.Uri_ = uri;
                 this.ContentsVersion_ = contentsVersion;
-                this.ContentsHash_ = contentsHash;
             }
             public void Clear()
             {
                 Initialize();
             }
-            public void IncrementContentsVersion(){
-                ++this.ContentsVersion_;
-            }
-            public void SetContentsHash(int hash)
-            {
-                this.ContentsHash_ = hash;
+            public void SetContentsVersion(int version){
+                ContentsVersion_=version;
             }
 
             void Initialize() {
                 Filename_ = "";
                 Uri_ = null;
-                ContentsVersion_ = 1;
-                ContentsHash_ = 0;
+                ContentsVersion_ = 0;
             }
         }
         Document openedFile_ = null;
@@ -127,12 +115,11 @@ namespace HidemaruLspClient_FrontEnd
                     return DigOpenStatus.AlreadyOpened;
                 }
                 var text = Hidemaru.GetTotalTextUnicode();
-                const int contentsVersion = 1;
+                var contentsVersion = Hidemaru.GetUpdateCount();
                 context_.worker.DidOpen(absFilename, text, contentsVersion);
                 openedFile_.Setup(absFilename,
                                  new Uri(absFilename),
-                                 contentsVersion,
-                                 Document.CalcTextHash(text));
+                                 contentsVersion);
                 return DigOpenStatus.Opened;
             }
             catch (Exception e)
@@ -151,16 +138,14 @@ namespace HidemaruLspClient_FrontEnd
                 Debug.Assert(string.IsNullOrEmpty(openedFile_.Filename) == false);
 
                 var text        = Hidemaru.GetTotalTextUnicode();
-                var currentHash = Document.CalcTextHash(text);
-                var prevHash    = openedFile_.ContentsHash;
-                if (currentHash == prevHash)
+                var currentContentsVersion = Hidemaru.GetUpdateCount();
+                var prevContentsVersion    = openedFile_.ContentsVersion;
+                if (currentContentsVersion == prevContentsVersion)
                 {
                     return DigChangeStatus.NoChanged;
                 }
                 context_.worker.DidChange(openedFile_.Filename, text, openedFile_.ContentsVersion);
-
-                openedFile_.SetContentsHash(currentHash);
-                openedFile_.IncrementContentsVersion();
+                openedFile_.SetContentsVersion(currentContentsVersion);
                 return DigChangeStatus.Changed;
             }catch(Exception e)
             {
