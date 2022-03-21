@@ -107,11 +107,13 @@
       <Link>COM\Contract.cs</Link>
     </Compile>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Service\HidemaruEditorDocument.cs" />
     <Compile Include="Microsoft.AppCenter\AppCenter.cs" />
     <Compile Include="Microsoft.AppCenter\AppSecret.cs" />
     <Compile Include="Native\Kernel32.cs" />
+    <Compile Include="Service\IniFileService.cs" />
     <Compile Include="Utils\TextLines.cs" />
-    <Compile Include="Utils\IniFile.cs" />
+    <Compile Include="Native\IniFileNative.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="Impl\LocationContainerImpl.cs" />
     <Compile Include="Native\NativeMethods.cs" />
@@ -151,6 +153,7 @@
     <None Include="FrontEnd.snk" />
     <None Include="Tools\PostbuildEvents.bat" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>rem call $(ProjectDir)\Tools\PostbuildEvents.bat "$(SolutionDir)" "$(TargetDir)" $(ProjectName) $(ConfigurationName) $(PlatformName)</PostBuildEvent>
