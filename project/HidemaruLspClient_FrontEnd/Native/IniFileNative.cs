@@ -5,13 +5,12 @@ using System.Text;
 
 namespace HidemaruLspClient_FrontEnd
 {
-    class IniFile
+    class IniFileNative
     {
-
         string Path_;
         public string Filename => Path_;
 
-        public IniFile(string IniPath)
+        public IniFileNative(string IniPath)
         {
             Path_ = new FileInfo(IniPath).FullName;
         }

@@ -17,7 +17,7 @@ namespace HidemaruLspClient_FrontEnd
     /// </summary>
     [ComVisible(true)]
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
-    public sealed class Service : IService
+    public sealed partial class Service : IService
     {
         static DllAssemblyResolver dasmr_= new DllAssemblyResolver();
 
@@ -28,52 +28,14 @@ namespace HidemaruLspClient_FrontEnd
         }
         Context context_ =null;
         ILspClientLogger logger_=null;
-
-
-
-        class Document
-        {
-            string Filename_;
-            Uri Uri_;
-            int ContentsVersion_;
-
-            public string Filename { get { return this.Filename_; } }
-            public Uri Uri { get { return this.Uri_; } }
-            public int ContentsVersion { get { return this.ContentsVersion_; } }
-            
-            public Document()
-            {
-                Initialize();
-            }
-            public void Setup(string filename, Uri uri, int contentsVersion)
-            {
-                this.Filename_ = filename;
-                this.Uri_ = uri;
-                this.ContentsVersion_ = contentsVersion;
-            }
-            public void Clear()
-            {
-                Initialize();
-            }
-            public void SetContentsVersion(int version){
-                ContentsVersion_=version;
-            }
-
-            void Initialize() {
-                Filename_ = "";
-                Uri_ = null;
-                ContentsVersion_ = 0;
-            }
-        }
-        Document openedFile_ = null;
+        HidemaruEditorDocument openedFile_ = null;
 
         CancellationTokenSource tokenSource_ = null;
         DiagnosticsTask diagnosticsTask_ = null;
         HoverTask hoverTask_ = null;
         DidChangeTask didChangeTask_ = null;
 
-        IniFile iniReader_ = null;
-        string iniFileDirectory_ = null;
+        IniFileService iniFile_ = null;
 
         enum DigOpenStatus
         {
@@ -115,10 +77,11 @@ namespace HidemaruLspClient_FrontEnd
                     return DigOpenStatus.AlreadyOpened;
                 }
                 var text = Hidemaru.GetTotalTextUnicode();
-                var contentsVersion = Hidemaru.GetUpdateCount();
+                const int contentsVersion = 1;
                 context_.worker.DidOpen(absFilename, text, contentsVersion);
                 openedFile_.Setup(absFilename,
                                  new Uri(absFilename),
+                                 Hidemaru.GetUpdateCount(),
                                  contentsVersion);
                 return DigOpenStatus.Opened;
             }
@@ -137,15 +100,14 @@ namespace HidemaruLspClient_FrontEnd
             {
                 Debug.Assert(string.IsNullOrEmpty(openedFile_.Filename) == false);
 
-                var text        = Hidemaru.GetTotalTextUnicode();
-                var currentContentsVersion = Hidemaru.GetUpdateCount();
-                var prevContentsVersion    = openedFile_.ContentsVersion;
-                if (currentContentsVersion == prevContentsVersion)
+                var currentUpdateCount = Hidemaru.GetUpdateCount();
+                var prevUpdateCount    = openedFile_.hidemaruUpdateCount;
+                if (currentUpdateCount == prevUpdateCount)
                 {
                     return DigChangeStatus.NoChanged;
                 }
-                context_.worker.DidChange(openedFile_.Filename, text, openedFile_.ContentsVersion);
-                openedFile_.SetContentsVersion(currentContentsVersion);
+                openedFile_.UpdateContentsVersion(currentUpdateCount);
+                context_.worker.DidChange(openedFile_.Filename, Hidemaru.GetTotalTextUnicode(), openedFile_.countentsVersion);
                 return DigChangeStatus.Changed;
             }catch(Exception e)
             {
@@ -271,36 +233,6 @@ namespace HidemaruLspClient_FrontEnd
             context_.worker = null;
             context_.server = null;
         }
-
-        /// <summary>
-        /// iniファイルからサーバ設定ファイルを見付ける
-        /// </summary>
-        /// <param name="fileExtension">ファイル拡張子(".c", ".cpp" ...)</param>
-        /// <returns>サーバ設定ファイル（絶対パス）、または空文字</returns>
-        string FindServerConfigFile(string fileExtension)
-        {
-            try
-            {
-                var path = iniReader_.Read(fileExtension, "ServerConfig");
-                if (path == "")
-                {
-                    logger_?.Info(string.Format($"{fileExtension} not found in .ini file."));
-                    return "";
-                }
-                if (Path.IsPathRooted(path))
-                {
-                    return path;
-                }
-                //iniFileからの相対パス→絶対パス
-                var absFileName = Path.Combine(iniFileDirectory_, path);
-                return absFileName;
-            }
-            catch (Exception e)
-            {
-                logger_?.Error(e.ToString());
-            }
-            return "";
-        }
         bool InitializeBackEndServiceMain()
         {
             lock (context_)
@@ -352,7 +284,7 @@ namespace HidemaruLspClient_FrontEnd
                 logger_.Error($"Not Found: currentSourceCodeDirectory('{currentSourceCodeDirectory}')");
                 return false;
             }
-            var serverConfigFilename = FindServerConfigFile(fileExtension);
+            var serverConfigFilename = iniFile_.FindServerConfig(fileExtension);
             if (serverConfigFilename == "")
             {
                 return false;
@@ -400,7 +332,7 @@ namespace HidemaruLspClient_FrontEnd
                 MicrosoftAppCenter.Start();
                 tokenSource_ = new CancellationTokenSource();
                 context_ = new Context();
-                openedFile_ = new Document();
+                openedFile_ = new HidemaruEditorDocument();
                 UIThread.Initializer();
                 Hidemaru.Initialize();
             }catch(Exception e)
@@ -414,12 +346,11 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
-                if (! File.Exists(iniFileName))
+                iniFile_ = IniFileService.Create(iniFileName,logger_);
+                if (iniFile_ == null)
                 {
                     return false;
                 }
-                iniReader_ = new IniFile(iniFileName);
-                iniFileDirectory_= Path.GetDirectoryName(iniReader_.Filename);
                 return true;
             }catch(Exception e)
             {
@@ -642,8 +573,7 @@ namespace HidemaruLspClient_FrontEnd
                 tokenSource_ = null;
                 context_ = null;
             }
-            iniReader_ = null;
-            iniFileDirectory_ = null;
+            iniFile_ = null;
 
             logger_?.Trace("Leave Finalizer");
             logger_ = null;
