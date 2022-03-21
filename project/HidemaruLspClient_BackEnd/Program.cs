@@ -17,6 +17,7 @@ namespace HidemaruLspClient
         static DllAssemblyResolver dasmr          = new DllAssemblyResolver();
         static readonly string tlbPath            = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb");
         static readonly bool isConsoleApplication = IsConsoleApplication();
+        static readonly Guid serverClassGuid      = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
 
         const int success = 0;
         const int error   = 1;
@@ -57,7 +58,7 @@ namespace HidemaruLspClient
             Options options;
             if (LaunchedViaCoCreateInstance(args))
             {
-                options = Options.Default;
+                options = Options.Embedding;
             }
             else
             {
@@ -103,7 +104,6 @@ namespace HidemaruLspClient
                 return false;
             }
 
-            var serverClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
             try
             {
                 if (!ProcessRegistroy(serverClassGuid, options))
