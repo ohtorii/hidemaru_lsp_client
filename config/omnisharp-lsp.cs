@@ -27,6 +27,10 @@ namespace LanguageServerProcess {
             }
             return sb.ToString();
         }
+        public override string GetRootUri(){
+            return LSP.Environment.FindRootUriAsAdhoc();
+        }
+        
         static string FindSource(){
             var sln = LSP.Environment.FindVisualStudioSolutionFileName();
             if(sln!=""){
@@ -37,9 +41,6 @@ namespace LanguageServerProcess {
                 return repo;
             }
             return LSP.Environment.GetCurrentWorkingDirectoryName();
-        }
-        public override string GetRootUri(){
-            return LSP.Environment.FindRootUriAsAdhoc();
         }
     }
 }
