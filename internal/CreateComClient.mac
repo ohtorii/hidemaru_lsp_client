@@ -108,7 +108,7 @@ SpawnBackEndCOMServer:
     //Memo: 標準入力が有効なのかすぐに終了する。
     //run $$comServerFileName + " -regserverperuser";
 
-    runex $$comServerFileName + " --mode RegServerPerUser --start"
+    runex $$comServerFileName + " --mode RegServerPerUser"
     		, 0 			//sync	  0:async 1:sync
     		, 0, "" 		//stdin   0:none 1:auto 2:file 3:(reserve) 4:all 5:select
     		, 0, "" 		//stdout  0:none 1:auto 2:file 3:add file  4:new 5:insert 6:replace
