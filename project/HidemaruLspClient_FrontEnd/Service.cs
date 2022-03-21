@@ -451,14 +451,27 @@ namespace HidemaruLspClient_FrontEnd
             {
                 try
                 {
-                    if (InitializeFrontEndServiceMain(fileExtension, currentSourceCodeDirectory))
+                    var prevUpdateCount = iniFile_.UpdateCount;
+                    while(InitializeFrontEndServiceMain(fileExtension, currentSourceCodeDirectory)==false)
                     {
-                        return;
+                        //.iniファイルの読み込みに失敗（リトライする）
+                        while (true)
+                        {
+                            if (tokenSource_.IsCancellationRequested)
+                            {
+                                return;
+                            }
+                            var currentUpdateCount = iniFile_.UpdateCount;
+                            if (prevUpdateCount != currentUpdateCount)
+                            {
+                                //.iniファイルを再読み込みする
+                                prevUpdateCount = currentUpdateCount;
+                                break;
+                            }
+                            Thread.Sleep(500);
+                        }
                     }
-                    UIThread.Invoke((MethodInvoker)delegate
-                    {
-                        Finalizer();
-                    });
+                    //.iniファイル読み込み成功
                 }catch(Exception e)
                 {
                     HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(),e.ToString());
