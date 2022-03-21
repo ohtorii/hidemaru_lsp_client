@@ -1,6 +1,7 @@
 ﻿using HidemaruLspClient_BackEndContract;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,8 +9,37 @@ using System.Threading.Tasks;
 
 namespace HidemaruLspClient_FrontEnd
 {
+    /// <summary>
+    /// Iniファイル
+    /// </summary>
     class IniFileService
     {
+        IniFileService(string iniFilename, ILspClientLogger logger)
+        {
+            iniReader_ = new IniFileNative(iniFilename);
+            iniFileDirectory_ = Path.GetDirectoryName(iniFilename);
+            logger_ = logger;
+            updateCount_ = 0;
+
+            watcher_ = new FileSystemWatcher();
+            watcher_.Path = iniFileDirectory_;
+            watcher_.Filter = Path.GetFileName(iniFilename);
+            watcher_.NotifyFilter = NotifyFilters.LastWrite|NotifyFilters.Size;
+            watcher_.IncludeSubdirectories = false;
+            watcher_.Changed += Watcher__Changed;
+            watcher_.EnableRaisingEvents = true;
+        }
+        void Watcher__Changed(object sender, FileSystemEventArgs e)
+        {
+            updateCount_++;
+            /*Debug.WriteLine("==== change ====");
+            Debug.WriteLine(e.FullPath);
+            Debug.WriteLine(e.Name);
+            Debug.WriteLine(e.ChangeType.ToString());*/
+            //iniReader_=new IniFileNative()
+            //throw new NotImplementedException();
+        }
+
         public static IniFileService Create(string iniFilename, ILspClientLogger logger) {
             if (!File.Exists(iniFilename))
             {
@@ -17,13 +47,7 @@ namespace HidemaruLspClient_FrontEnd
                 return null;
             }
             return new IniFileService(iniFilename, logger);
-        }
-        IniFileService(string iniFilename, ILspClientLogger logger)
-        {
-            iniReader_          = new IniFileNative(iniFilename);
-            iniFileDirectory_   = Path.GetDirectoryName(iniReader_.Filename);
-            logger_             = logger;
-        }
+        }        
         /// <summary>
         /// iniファイルからサーバ設定ファイルを見付ける
         /// </summary>
@@ -53,9 +77,13 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
+        
+        public int UpdateCount { get { return updateCount_; } }
+        int updateCount_;
 
         string iniFileDirectory_;
         ILspClientLogger logger_;
         IniFileNative iniReader_;
+        FileSystemWatcher watcher_;
     }
 }
