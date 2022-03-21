@@ -82,6 +82,13 @@ x64,x86は秀丸エディタに依存します。
 
 %USERPROFILE%\yyyy-mm-dd_hidemaru_lsp.log
 
+## 最後の手段
+
+Toolsフォルダの以下ファイルを実行後にマクロを実行してください、関連するレジストリが一新されます。
+
+- UnRegistAll_x64.bat
+- UnRegistAll_x86.bat
+
 
 # 謝辞
 
