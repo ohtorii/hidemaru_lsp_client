@@ -43,7 +43,7 @@ LSPサーバのプロセス（図中の.exe）はプロジェクトのルート�
 
 ## モデル定義
 
-[Language Server Protocol Specification](https://microsoft.github.io/language-server-protocol/specification) を参照してC#版のコードを記述します。</p>
+[Language Server Protocol Specification(version 3.16)](https://microsoft.github.io/language-server-protocol/specification) を参照してC#版のコードを記述します。</p>
 **LanguageServerProtocol/Model/*.cs** を参照してください。
 
 ## ソースコード説明
