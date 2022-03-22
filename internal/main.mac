@@ -82,7 +82,7 @@ CreateMenuArray:
             ##i = ##i + 1;
         }
     }
-
+    if(false)
     {
         $g_menuName[#g_menuNum]     ="ファイル同期（開発用）";
         $g_menuJumpLabel[#g_menuNum]="MenuSyncDocument";
