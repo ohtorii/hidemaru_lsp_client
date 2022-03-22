@@ -52,7 +52,7 @@ CheckDotnetVersion:
     ##old_hidemaru=hidemaruhandle(0);
     openfile "/h";
     if(result==false){
-        message "新しい秀丸エディタを開けません";
+        message "新しい秀丸エディタを開けません\n\n既存の秀丸エディタを閉じるか、秀丸エディタの起動数を動作環境から増やしてください。";
         return false;
     }
     ##new_hidemaru=hidemaruhandle(0);
