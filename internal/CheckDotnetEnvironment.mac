@@ -1,11 +1,6 @@
 ﻿/*必要なdotnet環境がインストールされているか確認する
 */
 
-
-$labelTable[0]="WhereDotnet";
-$labelTable[1]="CheckDotnetVersion";
-
-disabledraw;
 setcompatiblemode 0x20000;
 call main;
 endmacro str(##return);
@@ -49,30 +44,13 @@ WhereDotnet:
 
 
 CheckDotnetVersion:
-    ##old_hidemaru=hidemaruhandle(0);
-    openfile "/h";
-    if(result==false){
-        message "新しい秀丸エディタを開けません\n\n既存の秀丸エディタを閉じるか、秀丸エディタの起動数を動作環境から増やしてください。";
-        return false;
-    }
-    ##new_hidemaru=hidemaruhandle(0);
-
-    call CheckDotnetVersionMain;
-    ##isVersionOk=##return;
-
-    setactivehidemaru ##old_hidemaru;
-    closehidemaruforced ##new_hidemaru;
-    return ##isVersionOk;
-
-
-CheckDotnetVersionMain:
-    runex "dotnet --list-runtimes"
+    runex "cmd.exe /c dotnet --list-runtimes|find \"Microsoft.NETCore.App 5.\""
             , 1         //sync   0:async, 1:sync
             , 0, ""     //stdin  0:none, 1:auto, 2:<file, 3:(reserved),
                         //       4:current content, 5:selection
-            , 5, ""     //stdout 0:none, 1:auto, 2:>file 3:>>file, 4:new window,
+            , 0, ""     //stdout 0:none, 1:auto, 2:>file 3:>>file, 4:new window,
                         //       5:insert, 6:replace, 7:>output pane, 8:>>output pane
-            , 1, ""     //stderr 0:none, 1:auto or >>stdout, 2-8:same as stdout's param
+            , 0, ""     //stderr 0:none, 1:auto or >>stdout, 2-8:same as stdout's param
             , 1, ""     //folder 0:none, 1:current, 2:specify 3:(reserved), 4:exe's
             , 2         //show   0:auto, 1:show, 2:hide, 3-13:ShellExecute()'s SW_*
             , 1         //draw   0:draw, 1:no draw when stdout redirected
@@ -85,14 +63,8 @@ CheckDotnetVersionMain:
     }
     ##errorlevel=getresultex(9);
     if(##errorlevel!=0){
-        message "dotnetコマンドがエラーを返しました";
+        message ".NETCore version 5がインストールされていません\n事前にインストールしてください";
         return false;
     }
 
-    gofiletop;
-    searchdown2 "Microsoft.NETCore.App 5.",noregular,nocasesense,nohilight;
-    if(result==false){
-        message ".NETCore version 5がインストールされていません";
-        return false;
-    }
     return true;
