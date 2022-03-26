@@ -447,7 +447,7 @@ namespace HidemaruLspClient_FrontEnd
         /// <param name="currentSourceCodeDirectory"></param>
         public void InitializeFrontEndServiceAsync(string fileExtension, string currentSourceCodeDirectory)
         {
-            var _ = Task.Run(() =>
+            var _ = Task.Run(async () =>
             {
                 try
                 {
@@ -468,7 +468,7 @@ namespace HidemaruLspClient_FrontEnd
                                 prevUpdateCount = currentUpdateCount;
                                 break;
                             }
-                            Thread.Sleep(500);
+                            await Task.Delay(500);
                         }
                     }
                     //.iniファイル読み込み成功

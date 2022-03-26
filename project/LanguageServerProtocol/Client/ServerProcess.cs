@@ -111,11 +111,11 @@ namespace LSP.Implementation
         }
         public void StartThreadLoop()
         {
-            Task.Run(() =>
+            var _ = Task.Run(async () =>
             {
                 while (process_.HasExited == false)
                 {
-                    Thread.Sleep(10);
+                    await Task.Delay(10);
                     if (standardOutput_.Active == false)
                     {
                         standardOutput_.Start();
