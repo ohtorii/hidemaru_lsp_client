@@ -32,12 +32,6 @@ namespace HidemaruLspClient_FrontEnd
         void Watcher__Changed(object sender, FileSystemEventArgs e)
         {
             updateCount_++;
-            /*Debug.WriteLine("==== change ====");
-            Debug.WriteLine(e.FullPath);
-            Debug.WriteLine(e.Name);
-            Debug.WriteLine(e.ChangeType.ToString());*/
-            //iniReader_=new IniFileNative()
-            //throw new NotImplementedException();
         }
 
         public static IniFileService Create(string iniFilename, ILspClientLogger logger) {
