@@ -11,11 +11,7 @@ using System.IO;
 
 namespace HidemaruLspClient
 {
-    /*[ComVisible(true)]
-    [Guid(LspContract.Constants.ServerClass)]
-    [ProgId(LspContract.Constants.ProgId)]
-    [ComDefaultInterface(typeof(IHidemaruLspBackEndServer))]*/
-    public sealed partial class HidemaruLspBackEndServer : IHidemaruLspBackEndServer
+    public sealed class HidemaruLspBackEndServer : IHidemaruLspBackEndServer
     {
         static LspClientLogger lspClientLogger_ = null;
         static ComClientLogger comClientLogger_ = null;
@@ -101,6 +97,11 @@ namespace HidemaruLspClient
             }
             return Convert.ToSByte(true);
         }
+        void IHidemaruLspBackEndServer.EnableSendCrashReport(sbyte value)
+        {
+            MicrosoftAppCenter.EnableSendCrashReport = Convert.ToBoolean(value);
+        }
+        
         ILspClientLogger IHidemaruLspBackEndServer.GetLogger()
         {
             if (comClientLogger_ == null)
