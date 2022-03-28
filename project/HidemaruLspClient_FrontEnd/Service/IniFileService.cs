@@ -14,11 +14,14 @@ namespace HidemaruLspClient_FrontEnd
     /// </summary>
     class IniFileService
     {
-        IniFileService(string iniFilename, ILspClientLogger logger)
+        //Iniファイル変更後イベント
+        public event EventHandler OnFileChanged;
+
+        IniFileService(string iniFilename)
         {
             iniReader_ = new IniFileNative(iniFilename);
             iniFileDirectory_ = Path.GetDirectoryName(iniFilename);
-            logger_ = logger;
+            logger_ = null;
             updateCount_ = 0;
 
             watcher_ = new FileSystemWatcher();
@@ -32,16 +35,21 @@ namespace HidemaruLspClient_FrontEnd
         void Watcher__Changed(object sender, FileSystemEventArgs e)
         {
             updateCount_++;
+            OnFileChanged(this, EventArgs.Empty);
         }
 
-        public static IniFileService Create(string iniFilename, ILspClientLogger logger) {
+        public static IniFileService Create(string iniFilename) {
             if (!File.Exists(iniFilename))
             {
-                logger?.Error(string.Format(".Ini file not found. iniFilename={0}", iniFilename));
                 return null;
             }
-            return new IniFileService(iniFilename, logger);
-        }        
+            return new IniFileService(iniFilename);
+        }
+
+        public void SetLogger(ILspClientLogger logger)
+        {
+            logger_ = logger;
+        }
         /// <summary>
         /// iniファイルからサーバ設定ファイルを見付ける
         /// </summary>
@@ -71,7 +79,27 @@ namespace HidemaruLspClient_FrontEnd
             }
             return "";
         }
-        
+        /// <summary>
+        /// MacroImprovementProgram -> SendCrashReport の値(bool)を読み取る
+        /// </summary>
+        /// <returns></returns>
+        public bool ReadEnableCrashReport()
+        {
+            try
+            {
+                var crashReport = iniReader_.Read("SendCrashReport", "MacroImprovementProgram");
+                if (String.IsNullOrEmpty(crashReport) || String.IsNullOrWhiteSpace(crashReport))
+                {
+                    return false;
+                }
+                return Convert.ToBoolean(crashReport);
+            }
+            catch (Exception e)
+            {
+                logger_?.Error(e.ToString());
+            }
+            return false;
+        }
         public int UpdateCount { get { return updateCount_; } }
         int updateCount_;
 
