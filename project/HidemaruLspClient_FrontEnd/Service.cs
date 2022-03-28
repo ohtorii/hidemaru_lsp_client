@@ -258,6 +258,7 @@ namespace HidemaruLspClient_FrontEnd
                     if (ret)
                     {
                         logger_ = context_.server.GetLogger();
+                        iniFile_.SetLogger(logger_);
                         Configuration.Initialize(logger_);
                     }
                     else
@@ -344,13 +345,17 @@ namespace HidemaruLspClient_FrontEnd
 
         public bool Initialize(string iniFileName)
         {
+            //Memo: logger_はBackEndService起動後に取得可能
             try
             {
-                iniFile_ = IniFileService.Create(iniFileName,logger_);
+                iniFile_ = IniFileService.Create(iniFileName);
                 if (iniFile_ == null)
                 {
+                    logger_?.Error(string.Format(".Ini file not found. iniFilename={0}", iniFileName));
                     return false;
                 }
+                //MicrosoftAppCenter.Enable(iniFile_.ReadEnableCrashReport());
+                //iniFile_.OnFileChanged += IniFile__OnFileChanged;
                 return true;
             }catch(Exception e)
             {
@@ -359,6 +364,21 @@ namespace HidemaruLspClient_FrontEnd
             }
             return false;
         }
+
+        private void IniFile__OnFileChanged(object sender, EventArgs _)
+        {
+            try
+            {
+                var sendCrashReport = iniFile_.ReadEnableCrashReport();
+                MicrosoftAppCenter.EnableSendCrashReport = sendCrashReport;
+                context_?.server?.EnableSendCrashReport(Convert.ToSByte(sendCrashReport));
+            }
+            catch (System.Exception e)
+            {
+                logger_?.Error(e.ToString());
+            }
+        }
+
         /// <summary>
         /// BackEndを初期化する（非同期版）
         /// </summary>
