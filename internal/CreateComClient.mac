@@ -63,7 +63,7 @@ if(#useAsync){
 //Iniファイル
 //
 $rootFolder     =currentmacrodirectory+@"\..";
-$iniServerConfig=$rootFolder+"\\server_config.ini";
+$iniServerConfig=$rootFolder+"\\config.ini";
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ Initialize:
     ##obj=val($$obj);
     ##success=member(##obj,"Initialize",$$ini);
     if(! ##success){
-        message "[Failed] Initialize"
+        //message "[Failed] Initialize";
         return false;
     }
     return true;
@@ -157,7 +157,7 @@ InitializeBackEndService:
     ##obj=val($$obj);
     ##n=member(##obj,"InitializeBackEndService");
     if(##n==false){
-        message "[Failed] InitializeBackEndService";
+        //message "[Failed] InitializeBackEndService";
         return false;
     }
     return true;
@@ -189,7 +189,7 @@ InitializeFrontEndService:
     ##obj=val($$obj);
     ##n=member(##obj,"InitializeFrontEndService",filetype,directory2);
     if(##n==false){
-        message "[Failed] InitializeFrontEndService";
+        //wqmessage "[Failed] InitializeFrontEndService";
         return false;
     }
     return true;

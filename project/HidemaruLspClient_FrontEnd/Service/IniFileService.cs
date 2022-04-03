@@ -54,6 +54,46 @@ namespace HidemaruLspClient_FrontEnd
             logger_ = logger;
         }
         /// <summary>
+        /// [SearchServerIni]セクションから存在するiniファイルを見付ける
+        /// </summary>
+        /// <returns></returns>
+        string SearchExistServerIni()
+        {
+            const string sectionName = "SearchServerIni";
+            const int    keyFirst    = 1;
+            const int    keyLast     = 5;
+
+            for (int i = keyFirst; i < keyLast; ++i)
+            {
+                string absFileName;
+                var keyName  = $"Filename{i}";
+                var keyValue = iniReader_.Read(keyName, sectionName);
+                if (string.IsNullOrEmpty(keyValue))
+                {
+                    continue;
+                }
+                var expandedFileName = Environment.ExpandEnvironmentVariables(keyValue);
+                if (Path.IsPathRooted(expandedFileName))
+                {
+                    absFileName = expandedFileName;
+                }
+                else
+                {
+                    //iniFileからの相対パス→絶対パス
+                    absFileName = Path.Combine(iniFileDirectory_, expandedFileName);
+                }
+                if (File.Exists(absFileName)) {
+                    logger_?.Debug($"Ini file exist. sectionName={sectionName} / keyName={keyName} / keyValue={keyValue} / absFileName={absFileName}");
+                    return absFileName;
+                }
+                else
+                {
+                    logger_?.Debug($"Ini file not exist. sectionName={sectionName} / keyName={keyName} / keyValue={keyValue} / absFileName={absFileName}");
+                }
+            }
+            return null;
+        }
+        /// <summary>
         /// iniファイルからサーバ設定ファイルを見付ける
         /// </summary>
         /// <param name="fileExtension">ファイル拡張子(".c", ".cpp" ...)</param>
@@ -62,11 +102,18 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
-                var path = iniReader_.Read(fileExtension, "ServerConfig");
-                if (path == "")
+                const string sectionName = "ServerConfig";
+                var serverIniFilename    = SearchExistServerIni();
+                if (string.IsNullOrEmpty(serverIniFilename))
                 {
-                    logger_?.Info(string.Format($"{fileExtension} not found in .ini file."));
-                    return "";
+                    return null;
+                }
+                var serverIniReader = new IniFileNative(serverIniFilename);
+                var path            = serverIniReader.Read(fileExtension, sectionName);
+                if (string.IsNullOrEmpty(path))
+                {
+                    logger_?.Info($"Not found key in ini file. section={sectionName} / key={fileExtension} / serverIniFilename={serverIniFilename}");
+                    return null;
                 }
                 if (Path.IsPathRooted(path))
                 {
@@ -80,7 +127,7 @@ namespace HidemaruLspClient_FrontEnd
             {
                 logger_?.Error(e.ToString());
             }
-            return "";
+            return null;
         }
         /// <summary>
         /// MacroImprovementProgram -> SendCrashReport の値(bool)を読み取る
@@ -88,20 +135,42 @@ namespace HidemaruLspClient_FrontEnd
         /// <returns></returns>
         public bool ReadEnableCrashReport()
         {
+            string crashReport="";
             try
             {
-                var crashReport = iniReader_.Read("SendCrashReport", "MacroImprovementProgram");
+                crashReport = iniReader_.Read("SendCrashReport", "MacroImprovementProgram");
                 if (String.IsNullOrEmpty(crashReport) || String.IsNullOrWhiteSpace(crashReport))
                 {
                     return false;
                 }
-                return Convert.ToBoolean(crashReport);
+                return StringToBoolean(crashReport);
             }
             catch (Exception e)
             {
                 logger_?.Error(e.ToString());
             }
             return false;
+        }
+        
+        static bool StringToBoolean(string value, bool @default=false)
+        {
+            switch (value.ToLower())
+            {
+                case "true":
+                    return true;
+                case "t":
+                    return true;
+                case "1":
+                    return true;
+                case "0":
+                    return false;
+                case "false":
+                    return false;
+                case "f":
+                    return false;
+                default:
+                    return @default;
+            }
         }
         public int UpdateCount { get { return updateCount_; } }
         int updateCount_;
