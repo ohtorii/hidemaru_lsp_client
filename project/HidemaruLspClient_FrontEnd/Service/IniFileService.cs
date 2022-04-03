@@ -35,7 +35,10 @@ namespace HidemaruLspClient_FrontEnd
         void Watcher__Changed(object sender, FileSystemEventArgs e)
         {
             updateCount_++;
-            OnFileChanged(this, EventArgs.Empty);
+            if (OnFileChanged != null)
+            {
+                OnFileChanged(this, EventArgs.Empty);
+            }
         }
 
         public static IniFileService Create(string iniFilename) {

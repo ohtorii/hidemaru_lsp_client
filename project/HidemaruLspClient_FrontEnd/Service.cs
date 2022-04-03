@@ -354,8 +354,6 @@ namespace HidemaruLspClient_FrontEnd
                     logger_?.Error(string.Format(".Ini file not found. iniFilename={0}", iniFileName));
                     return false;
                 }
-                //MicrosoftAppCenter.Enable(iniFile_.ReadEnableCrashReport());
-                //iniFile_.OnFileChanged += IniFile__OnFileChanged;
                 return true;
             }catch(Exception e)
             {
@@ -363,21 +361,7 @@ namespace HidemaruLspClient_FrontEnd
                 logger_?.Error(e.ToString());
             }
             return false;
-        }
-
-        private void IniFile__OnFileChanged(object sender, EventArgs _)
-        {
-            try
-            {
-                var sendCrashReport = iniFile_.ReadEnableCrashReport();
-                MicrosoftAppCenter.EnableSendCrashReport = sendCrashReport;
-                context_?.server?.EnableSendCrashReport(Convert.ToSByte(sendCrashReport));
-            }
-            catch (System.Exception e)
-            {
-                logger_?.Error(e.ToString());
-            }
-        }
+        }        
 
         /// <summary>
         /// BackEndを初期化する（非同期版）
