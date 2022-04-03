@@ -253,6 +253,9 @@ namespace HidemaruLspClient_FrontEnd
                             Marshal.ThrowExceptionForHR(hr);
                         }
                         context_.server = (IHidemaruLspBackEndServer)obj;
+
+                        //CrashReport送信は個人情報に関わる処理なのでサーバ起動直後に真偽値をセットする（Initializeより先に呼びだして良い）
+                        context_.server.EnableSendCrashReport(Convert.ToSByte(MicrosoftAppCenter.EnableSendCrashReport));
                     }
                     var ret = Convert.ToBoolean(context_.server.Initialize());
                     if (ret)
@@ -282,17 +285,17 @@ namespace HidemaruLspClient_FrontEnd
         {
             if (! Directory.Exists(currentSourceCodeDirectory))
             {
-                logger_.Error($"Not Found: currentSourceCodeDirectory('{currentSourceCodeDirectory}')");
+                logger_.Error($"Directory not Found: currentSourceCodeDirectory={currentSourceCodeDirectory}");
                 return false;
             }
             var serverConfigFilename = iniFile_.FindServerConfig(fileExtension);
-            if (serverConfigFilename == "")
+            if (string.IsNullOrEmpty(serverConfigFilename))
             {
                 return false;
             }
             if(!File.Exists(serverConfigFilename))
             {
-                logger_.Error($"Not found: serverConfigFilename('{serverConfigFilename}'')");
+                logger_.Error($"File not found. serverConfigFilename={serverConfigFilename}");
                 return false;
             }
             lock (context_)
@@ -332,8 +335,8 @@ namespace HidemaruLspClient_FrontEnd
             {
                 MicrosoftAppCenter.Start();
                 tokenSource_ = new CancellationTokenSource();
-                context_ = new Context();
-                openedFile_ = new HidemaruEditorDocument();
+                context_     = new Context();
+                openedFile_  = new HidemaruEditorDocument();
                 UIThread.Initializer();
                 Hidemaru.Initialize();
             }catch(Exception e)
@@ -354,6 +357,11 @@ namespace HidemaruLspClient_FrontEnd
                     logger_?.Error(string.Format(".Ini file not found. iniFilename={0}", iniFileName));
                     return false;
                 }
+                
+                //CrashReport送信は個人情報に関わる処理なので処理の早い段階で真偽値をセットする
+                MicrosoftAppCenter.EnableSendCrashReport=iniFile_.ReadEnableCrashReport();
+                iniFile_.OnFileChanged += IniFile__OnFileChanged;
+
                 return true;
             }catch(Exception e)
             {
@@ -361,7 +369,24 @@ namespace HidemaruLspClient_FrontEnd
                 logger_?.Error(e.ToString());
             }
             return false;
-        }        
+        }
+        private void IniFile__OnFileChanged(object sender, EventArgs _)
+        {
+            try
+            {
+                if (iniFile_ == null)
+                {
+                    return;
+                }
+                var sendCrashReport = iniFile_.ReadEnableCrashReport();
+                MicrosoftAppCenter.EnableSendCrashReport = sendCrashReport;
+                context_?.server?.EnableSendCrashReport(Convert.ToSByte(sendCrashReport));
+            }
+            catch (System.Exception e)
+            {
+                logger_?.Error(e.ToString());
+            }
+        }
 
         /// <summary>
         /// BackEndを初期化する（非同期版）
@@ -468,7 +493,7 @@ namespace HidemaruLspClient_FrontEnd
                             var currentUpdateCount = iniFile_.UpdateCount;
                             if (prevUpdateCount != currentUpdateCount)
                             {
-                                //.iniファイルを再読み込みする
+                                //.iniファイルが更新されたため再読み込みする
                                 prevUpdateCount = currentUpdateCount;
                                 break;
                             }
@@ -563,10 +588,7 @@ namespace HidemaruLspClient_FrontEnd
             logger_?.Trace("Enter Finalizer");
             try
             {
-                if (tokenSource_ != null)
-                {
-                    tokenSource_.Cancel();
-                }
+                tokenSource_?.Cancel();
                 lock (context_)
                 {
                     FinalizeContext();
@@ -586,10 +608,9 @@ namespace HidemaruLspClient_FrontEnd
             dasmr_ = null;
             openedFile_ = null;
 
-            if (false) {
-                tokenSource_ = null;
-                context_ = null;
-            }
+            /*tokenSource_ = null;
+            context_ = null;*/
+
             iniFile_ = null;
 
             logger_?.Trace("Leave Finalizer");
