@@ -1,11 +1,5 @@
 ﻿# 開発者向けドキュメント
 
-ソースコードを改変するために必要な情報を網羅した開発者向けドキュメントです。
+以下ファイルを参照してください。
 
-# ドキュメント
-
-- [プロジェクトのビルド方法](documents/project.md)
-- [処理の流れ](documents/flow.md)
-- [内部実装](documents/internal.md)
-
-以上
+[documents/readme.md](documents/readme.md)
