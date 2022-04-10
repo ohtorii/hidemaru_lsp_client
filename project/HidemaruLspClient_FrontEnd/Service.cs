@@ -483,7 +483,7 @@ namespace HidemaruLspClient_FrontEnd
                     var prevUpdateCount = iniFile_.UpdateCount;
                     while(InitializeFrontEndServiceMain(fileExtension, currentSourceCodeDirectory)==false)
                     {
-                        //.iniファイルの読み込みに失敗（リトライする）
+                        //リトライする（.iniファイルの読み込み失敗、または、LSPのプロセス起動失敗）
                         while (true)
                         {
                             if (tokenSource_.IsCancellationRequested)
