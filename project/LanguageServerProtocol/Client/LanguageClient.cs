@@ -54,7 +54,19 @@ namespace LSP.Implementation
 		LspParameter param_;
 		ClientEvents clientEvents_;
 
-        public Sender Send { get; private set; }
+		/// <summary>
+		/// 関連付けられているプロセスが終了したかどうかを示す値を取得します。
+		/// </summary>
+		public bool HasExited { get { return hasExited_; } }
+		bool hasExited_ = false;
+
+		/// <summary>
+		/// 関連付けられたプロセスが終了したときにプロセスによって指定された値を取得します。
+		/// </summary>
+		public int ExitCode { get { return exitCode_; } }
+		int exitCode_ = 0;
+
+		public Sender Send { get; private set; }
 
         public LanguageClient()
         {
@@ -108,16 +120,18 @@ namespace LSP.Implementation
 		}
 		void Client_standardErrorReceived(object sender, byte[] e)
 		{
-			if (param_.logger.IsDebugEnabled)
+			if (param_.logger.IsErrorEnabled)
 			{
 				var unicodeString = Encoding.UTF8.GetString(e.ToArray());
-				param_.logger.Debug(string.Format("[StandardError]{0}", unicodeString));
+				param_.logger.Error(string.Format("[StandardError]{0}", unicodeString));
 			}
 		}
 		void Server_Exited(object sender, EventArgs e)
-		{			
-			param_.logger.Debug("Server_Exited");			
+		{
+			hasExited_ = true;
+			exitCode_  = server_.GetExitCode();
 			source_.Cancel();
+			param_.logger.Info($"Server_Exited. exitcode={exitCode_}");
 		}
         #endregion
         void EventResponseProxy(int request_id, JArray any)

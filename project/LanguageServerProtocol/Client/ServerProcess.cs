@@ -137,6 +137,10 @@ namespace LSP.Implementation
         }
         public void WriteStandardInput(byte[] b)
 		{
+            if (process_.HasExited)
+            {
+                throw new Exception();
+            }
             process_.StandardInput.BaseStream.Write(b,0,b.Length);
             process_.StandardInput.BaseStream.Flush();
             //process.StandardInput.Write(str);
@@ -146,5 +150,9 @@ namespace LSP.Implementation
 		{
             process_.Kill();
 		}
+        public int GetExitCode()
+        {
+            return process_.ExitCode;
+        }
     }
 }

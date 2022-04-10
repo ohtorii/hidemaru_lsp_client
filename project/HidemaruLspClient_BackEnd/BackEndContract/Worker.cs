@@ -96,11 +96,7 @@ namespace HidemaruLspClient
 
 			hidemaruProcessId_ = HidemaruProcessId;
 
-			if (!InitializeClient())
-			{
-				return false;
-			}
-
+			InitializeClient();
 			var reqId=InitializeServer();
 			var response = client_.QueryResponse(reqId, millisecondsTimeout: defaultTimeout);
             if ((ResponseIsCorrect(response) == false) || (response.item == null))
@@ -113,7 +109,7 @@ namespace HidemaruLspClient
 		}
 
 		[LogMethod]
-		bool InitializeClient()
+		void InitializeClient()
         {
 			JObject WorkspaceConfiguration=null;
 			if (options_.WorkspaceConfig!="") {
@@ -129,7 +125,6 @@ namespace HidemaruLspClient
 					jsonWorkspaceConfiguration	= WorkspaceConfiguration,
 				}
 			);
-			return true;
 		}
 
 		[LogMethod]
