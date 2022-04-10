@@ -65,13 +65,14 @@ namespace HidemaruLspClient_FrontEnd
 
             for (int i = keyFirst; i < keyLast; ++i)
             {
-                string absFileName;
-                var keyName  = $"Filename{i}";
+                var keyName  = $"FileName{i}";
                 var keyValue = iniReader_.Read(keyName, sectionName);
                 if (string.IsNullOrEmpty(keyValue))
                 {
                     continue;
                 }
+
+                string absFileName;
                 var expandedFileName = Environment.ExpandEnvironmentVariables(keyValue);
                 if (Path.IsPathRooted(expandedFileName))
                 {
@@ -80,7 +81,7 @@ namespace HidemaruLspClient_FrontEnd
                 else
                 {
                     //iniFileからの相対パス→絶対パス
-                    absFileName = Path.Combine(iniFileDirectory_, expandedFileName);
+                    absFileName = Path.GetFullPath(Path.Combine(iniFileDirectory_, expandedFileName));
                 }
                 if (File.Exists(absFileName)) {
                     logger_?.Debug($"Ini file exist. sectionName={sectionName} / keyName={keyName} / keyValue={keyValue} / absFileName={absFileName}");
@@ -100,15 +101,17 @@ namespace HidemaruLspClient_FrontEnd
         /// <returns>サーバ設定ファイル（絶対パス）、または空文字</returns>
         public string FindServerConfig(string fileExtension)
         {
+            string absFileName = null;
             try
             {
-                const string sectionName = "ServerConfig";
                 var serverIniFilename    = SearchExistServerIni();
                 if (string.IsNullOrEmpty(serverIniFilename))
                 {
                     return null;
                 }
+
                 var serverIniReader = new IniFileNative(serverIniFilename);
+                const string sectionName = "ServerConfig";
                 var path            = serverIniReader.Read(fileExtension, sectionName);
                 if (string.IsNullOrEmpty(path))
                 {
@@ -120,12 +123,16 @@ namespace HidemaruLspClient_FrontEnd
                     return path;
                 }
                 //iniFileからの相対パス→絶対パス
-                var absFileName = Path.Combine(iniFileDirectory_, path);
+                var serverIniDirectoryName = Path.GetDirectoryName(serverIniFilename);
+                absFileName = Path.GetFullPath(Path.Combine(serverIniDirectoryName, path));
                 return absFileName;
             }
             catch (Exception e)
             {
                 logger_?.Error(e.ToString());
+            }
+            finally{
+                logger_?.Info($"FindServerConfig return. \"{fileExtension}\" -> \"{absFileName}\"");
             }
             return null;
         }
