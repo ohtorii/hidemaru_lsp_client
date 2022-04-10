@@ -15,7 +15,7 @@ namespace HidemaruLspClient
     {
         static string applicationName             = System.AppDomain.CurrentDomain.FriendlyName;
         static DllAssemblyResolver dasmr          = new DllAssemblyResolver();
-        static readonly string tlbPath            = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb");
+        static readonly string tlbPath            = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb"));
         static readonly bool isConsoleApplication = IsConsoleApplication();
         static readonly Guid serverClassGuid      = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
 
