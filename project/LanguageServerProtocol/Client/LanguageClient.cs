@@ -131,7 +131,17 @@ namespace LSP.Implementation
 			hasExited_ = true;
 			exitCode_  = server_.GetExitCode();
 			source_.Cancel();
-			param_.logger.Info($"Server_Exited. exitcode={exitCode_}");
+
+			const int success = 0;
+			var message = $"Server Exited. exitcode={exitCode_}";
+			if (exitCode_ == success)
+            {
+				param_.logger.Info(message);
+			}
+            else
+            {
+				param_.logger.Error(message);
+			}
 		}
         #endregion
         void EventResponseProxy(int request_id, JArray any)

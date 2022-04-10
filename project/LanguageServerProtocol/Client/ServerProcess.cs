@@ -139,12 +139,10 @@ namespace LSP.Implementation
 		{
             if (process_.HasExited)
             {
-                throw new Exception();
+                throw new Exception("LSP process has been exited.");
             }
             process_.StandardInput.BaseStream.Write(b,0,b.Length);
             process_.StandardInput.BaseStream.Flush();
-            //process.StandardInput.Write(str);
-            //process.StandardInput.Flush();
         }
         public void Kill()
 		{

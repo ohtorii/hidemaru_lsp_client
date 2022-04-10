@@ -31,7 +31,7 @@ public class LogMethodAttribute : Attribute, IMethodDecorator
 
     public void OnException(Exception exception)
     {
-        LogManager.GetCurrentClassLogger().Trace(exception, "Exception {0}", _method.Name);
+        //LogManager.GetCurrentClassLogger().Trace(exception, "Exception {0}", _method.Name);
     }
 }
 
