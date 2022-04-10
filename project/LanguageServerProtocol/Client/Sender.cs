@@ -390,9 +390,9 @@ namespace LSP.Implementation
 
 				Thread.Sleep(0);
 			}
-			if (param_.logger.IsInfoEnabled)
+			if (param_.logger.IsErrorEnabled)
 			{
-				param_.logger.Info(string.Format("QueryResponse timeout. id={0}/millisecondsTimeout={1}", id, millisecondsTimeout));
+				param_.logger.Error(string.Format("QueryResponse timeout. id={0}/millisecondsTimeout={1}", id, millisecondsTimeout));
 			}
 			return null;
 		}
