@@ -117,7 +117,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             var self_full_path  = Assembly.GetExecutingAssembly().Location;
             var self_dir        = Path.GetDirectoryName(self_full_path);
-            return Path.Combine(self_dir, dllName);
+            return Path.GetFullPath(Path.Combine(self_dir, dllName));
         }
     }
 }
