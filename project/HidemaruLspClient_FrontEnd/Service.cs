@@ -260,7 +260,7 @@ namespace HidemaruLspClient_FrontEnd
                     var ret = Convert.ToBoolean(context_.server.Initialize());
                     if (ret)
                     {
-                        logger_ = context_.server.GetLogger();
+                        logger_ = context_.server.GetLogger("FrontEnd");
                         iniFile_.SetLogger(logger_);
                         Configuration.Initialize(logger_);
                     }

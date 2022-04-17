@@ -72,7 +72,6 @@ namespace HidemaruLspClient
 			TempFile.Initialize();
 			initialized_ = true;
 		}
-		[LogMethod]
 		public bool Start(
 				string ServerName,
 				string ExcutablePath,
@@ -108,7 +107,6 @@ namespace HidemaruLspClient
 			return true;
 		}
 
-		[LogMethod]
 		void InitializeClient()
         {
 			JObject WorkspaceConfiguration=null;
@@ -127,7 +125,6 @@ namespace HidemaruLspClient
 			);
 		}
 
-		[LogMethod]
 		RequestId InitializeServer()
 		{
 			var param = UtilInitializeParams.Initialzie();
@@ -138,21 +135,18 @@ namespace HidemaruLspClient
 			return client_.Send.Initialize(param);
 		}
 
-		[LogMethod]
 		void InitializedClient()
 		{
 			var param = new InitializedParams();
 			client_.Send.Initialized(param);
 		}
 
-		[LogMethod]
 		public void Stop()
 		{
 			prevCompletionTempFile_.Delete();
 			Shutdown();
 			client_.Send.LoggingResponseLeak();
 		}
-		[LogMethod]
 		void Shutdown()
 		{
 			var requestId = client_.Send.Shutdown();
@@ -195,7 +189,6 @@ namespace HidemaruLspClient
 
 
 		#region DidOpen
-		[LogMethod]
 		/// <summary>
 		///
 		/// </summary>
@@ -233,7 +226,6 @@ namespace HidemaruLspClient
 			return extension.Substring(1);
 		}
         #endregion
-        [LogMethod]
 		void IWorker.DidChange(string absFilename, string text, int contentsVersion)
         {
 			var param = new DidChangeTextDocumentParams {
@@ -245,7 +237,6 @@ namespace HidemaruLspClient
 			client_.Send.TextDocumentDidChange(param);
 		}
 
-		[LogMethod]
 		void IWorker.DidClose(string absFilename)
         {
 			var sourceUri = new Uri(absFilename);
@@ -266,7 +257,6 @@ namespace HidemaruLspClient
 			return true;
         }
 		#region Completion
-		[LogMethod]
 		/// <summary>
 		///
 		/// </summary>
@@ -589,7 +579,6 @@ namespace HidemaruLspClient
 			}
 			return new LocationContainerImpl(result);
 		}
-		[LogMethod]
 		ILocationContainer IWorker.Declaration(string absFilename, long line, long column)
 		{
 			var param = new DeclarationParams();

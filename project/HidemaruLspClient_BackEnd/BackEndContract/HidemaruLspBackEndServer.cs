@@ -67,13 +67,11 @@ namespace HidemaruLspClient
             }
         }
 
-        [LogMethod]
         int IHidemaruLspBackEndServer.Add(int x, int y)
         {
             return x + y;
         }
 
-        [LogMethod]
         /// <summary>
         /// コンストラクタ
         /// (Memo)アウトプロセスサーバなので createobject するたびに呼ばれる
@@ -82,7 +80,7 @@ namespace HidemaruLspClient
         {
             if (lspClientLogger_ == null)
             {
-                lspClientLogger_ = new LspClientLogger();
+                lspClientLogger_ = new LspClientLogger("BackEnd");
             }
 
             var logger = LogManager.GetCurrentClassLogger();
@@ -102,7 +100,7 @@ namespace HidemaruLspClient
             MicrosoftAppCenter.EnableSendCrashReport = Convert.ToBoolean(value);
         }
         
-        ILspClientLogger IHidemaruLspBackEndServer.GetLogger()
+        ILspClientLogger IHidemaruLspBackEndServer.GetLogger(string name)
         {
             if (comClientLogger_ == null)
             {
@@ -112,7 +110,6 @@ namespace HidemaruLspClient
             return comClientLogger_;
         }
 
-        [LogMethod]
         /// <summary>
         /// LSPサーバを起動する
         /// </summary>
@@ -161,7 +158,6 @@ namespace HidemaruLspClient
             return null;
         }
 
-        [LogMethod]
         void IHidemaruLspBackEndServer.DestroyWorker(IWorker worker)
         {
             var logger = LogManager.GetCurrentClassLogger();

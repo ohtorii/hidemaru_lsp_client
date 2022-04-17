@@ -4,9 +4,9 @@
 	{
 		public NLog.Logger nlog_ {get; private set;}
 
-		public LspClientLogger()
+		public LspClientLogger(string name)
 		{
-			nlog_ = NLog.LogManager.GetCurrentClassLogger();
+			nlog_ = NLog.LogManager.GetLogger(name);
 		}
 		public bool IsFatalEnabled { get { return nlog_.IsFatalEnabled; } }
 		public bool IsErrorEnabled { get { return nlog_.IsErrorEnabled; } }
