@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("HidemaruLspClient_FrontEnd")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Ohtorii")]
 [assembly: AssemblyProduct("HidemaruLspClient_FrontEnd")]
 [assembly: AssemblyCopyright("Copyright ©  2021 ohtorii")]
 [assembly: AssemblyTrademark("")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // すべての値を指定するか、次を使用してビルド番号とリビジョン番号を既定に設定できます
 // 既定値にすることができます:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.5.0.0")]
+[assembly: AssemblyVersion("0.5.1.0")]
 //[assembly: AssemblyFileVersion("1.0.0.0")]
