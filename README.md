@@ -1,5 +1,7 @@
 # hidemaru_lsp_client
 
+![Coverity Scan Build Status](https://img.shields.io/coverity/scan/25158.svg "Coverity Scan Build Status")
+ 
 秀丸エディタから Language Server Protocol (LSP) を利用するマクロ。
 
 ## スケジュール感
