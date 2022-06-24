@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Windows.Forms;
+using System.Threading;
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -8,13 +10,22 @@ namespace HidemaruLspClient_FrontEnd
     /// </summary>
     class UIThread
     {
-        class HiddenForm : System.Windows.Forms.Form {
+        class HiddenForm : Form {
             public HiddenForm()
             {
-                this.Opacity = 0;
-                this.ShowIcon = false;
-                this.ShowInTaskbar = false;
+                this.Text = "HidemaruLspClient";
+                this.Load += HiddenForm_Load;
             }
+
+            private void HiddenForm_Load(object sender, EventArgs e)
+            {
+                this.ShowIcon = false;
+                this.WindowState = FormWindowState.Minimized;
+                this.ShowInTaskbar = false;
+                this.Visible = false;
+                this.FormBorderStyle = FormBorderStyle.None;
+            }
+
             protected override bool ShowWithoutActivation => true;
         }
 
@@ -25,7 +36,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             if (form_ == null)
             {
-                mainThreadId_ = System.Threading.Thread.CurrentThread.ManagedThreadId;
+                mainThreadId_ = Thread.CurrentThread.ManagedThreadId;
                 form_ = new HiddenForm();
                 //Memo: Formを表示するとInvokeを呼べる
 #if false
@@ -45,7 +56,7 @@ namespace HidemaruLspClient_FrontEnd
             }
         }
 
-        static bool IsMainThread => System.Threading.Thread.CurrentThread.ManagedThreadId == mainThreadId_;
+        static bool IsMainThread => Thread.CurrentThread.ManagedThreadId == mainThreadId_;
 
         /// <summary>
         /// デリゲートをUIスレッドで実行する
