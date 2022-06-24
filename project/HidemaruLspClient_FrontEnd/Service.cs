@@ -357,7 +357,7 @@ namespace HidemaruLspClient_FrontEnd
                     logger_?.Error(string.Format(".Ini file not found. iniFilename={0}", iniFileName));
                     return false;
                 }
-                
+
                 //CrashReport送信は個人情報に関わる処理なので処理の早い段階で真偽値をセットする
                 MicrosoftAppCenter.EnableSendCrashReport=iniFile_.ReadEnableCrashReport();
                 iniFile_.OnFileChanged += IniFile__OnFileChanged;
@@ -730,6 +730,14 @@ namespace HidemaruLspClient_FrontEnd
                     result.Add(UserData);
 
                     var location = locations.Item(i);
+                    if (location == null)
+                    {
+                        continue;
+                    }
+                    if (location.range == null)
+                    {
+                        continue;
+                    }
                     option.Add(
                         new Uri(location.uri).AbsolutePath,
                         location.range.start.line,

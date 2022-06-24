@@ -19,21 +19,9 @@ namespace HidemaruLspClient
         /// <param name="args">コマンドライン引数</param>
         /// <returns>--helpの場合はnullを返す</returns>
         internal static Options Create(bool isConsoleApplication, string [] args) {
-            Options result=null;
+            using (var parser = CreateParser(isConsoleApplication))
             {
-                Parser parser                 = null;
-                StringBuilder helpTextBuilder =null;
-                StringWriter helpTextWriter   = null;
-                if (isConsoleApplication)
-                {
-                    parser = new Parser(config=> { config.HelpWriter = Console.Out; });
-                }
-                else
-                {
-                    helpTextBuilder = new StringBuilder();
-                    helpTextWriter  = new StringWriter(helpTextBuilder);
-                    parser          = new Parser(config => { config.HelpWriter = helpTextWriter; });
-                }
+                Options result=null;
                 parser.ParseArguments<Options>(args)
                     .WithParsed<Options>(o =>
                     {
@@ -41,18 +29,27 @@ namespace HidemaruLspClient
                     });
                 if (isConsoleApplication)
                 {
-                    //pass
+                    return result;
                 }
-                else
+                if (result != null)
                 {
-                    if (result == null)
-                    {
-                        Win32Native.MessageBox(IntPtr.Zero, helpTextBuilder.ToString(), "Help", 0);
-                    }
+                    return result;
                 }
+                var writer = (StringWriter)parser.Settings.HelpWriter;
+                Win32Native.MessageBox(IntPtr.Zero, writer.GetStringBuilder().ToString(), "Help", 0);
+                return null;
             }
-            return result;
         }
+
+        static Parser CreateParser(bool isConsoleApplication)
+        {
+            if (isConsoleApplication)
+            {
+                return new Parser(config => { config.HelpWriter = Console.Out; });
+            }
+            return new Parser(config => { config.HelpWriter = new StringWriter(new StringBuilder()); });
+        }
+
         internal enum RegistryMode{
             RegServer,
             UnRegServer,

@@ -438,44 +438,6 @@ namespace LSP.Implementation
                 callback(response);
             }
         }
-
-        bool FindPairKakko(out int outPairKakkoIndex)
-        {
-            /*(Ex)
-             * bufferStreamUTF8={"method":"initialized",...}Content-Length: 128\n\n{
-             *                                         ^
-             *                                         |
-             *                     outPairKakkoIndex---+
-             */
-            outPairKakkoIndex = -1;
-
-            Debug.Assert(bufferStreamUTF8_[0] == Convert.ToByte('{'));
-
-            int index = 0;
-            int counter = 0;
-
-            foreach (var c in bufferStreamUTF8_)
-            {
-                if (c == Convert.ToByte('{'))
-                {
-                    ++counter;
-                }
-                else if (c == Convert.ToByte('}'))
-                {
-                    --counter;
-                }
-
-                if (counter == 0)
-                {
-                    outPairKakkoIndex = index;
-                    return true;
-                }
-
-                ++index;
-            }
-
-            return false;
-        }
         class ByteListUtil
         {
             public static bool StartsWith(List<byte> buf, string str)
