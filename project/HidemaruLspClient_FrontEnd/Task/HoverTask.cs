@@ -27,7 +27,7 @@ namespace HidemaruLspClient_FrontEnd
         //Memo: コンポジションしているのはFormクラスをみえないようにするのが目的
         Internal.Tooltipform tooltipWinforms_;
 
-        public HoverTask(Internal.Tooltipform.QueryHoverString func, IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
+        public HoverTask(Internal.Tooltipform.QueryHoverStringType func, IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
         {
             tooltipWinforms_ = new Internal.Tooltipform(func, logger, cancellationToken);
         }
@@ -43,8 +43,8 @@ namespace HidemaruLspClient_FrontEnd
         /// </summary>
         class Tooltipform : Form
         {
-            public delegate string QueryHoverString(long hidemaruLine, long hidemaruColumn);
-            QueryHoverString QueryHoverStringFunction;
+            public delegate string QueryHoverStringType(long hidemaruLine, long hidemaruColumn);
+            QueryHoverStringType QueryHoverString;
 
             ILspClientLogger logger_;
             CancellationToken cancellationToken_;
@@ -64,9 +64,9 @@ namespace HidemaruLspClient_FrontEnd
             #endregion
 
 
-            public Tooltipform(QueryHoverString func, ILspClientLogger logger, CancellationToken cancellationToken)
+            public Tooltipform(QueryHoverStringType func, ILspClientLogger logger, CancellationToken cancellationToken)
             {
-                QueryHoverStringFunction = func;
+                QueryHoverString = func;
                 hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();
 
                 logger_ = logger;
@@ -342,7 +342,7 @@ namespace HidemaruLspClient_FrontEnd
                             try
                             {
                                 timer_.Stop();
-                                tooltipText = await Task.Run(() => QueryHoverStringFunction(line, column), cancellationToken_);
+                                tooltipText = await Task.Run(() => QueryHoverString(line, column), cancellationToken_);
                             }
                             finally
                             {
