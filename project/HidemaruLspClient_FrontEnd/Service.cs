@@ -151,7 +151,7 @@ namespace HidemaruLspClient_FrontEnd
                     const sbyte False = 0;
                     if ((hoverTask_ == null) && (context_.worker.ServerCapabilities.HoverProvider != False))
                     {
-                        hoverTask_ = new HoverTask(this, context_.worker, logger_, tokenSource_.Token);
+                        hoverTask_ = new HoverTask(this.HoverAsync, context_.worker, logger_, tokenSource_.Token);
                     }
                     if (syncDocumentTask_ == null)
                     {
@@ -668,24 +668,28 @@ namespace HidemaruLspClient_FrontEnd
         }
 
 #region Hover
-        internal string Hover(long hidemaruLine, long hidemaruColumn)
+        internal string HoverAsync(long hidemaruLine, long hidemaruColumn)
         {
             try {
+                if (this.tokenSource_.IsCancellationRequested)
+                {
+                    return null;
+                }
                 if (context_.worker == null)
                 {
-                    return "";
+                    return null;
                 }
                 var absFileName = syncDocumentTask_.QueryFileName();
                 if (String.IsNullOrEmpty(absFileName))
                 {
-                    return "";
+                    return null;
                 }
                 long line, character;
                 Hidemaru.HidemaruToZeroBase(out line, out character, hidemaruLine, hidemaruColumn);
                 var hover = context_.worker.Hover(absFileName, line, character);
                 if (hover == null)
                 {
-                    return "";
+                    return null;
                 }
                 return hover.contents.value;
             }
@@ -694,7 +698,7 @@ namespace HidemaruLspClient_FrontEnd
                 HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
                 logger_.Error(e.ToString());
             }
-            return "";
+            return null;
         }
 #endregion
 #endregion

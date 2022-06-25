@@ -1,4 +1,12 @@
-﻿using System;
+﻿//以下コードを改変利用しています。
+//https://github.com/komiyamma/hidemaru-net/tree/master/win-hidemaru-app/hm_ts_intellisense/HmTSHintPopup.src/HmTSHintPopup
+//
+//(License)
+//https://github.com/komiyamma/hidemaru-net/blob/master/win-hidemaru-app/hm_ts_intellisense/LICENSE.txt
+//
+
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,24 +24,28 @@ namespace HidemaruLspClient_FrontEnd
     /// </summary>
     class HoverTask
     {
-        Tooltipform tooltipWinforms_;
+        //Memo: コンポジションしているのはFormクラスをみえないようにするのが目的
+        Internal.Tooltipform tooltipWinforms_;
 
-        public HoverTask(Service service, IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
+        public HoverTask(Internal.Tooltipform.QueryHoverString func, IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
         {
-            tooltipWinforms_ = new Tooltipform(service, logger, cancellationToken);
+            tooltipWinforms_ = new Internal.Tooltipform(func, logger, cancellationToken);
         }
 
-        #region Tooltipform
-        //以下コードを改変利用しています。
-        //https://github.com/komiyamma/hidemaru-net/tree/master/win-hidemaru-app/hm_ts_intellisense/HmTSHintPopup.src/HmTSHintPopup
-        //
-        //(License)
-        //https://github.com/komiyamma/hidemaru-net/blob/master/win-hidemaru-app/hm_ts_intellisense/LICENSE.txt
-        //
+    }
 
+
+
+    namespace Internal
+    {
+        /// <summary>
+        ///
+        /// </summary>
         class Tooltipform : Form
         {
-            Service service_;
+            public delegate string QueryHoverString(long hidemaruLine, long hidemaruColumn);
+            QueryHoverString QueryHoverStringFunction;
+
             ILspClientLogger logger_;
             CancellationToken cancellationToken_;
 
@@ -52,9 +64,9 @@ namespace HidemaruLspClient_FrontEnd
             #endregion
 
 
-            public Tooltipform(Service service, ILspClientLogger logger, CancellationToken cancellationToken)
+            public Tooltipform(QueryHoverString func, ILspClientLogger logger, CancellationToken cancellationToken)
             {
-                service_ = service;
+                QueryHoverStringFunction = func;
                 hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();
 
                 logger_ = logger;
@@ -112,7 +124,7 @@ namespace HidemaruLspClient_FrontEnd
                     const int WS_EX_COMPOSITED = 0x02000000;
 
                     CreateParams p = base.CreateParams;
-                    p.ExStyle |= WS_EX_TOPMOST| WS_EX_COMPOSITED;
+                    p.ExStyle |= WS_EX_TOPMOST | WS_EX_COMPOSITED;
                     return p;
                 }
             }
@@ -137,7 +149,7 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     timer_ = new System.Windows.Forms.Timer();
                 }
-                timer_.Tick += MainLoop;
+                timer_.Tick += UpdateAsync;
                 timer_.Enabled = true;
                 timer_.Interval = 100;
                 timer_.Start();
@@ -269,7 +281,7 @@ namespace HidemaruLspClient_FrontEnd
                 return true;
             }
             #endregion
-            async void MainLoop(object sender, EventArgs e)
+            async void UpdateAsync(object sender, EventArgs e)
             {
                 if (cancellationToken_.IsCancellationRequested)
                 {
@@ -277,7 +289,7 @@ namespace HidemaruLspClient_FrontEnd
                     this.Close();
                     return;
                 }
-                if(ShouldTooltipBeDisplayed()==false)
+                if (ShouldTooltipBeDisplayed() == false)
                 {
                     HideToolTips();
                     return;
@@ -330,7 +342,7 @@ namespace HidemaruLspClient_FrontEnd
                             try
                             {
                                 timer_.Stop();
-                                tooltipText = await Task.Run(() => service_.Hover(line, column), cancellationToken_);
+                                tooltipText = await Task.Run(() => QueryHoverStringFunction(line, column), cancellationToken_);
                             }
                             finally
                             {
@@ -352,7 +364,7 @@ namespace HidemaruLspClient_FrontEnd
                     }
                 }
 
-                if ((tooltipText == null) || (tooltipText.Length == 0))
+                if (string.IsNullOrEmpty(tooltipText))
                 {
                     HideToolTips();
                 }
@@ -389,8 +401,6 @@ namespace HidemaruLspClient_FrontEnd
                 //this.WindowState = FormWindowState.Normal;
             }
         }
-        #endregion /*Tooltipform*/
     }
-
 }
 
