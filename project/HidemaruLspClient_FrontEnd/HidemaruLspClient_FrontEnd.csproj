@@ -127,7 +127,7 @@
     <Compile Include="Native\UnsafeNativeMethods.cs" />
     <Compile Include="ServiceAsync.cs" />
     <Compile Include="Task\DiagnosticsTask.cs" />
-    <Compile Include="Task\DidChangeTask.cs" />
+    <Compile Include="Task\SyncDocumentTask.cs" />
     <Compile Include="Task\HoverTask.cs" />
     <Compile Include="Utils\UIThread.cs" />
   </ItemGroup>

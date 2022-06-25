@@ -39,11 +39,11 @@ namespace HidemaruLspClient_FrontEnd
 
             timer_ = new System.Windows.Forms.Timer();
             timer_.Interval = 500;
-            timer_.Tick += MainLoopAsync;
+            timer_.Tick += UpdateAsync;
             timer_.Start();
         }
 
-        async void MainLoopAsync(object sender, EventArgs e)
+        async void UpdateAsync(object sender, EventArgs e)
         {
             try
             {
