@@ -12,7 +12,9 @@ namespace HidemaruLspClient_FrontEnd
     /// </summary>
     class DiagnosticsTask
     {
-        IWorker worker_;
+        public delegate IPublishDiagnosticsParamsContainer PullDiagnosticsParamsType();
+        PullDiagnosticsParamsType PullDiagnosticsParams;
+
         ILspClientLogger logger_;
         CancellationToken cancellationToken_;
         System.Windows.Forms.Timer timer_;
@@ -28,12 +30,12 @@ namespace HidemaruLspClient_FrontEnd
         /// </summary>
         bool outputPaneCleard_;
 
-        public DiagnosticsTask(IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
+        public DiagnosticsTask(PullDiagnosticsParamsType func, ILspClientLogger logger, CancellationToken cancellationToken)
         {
+            PullDiagnosticsParams = func;
             hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();
             outputPaneCleard_ = false;
 
-            worker_ = worker;
             logger_ = logger;
             cancellationToken_ = cancellationToken;
 
@@ -96,7 +98,7 @@ namespace HidemaruLspClient_FrontEnd
 
         (bool pullEventOccurred, string text) PullDiagnosticsText()
         {
-            var container = worker_.PullDiagnosticsParams();
+            var container = PullDiagnosticsParams();
             bool pullEventOccurred = container.Length == 0 ? false : true;
             if (pullEventOccurred == false)
             {

@@ -146,7 +146,7 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     if (diagnosticsTask_ == null)
                     {
-                        diagnosticsTask_ = new DiagnosticsTask(context_.worker, logger_, tokenSource_.Token);
+                        diagnosticsTask_ = new DiagnosticsTask(context_.worker.PullDiagnosticsParams, logger_, tokenSource_.Token);
                     }
                     const sbyte False = 0;
                     if ((hoverTask_ == null) && (context_.worker.ServerCapabilities.HoverProvider != False))
