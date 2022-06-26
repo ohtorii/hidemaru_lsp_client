@@ -39,7 +39,17 @@
 |カーソル位置のシンボルを参照している箇所へジャンプ|textDocument/references|○|
 |実装へ移動|textDocument/implementation|○|
 |Hover|textDocument/hover|○|
+|CodeLens|textDocument/codeLens|実装中|
 
+### 細々としたメッセージ
+|LSP method|実装|
+|workspace/didChangeConfiguration|×|
+|textDocument/didOpen|○|
+|textDocument/didChange|○|
+|textDocument/didClose|○|
+|textDocument/didSave|実装中|
+|workspace/didChangeWatchedFiles||
+|textDocument/publishDiagnostics||
 
 ## 動作確認した言語サーバ
 
