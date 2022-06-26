@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.Threading;
 
-namespace HidemaruLspClient_FrontEnd
+namespace HidemaruLspClient_FrontEnd.Utils
 {
     /// <summary>
     /// UIスレッドでデリゲートを実行するクラス

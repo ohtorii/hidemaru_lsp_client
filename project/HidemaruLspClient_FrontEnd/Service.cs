@@ -12,6 +12,7 @@ using HidemaruLspClient_FrontEnd.BackgroundTask;
 using HidemaruLspClient_FrontEnd.Facility;
 using HidemaruLspClient_FrontEnd.Hidemaru;
 using HidemaruLspClient_FrontEnd.BackEndContractImpl;
+using HidemaruLspClient_FrontEnd.Utils;
 
 namespace HidemaruLspClient_FrontEnd
 {

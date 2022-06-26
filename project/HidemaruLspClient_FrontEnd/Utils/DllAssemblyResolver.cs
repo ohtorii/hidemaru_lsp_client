@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace HidemaruLspClient_FrontEnd
+namespace HidemaruLspClient_FrontEnd.Utils
 {
     internal class DllAssemblyResolver
     {

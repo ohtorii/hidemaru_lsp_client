@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HidemaruLspClient_FrontEnd
+namespace HidemaruLspClient_FrontEnd.Utils
 {
     /// <summary>
     /// 複数のテキストファイルから行を集める
