@@ -30,6 +30,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         {
             if (OpenEvent != null)
             {
+                logger_?.Trace($"RaiseOpenEvent:e.FileName={e.FileName}");
                 OpenEvent(this, e);
             }
         }
@@ -54,6 +55,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         {
             if (ChangeEvent != null)
             {
+                logger_?.Trace($"RaiseChangeEvent:e.FileName={e.FileName}");
                 ChangeEvent(this, e);
             }
         }
@@ -75,6 +77,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         {
             if (CloseEvent != null)
             {
+                logger_?.Trace($"RaiseCloseEvent:e.FileName={e.FileName}");
                 CloseEvent(this, e);
             }
         }
@@ -207,10 +210,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             }
             catch (Exception e)
             {
-                if (logger_ != null)
-                {
-                    logger_.Error(e.ToString());
-                }
+                logger_?.Error(e.ToString());
             }
             return DigOpenStatus.Failed;
         }
@@ -273,8 +273,33 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         string Workflow()
         {
             string currentHidemaruFilePath;
-            if (! openedFile_.IsValidFileName())
+            if (openedFile_.IsValidFileName())
             {
+                //2回目以降にファイルを開く場合
+                currentHidemaruFilePath = Api.GetFileFullPath();
+                if (string.IsNullOrEmpty(currentHidemaruFilePath))
+                {
+                    //秀丸エディタのファイルが閉じた場合
+                    DidClose();
+                    return fileNotFound;
+                }
+
+                if (openedFile_.IsSameFileName(currentHidemaruFilePath))
+                {
+                    //秀丸エディタで前回と同じファイルを開いている場合
+                    if (TryDigChange() == DigChangeStatus.Failed)
+                    {
+                        logger_.Warn("DigChangeStatus.Failed");
+                        return fileNotFound;
+                    }
+                    return currentHidemaruFilePath;
+                }
+
+                //秀丸エディタで前回と異なるファイルを開いた場合
+                DidClose();
+                return DigOpenProc(currentHidemaruFilePath);
+            }
+            else {
                 //初めてファイルを開く場合
                 currentHidemaruFilePath = Api.GetFileFullPath();
                 if (String.IsNullOrEmpty(currentHidemaruFilePath))
@@ -283,32 +308,6 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 }
                 return DigOpenProc(currentHidemaruFilePath);
             }
-
-            //
-            //2回目以降にファイルを開く場合
-            //
-            currentHidemaruFilePath = Api.GetFileFullPath();
-            if (string.IsNullOrEmpty(currentHidemaruFilePath))
-            {
-                //秀丸エディタのファイルが閉じた場合
-                DidClose();
-                return fileNotFound;
-            }
-
-            if (openedFile_.IsSameFileName(currentHidemaruFilePath))
-            {
-                //秀丸エディタで前回と同じファイルを開いている場合
-                if (TryDigChange() == DigChangeStatus.Failed)
-                {
-                    logger_.Warn("DigChangeStatus.Failed");
-                    return fileNotFound;
-                }
-                return currentHidemaruFilePath;
-            }
-
-            //秀丸エディタで前回と異なるファイルを開いた場合
-            DidClose();
-            return DigOpenProc(currentHidemaruFilePath);
         }
     }
 }

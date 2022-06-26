@@ -19,7 +19,7 @@ namespace HidemaruLspClient_FrontEnd.Facility
         /// <returns>true ドキュメントのファイル名が格納されている, false それ以外</returns>
         public bool TryGetFileName(out string filename)
         {
-            filename= this.Filename_;
+            filename = this.Filename_;
             return IsValidFileName();
         }
         /// <summary>
@@ -28,7 +28,7 @@ namespace HidemaruLspClient_FrontEnd.Facility
         /// <returns>true 正しいファイル / false 正しくないファイル</returns>
         public bool IsValidFileName()
         {
-            return string.IsNullOrEmpty(this.Filename_)!=false;
+            return !string.IsNullOrEmpty(this.Filename_);
         }
         /// <summary>
         /// ドキュメントのファイル名が同じかどうか

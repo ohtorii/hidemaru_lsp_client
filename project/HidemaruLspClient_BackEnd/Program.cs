@@ -13,7 +13,6 @@ namespace HidemaruLspClient
 {
     partial class Program
     {
-        static string applicationName             = System.AppDomain.CurrentDomain.FriendlyName;
         static DllAssemblyResolver dasmr          = new DllAssemblyResolver();
         static readonly string tlbPath            = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb"));
         static readonly bool isConsoleApplication = IsConsoleApplication();
@@ -28,7 +27,7 @@ namespace HidemaruLspClient
 
             int exitCode = error;
 
-            using (var tracer = new LoggingOutToOneLocation(new ConsoleTraceListener(), new NLogTraceListener {Name=applicationName }))
+            using (var tracer = new LoggingOutToOneLocation(new ConsoleTraceListener(), new NLogTraceListener {Name=HidemaruLspClient_BackEnd.Constant.Logger.HeaderMain }))
             {
                 Trace.AutoFlush = true;
                 Trace.Listeners.Add(tracer);

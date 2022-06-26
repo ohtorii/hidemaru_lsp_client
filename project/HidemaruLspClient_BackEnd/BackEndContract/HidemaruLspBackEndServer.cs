@@ -80,7 +80,7 @@ namespace HidemaruLspClient
         {
             if (lspClientLogger_ == null)
             {
-                lspClientLogger_ = new LspClientLogger("BackEnd");
+                lspClientLogger_ = new LspClientLogger(HidemaruLspClient_BackEnd.Constant.Logger.HeaderClient);
             }
 
             var logger = LogManager.GetCurrentClassLogger();
@@ -99,13 +99,13 @@ namespace HidemaruLspClient
         {
             MicrosoftAppCenter.EnableSendCrashReport = Convert.ToBoolean(value);
         }
-        
+
         ILspClientLogger IHidemaruLspBackEndServer.GetLogger(string name)
         {
             if (comClientLogger_ == null)
             {
                 Debug.Assert(lspClientLogger_ != null);
-                comClientLogger_ = new ComClientLogger(lspClientLogger_);
+                comClientLogger_ = new ComClientLogger(name);
             }
             return comClientLogger_;
         }

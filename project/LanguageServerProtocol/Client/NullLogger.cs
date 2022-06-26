@@ -1,7 +1,7 @@
 ﻿namespace LSP.Implementation
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     class NullLogger : ILogger
     {
@@ -16,7 +16,6 @@
         public bool IsDebugEnabled { get { return false; } }
 
         public bool IsTraceEnabled { get { return false; } }
-
         public void Debug(string message)
         {
         }
@@ -26,19 +25,18 @@
         }
 
         public void Fatal(string message)
-        {         
+        {
         }
-
         public void Info(string message)
-        {         
+        {
         }
 
         public void Trace(string message)
-        {         
+        {
         }
 
         public void Warn(string message)
-        {         
+        {
         }
     }
 }

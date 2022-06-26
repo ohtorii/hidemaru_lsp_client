@@ -38,5 +38,6 @@
 		{
 			nlog_.Trace(message);
 		}
+
     }
 }
