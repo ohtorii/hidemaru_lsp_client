@@ -2,7 +2,7 @@
 
 
 namespace HidemaruLspClient_FrontEnd
-{    
+{
     /// <summary>
     /// 秀丸エディタで編集しているドキュメントの情報
     /// </summary>
@@ -12,7 +12,41 @@ namespace HidemaruLspClient_FrontEnd
         Uri Uri_;
         int hidemaruUpdateCount_;
         int contentsVersion_;
-
+        /// <summary>
+        /// ドキュメントのファイル名を取得を試みる
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns>true ドキュメントのファイル名が格納されている, false それ以外</returns>
+        public bool TryGetFileName(out string filename)
+        {
+            filename= this.Filename_;
+            return IsValidFileName();
+        }
+        /// <summary>
+        /// ドキュメントのファイル名が格納されているかどうか確認する
+        /// </summary>
+        /// <returns>true 正しいファイル / false 正しくないファイル</returns>
+        public bool IsValidFileName()
+        {
+            return string.IsNullOrEmpty(this.Filename_)!=false;
+        }
+        /// <summary>
+        /// ドキュメントのファイル名が同じかどうか
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
+        public bool IsSameFileName(string filename)
+        {
+            string currentFileName;
+            if(TryGetFileName(out currentFileName))
+            {
+                return filename == currentFileName;
+            }
+            return false;
+        }
+        /// <summary>
+        /// ドキュメントのファイル名を取得する
+        /// </summary>
         public string Filename { get { return this.Filename_; } }
         public Uri Uri { get { return this.Uri_; } }
         /// <summary>
@@ -50,5 +84,5 @@ namespace HidemaruLspClient_FrontEnd
             contentsVersion_ = 0;
         }
     }
-    
+
 }

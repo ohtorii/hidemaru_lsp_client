@@ -85,7 +85,7 @@ namespace HidemaruLspClient_FrontEnd
 
         public void Finish()
         {
-            if (string.IsNullOrEmpty(openedFile_.Filename) == false)
+            if (openedFile_.IsValidFileName())
             {
                 DidClose();
             }
@@ -186,11 +186,11 @@ namespace HidemaruLspClient_FrontEnd
             Failed,
         }
 
-        DigOpenStatus DigOpen(string absFilename)
+        DigOpenStatus TryDigOpen(string absFilename)
         {
             try
             {
-                if (openedFile_.Filename == absFilename)
+                if (openedFile_.IsSameFileName(absFilename))
                 {
                     return DigOpenStatus.AlreadyOpened;
                 }
@@ -216,7 +216,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
-                Debug.Assert(string.IsNullOrEmpty(openedFile_.Filename) == false);
+                Debug.Assert(openedFile_.IsValidFileName());
 
                 var currentUpdateCount = Hidemaru.GetUpdateCount();
                 var prevUpdateCount    = openedFile_.hidemaruUpdateCount;
@@ -238,41 +238,40 @@ namespace HidemaruLspClient_FrontEnd
         }
         void DidClose()
         {
-            Debug.Assert(string.IsNullOrEmpty(openedFile_.Filename) == false);
+            Debug.Assert(openedFile_.IsValidFileName());
             RaiseCloseEvent(new CloseEventArgs(openedFile_.Filename));
             openedFile_.Clear();
         }
 
+        const string fileNotFound = "";
+        string DigOpenProc(string currentHidemaruFilePath)
+        {
+             switch (TryDigOpen(currentHidemaruFilePath))
+             {
+                 case DigOpenStatus.Opened:
+                     return currentHidemaruFilePath;
+
+                 case DigOpenStatus.AlreadyOpened:
+                     return currentHidemaruFilePath;
+
+                 case DigOpenStatus.Failed:
+                     logger_.Warn("DigOpenStatus.Failed");
+                     return fileNotFound;
+
+                 default:
+                     logger_.Warn("DigOpenStatus.???");
+                     break;
+             }
+             return fileNotFound;
+         }
         /// <summary>
         /// ファイルの処理
         /// </summary>
         /// <returns>現在、秀丸エディタで開いているファイルの絶対パス</returns>
         string FileProc()
         {
-            const string fileNotFound = "";
-            Func<string, string> fncDidOpen = (absFileName) =>
-            {
-                switch (DigOpen(absFileName))
-                {
-                    case DigOpenStatus.Opened:
-                        return absFileName;
-
-                    case DigOpenStatus.AlreadyOpened:
-                        return absFileName;
-
-                    case DigOpenStatus.Failed:
-                        logger_.Warn("DigOpenStatus.Failed");
-                        return fileNotFound;
-
-                    default:
-                        logger_.Warn("DigOpenStatus.???");
-                        break;
-                }
-                return fileNotFound;
-            };
-
             string currentHidemaruFilePath;
-            if (String.IsNullOrEmpty(openedFile_.Filename))
+            if (! openedFile_.IsValidFileName())
             {
                 //初めてファイルを開く場合
                 currentHidemaruFilePath = Hidemaru.GetFileFullPath();
@@ -280,7 +279,7 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     return fileNotFound;
                 }
-                return fncDidOpen(currentHidemaruFilePath);
+                return DigOpenProc(currentHidemaruFilePath);
             }
 
             //
@@ -294,7 +293,7 @@ namespace HidemaruLspClient_FrontEnd
                 return fileNotFound;
             }
 
-            if (openedFile_.Filename == currentHidemaruFilePath)
+            if (openedFile_.IsSameFileName(currentHidemaruFilePath))
             {
                 //秀丸エディタで前回と同じファイルを開いている場合
                 if (TryDigChange() == DigChangeStatus.Failed)
@@ -307,7 +306,7 @@ namespace HidemaruLspClient_FrontEnd
 
             //秀丸エディタで前回と異なるファイルを開いた場合
             DidClose();
-            return fncDidOpen(currentHidemaruFilePath);
+            return DigOpenProc(currentHidemaruFilePath);
         }
     }
 }
