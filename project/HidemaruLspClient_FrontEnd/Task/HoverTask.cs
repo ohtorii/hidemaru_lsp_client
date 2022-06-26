@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
 using HidemaruLspClient_BackEndContract;
-using static HidemaruLspClient_FrontEnd.UnsafeNativeMethods;
-using static HidemaruLspClient_FrontEnd.NativeMethods;
+using static HidemaruLspClient_FrontEnd.Native.UnsafeNativeMethods;
+using static HidemaruLspClient_FrontEnd.Native.NativeMethods;
 using System.Collections.Generic;
 using System.Text;
 

@@ -1,11 +1,7 @@
 ﻿using HidemaruLspClient_BackEndContract;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using HidemaruLspClient_FrontEnd.Native;
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -158,7 +154,7 @@ namespace HidemaruLspClient_FrontEnd
             }
             return false;
         }
-        
+
         static bool StringToBoolean(string value, bool @default=false)
         {
             switch (value.ToLower())

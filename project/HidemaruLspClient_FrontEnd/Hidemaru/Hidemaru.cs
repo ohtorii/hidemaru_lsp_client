@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using static HidemaruLspClient_FrontEnd.UnsafeNativeMethods;
+using static HidemaruLspClient_FrontEnd.Native.UnsafeNativeMethods;
+using HidemaruLspClient_FrontEnd.Native;
 
 namespace HidemaruLspClient_FrontEnd
 {

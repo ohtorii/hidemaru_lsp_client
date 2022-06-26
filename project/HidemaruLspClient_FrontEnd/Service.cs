@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using HidemaruLspClient_BackEndContract;
-
+using HidemaruLspClient_FrontEnd.Native;
 
 namespace HidemaruLspClient_FrontEnd
 {

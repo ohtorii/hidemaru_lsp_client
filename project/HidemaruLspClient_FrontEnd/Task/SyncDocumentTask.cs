@@ -111,7 +111,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             try
             {
-                var _ = FileProc();
+                var _ = Workflow();
             }
             catch (Exception e)
             {
@@ -123,7 +123,7 @@ namespace HidemaruLspClient_FrontEnd
         }
         public string QueryFileName()
         {
-            return FileProc();
+            return Workflow();
         }
         void Update(object sender, EventArgs e)
         {
@@ -136,7 +136,7 @@ namespace HidemaruLspClient_FrontEnd
                 }
                 try
                 {
-                    var _ = FileProc();
+                    var _ = Workflow();
                 }
                 catch (Exception exception)
                 {
@@ -265,10 +265,10 @@ namespace HidemaruLspClient_FrontEnd
              return fileNotFound;
          }
         /// <summary>
-        /// ファイルの処理
+        /// 状態更新
         /// </summary>
         /// <returns>現在、秀丸エディタで開いているファイルの絶対パス</returns>
-        string FileProc()
+        string Workflow()
         {
             string currentHidemaruFilePath;
             if (! openedFile_.IsValidFileName())
