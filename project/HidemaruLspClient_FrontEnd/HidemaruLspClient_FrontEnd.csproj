@@ -115,14 +115,14 @@
     <Compile Include="Utils\TextLines.cs" />
     <Compile Include="Native\IniFileNative.cs" />
     <Compile Include="IService.cs" />
-    <Compile Include="Impl\LocationContainerImpl.cs" />
+    <Compile Include="BackEndContractImpl\LocationContainerImpl.cs" />
     <Compile Include="Native\NativeMethods.cs" />
     <Compile Include="Utils\DllAssemblyResolver.cs" />
     <Compile Include="Hidemaru\Api.cs" />
     <Compile Include="Hidemaru\OutputPane.cs" />
     <Compile Include="Native\Ole32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Impl\ServerCapabilitiesImpl.cs" />
+    <Compile Include="BackEndContractImpl\ServerCapabilitiesImpl.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="Native\UnsafeNativeMethods.cs" />
     <Compile Include="ServiceAsync.cs" />
