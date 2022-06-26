@@ -4,13 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using HidemaruLspClient_BackEndContract;
 
-namespace HidemaruLspClient_FrontEnd
+namespace HidemaruLspClient_FrontEnd.BackgroundTask
 {
 
     /// <summary>
     /// textDocument/publishDiagnostics
     /// </summary>
-    class DiagnosticsTask
+    class Diagnostics
     {
         public delegate IPublishDiagnosticsParamsContainer PullDiagnosticsParamsType();
         PullDiagnosticsParamsType PullDiagnosticsParams;
@@ -30,7 +30,7 @@ namespace HidemaruLspClient_FrontEnd
         /// </summary>
         bool outputPaneCleard_;
 
-        public DiagnosticsTask(PullDiagnosticsParamsType func, ILspClientLogger logger, CancellationToken cancellationToken)
+        public Diagnostics(PullDiagnosticsParamsType func, ILspClientLogger logger, CancellationToken cancellationToken)
         {
             PullDiagnosticsParams = func;
             hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();

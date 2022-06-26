@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using HidemaruLspClient_BackEndContract;
 using HidemaruLspClient_FrontEnd.Native;
+using HidemaruLspClient_FrontEnd.BackgroundTask;
+
+
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -30,9 +33,9 @@ namespace HidemaruLspClient_FrontEnd
         ILspClientLogger logger_=null;
 
         CancellationTokenSource tokenSource_ = null;
-        DiagnosticsTask diagnosticsTask_ = null;
-        HoverTask hoverTask_ = null;
-        SyncDocumenmtTask syncDocumentTask_ = null;
+        Diagnostics diagnosticsTask_ = null;
+        Hover hoverTask_ = null;
+        SyncDocumenmt syncDocumentTask_ = null;
         IniFileService iniFile_ = null;
 
 
@@ -146,16 +149,16 @@ namespace HidemaruLspClient_FrontEnd
                 {
                     if (diagnosticsTask_ == null)
                     {
-                        diagnosticsTask_ = new DiagnosticsTask(context_.worker.PullDiagnosticsParams, logger_, tokenSource_.Token);
+                        diagnosticsTask_ = new Diagnostics(context_.worker.PullDiagnosticsParams, logger_, tokenSource_.Token);
                     }
                     const sbyte False = 0;
                     if ((hoverTask_ == null) && (context_.worker.ServerCapabilities.HoverProvider != False))
                     {
-                        hoverTask_ = new HoverTask(this.HoverAsync, context_.worker, logger_, tokenSource_.Token);
+                        hoverTask_ = new Hover(this.HoverAsync, context_.worker, logger_, tokenSource_.Token);
                     }
                     if (syncDocumentTask_ == null)
                     {
-                        syncDocumentTask_ = new SyncDocumenmtTask(logger_, tokenSource_.Token);
+                        syncDocumentTask_ = new SyncDocumenmt(logger_, tokenSource_.Token);
                         syncDocumentTask_.OpenEvent += (sender, e) => context_.worker.DidOpen(e.FileName, e.Text, e.ContentsVersion);
                         syncDocumentTask_.ChangeEvent += (sender, e) =>context_.worker.DidChange(e.FileName, e.Text, e.ContentsVersion);
                         syncDocumentTask_.CloseEvent += (sender, e) =>context_.worker.DidClose(e.FileName);

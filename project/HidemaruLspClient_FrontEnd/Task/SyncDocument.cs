@@ -3,9 +3,9 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace HidemaruLspClient_FrontEnd
+namespace HidemaruLspClient_FrontEnd.BackgroundTask
 {
-    class SyncDocumenmtTask
+    class SyncDocumenmt
     {
         /// <summary>
         /// OpenEvent
@@ -91,7 +91,7 @@ namespace HidemaruLspClient_FrontEnd
             }
         }
 
-        public SyncDocumenmtTask(ILspClientLogger logger, CancellationToken cancellationToken)
+        public SyncDocumenmt(ILspClientLogger logger, CancellationToken cancellationToken)
         {
             logger_ = logger;
             cancellationToken_ = cancellationToken;

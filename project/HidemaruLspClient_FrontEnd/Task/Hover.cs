@@ -17,17 +17,17 @@ using static HidemaruLspClient_FrontEnd.Native.NativeMethods;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HidemaruLspClient_FrontEnd
+namespace HidemaruLspClient_FrontEnd.BackgroundTask
 {
     /// <summary>
     /// textDocument/hover
     /// </summary>
-    class HoverTask
+    class Hover
     {
         //Memo: コンポジションしているのはFormクラスをみえないようにするのが目的
         Internal.Tooltipform tooltipWinforms_;
 
-        public HoverTask(Internal.Tooltipform.QueryHoverStringType func, IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
+        public Hover(Internal.Tooltipform.QueryHoverStringType func, IWorker worker, ILspClientLogger logger, CancellationToken cancellationToken)
         {
             tooltipWinforms_ = new Internal.Tooltipform(func, logger, cancellationToken);
         }
