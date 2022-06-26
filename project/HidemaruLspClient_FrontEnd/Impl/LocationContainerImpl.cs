@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using HidemaruLspClient_FrontEnd.Hidemaru;
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -57,7 +58,7 @@ namespace HidemaruLspClient_FrontEnd
                 hidemaruLine_ = -1;
                 return;
             }
-            Hidemaru.ZeroBaseToHidemaru(out hidemaruLine_,
+            Api.ZeroBaseToHidemaru(out hidemaruLine_,
                                         out hidemaruCharacter_,
                                         position.line,
                                         position.character);

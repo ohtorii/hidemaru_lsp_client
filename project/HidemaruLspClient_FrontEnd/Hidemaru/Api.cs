@@ -6,13 +6,13 @@ using HidemaruLspClient_FrontEnd.Native;
 using HidemaruLspClient_FrontEnd.Facility;
 
 
-namespace HidemaruLspClient_FrontEnd
+namespace HidemaruLspClient_FrontEnd.Hidemaru
 {
 	/// <summary>
 	/// 秀丸エディタの機能を呼び出す
 	/// （重要）秀丸エディタはマルチスレッドに対応していないため、各機能はメインスレッドから呼びだすこと。
 	/// </summary>
-    class Hidemaru
+    class Api
     {
 		static bool initialized_ = false;
 

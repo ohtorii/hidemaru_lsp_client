@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using HidemaruLspClient_BackEndContract;
+using HidemaruLspClient_FrontEnd.Hidemaru;
 
 namespace HidemaruLspClient_FrontEnd.BackgroundTask
 {
@@ -33,7 +34,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         public Diagnostics(PullDiagnosticsParamsType func, ILspClientLogger logger, CancellationToken cancellationToken)
         {
             PullDiagnosticsParams = func;
-            hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+            hwndHidemaru_ = Api.Hidemaru_GetCurrentWindowHandle();
             outputPaneCleard_ = false;
 
             logger_ = logger;
@@ -77,14 +78,14 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 {
                     if (outputPaneCleard_ == false)
                     {
-                        HmOutputPane.Clear(hwndHidemaru_);
+                        OutputPane.Clear(hwndHidemaru_);
                         outputPaneCleard_ = true;
                     }
                 }
                 else
                 {
-                    HmOutputPane.Clear(hwndHidemaru_);
-                    HmOutputPane.OutputW(hwndHidemaru_, result.text);
+                    OutputPane.Clear(hwndHidemaru_);
+                    OutputPane.OutputW(hwndHidemaru_, result.text);
                     outputPaneCleard_ = false;
                 }
             }

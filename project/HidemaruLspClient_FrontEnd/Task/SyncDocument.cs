@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using HidemaruLspClient_FrontEnd.Facility;
+using HidemaruLspClient_FrontEnd.Hidemaru;
 
 namespace HidemaruLspClient_FrontEnd.BackgroundTask
 {
@@ -116,7 +117,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             }
             catch (Exception e)
             {
-                HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), e.ToString());
+                OutputPane.OutputW(Api.Hidemaru_GetCurrentWindowHandle(), e.ToString());
                 logger_.Error(e.ToString());
                 return false;
             }
@@ -141,7 +142,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 }
                 catch (Exception exception)
                 {
-                    HmOutputPane.OutputW(Hidemaru.Hidemaru_GetCurrentWindowHandle(), exception.ToString());
+                    OutputPane.OutputW(Api.Hidemaru_GetCurrentWindowHandle(), exception.ToString());
                     logger_.Error(exception.ToString());
                     return ;
                 }
@@ -195,12 +196,12 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 {
                     return DigOpenStatus.AlreadyOpened;
                 }
-                var text = Hidemaru.GetTotalTextUnicode();
+                var text = Api.GetTotalTextUnicode();
                 const int contentsVersion = 1;
                 RaiseOpenEvent(new OpenEventArgs(absFilename, text, contentsVersion));
                 openedFile_.Setup(absFilename,
                                  new Uri(absFilename),
-                                 Hidemaru.GetUpdateCount(),
+                                 Api.GetUpdateCount(),
                                  contentsVersion);
                 return DigOpenStatus.Opened;
             }
@@ -219,14 +220,14 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             {
                 Debug.Assert(openedFile_.IsValidFileName());
 
-                var currentUpdateCount = Hidemaru.GetUpdateCount();
+                var currentUpdateCount = Api.GetUpdateCount();
                 var prevUpdateCount    = openedFile_.hidemaruUpdateCount;
                 if (currentUpdateCount == prevUpdateCount)
                 {
                     return DigChangeStatus.NoChanged;
                 }
                 openedFile_.UpdateContentsVersion(currentUpdateCount);
-                RaiseChangeEvent(new ChangeEventArgs(openedFile_.Filename, Hidemaru.GetTotalTextUnicode(), openedFile_.countentsVersion));
+                RaiseChangeEvent(new ChangeEventArgs(openedFile_.Filename, Api.GetTotalTextUnicode(), openedFile_.countentsVersion));
                 return DigChangeStatus.Changed;
             }catch(Exception e)
             {
@@ -275,7 +276,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             if (! openedFile_.IsValidFileName())
             {
                 //初めてファイルを開く場合
-                currentHidemaruFilePath = Hidemaru.GetFileFullPath();
+                currentHidemaruFilePath = Api.GetFileFullPath();
                 if (String.IsNullOrEmpty(currentHidemaruFilePath))
                 {
                     return fileNotFound;
@@ -286,7 +287,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             //
             //2回目以降にファイルを開く場合
             //
-            currentHidemaruFilePath = Hidemaru.GetFileFullPath();
+            currentHidemaruFilePath = Api.GetFileFullPath();
             if (string.IsNullOrEmpty(currentHidemaruFilePath))
             {
                 //秀丸エディタのファイルが閉じた場合

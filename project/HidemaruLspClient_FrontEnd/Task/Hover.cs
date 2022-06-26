@@ -11,11 +11,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Collections.Generic;
+using System.Text;
 using HidemaruLspClient_BackEndContract;
 using static HidemaruLspClient_FrontEnd.Native.UnsafeNativeMethods;
 using static HidemaruLspClient_FrontEnd.Native.NativeMethods;
-using System.Collections.Generic;
-using System.Text;
+using HidemaruLspClient_FrontEnd.Hidemaru;
+
 
 namespace HidemaruLspClient_FrontEnd.BackgroundTask
 {
@@ -50,7 +52,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             CancellationToken cancellationToken_;
 
             POINT prevMousePoint_ = new POINT(0, 0);
-            Hidemaru.Position prevHidemaruPosition_ = new Hidemaru.Position(0, 0);
+            Api.Position prevHidemaruPosition_ = new Api.Position(0, 0);
 
             /// <summary>
             /// 秀丸エディタのウインドウハンドル
@@ -67,7 +69,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             public Tooltipform(QueryHoverStringType func, ILspClientLogger logger, CancellationToken cancellationToken)
             {
                 QueryHoverString = func;
-                hwndHidemaru_ = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+                hwndHidemaru_ = Api.Hidemaru_GetCurrentWindowHandle();
 
                 logger_ = logger;
                 cancellationToken_ = cancellationToken;
@@ -162,7 +164,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             {
                 const uint GW_HWNDPREV = 3;
                 List<IntPtr> list = new List<IntPtr>();
-                IntPtr hCurWnd = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+                IntPtr hCurWnd = Api.Hidemaru_GetCurrentWindowHandle();
                 list.Add(hCurWnd);
 
                 // 自分より前方を走査
@@ -272,7 +274,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 }
 
                 // 自分が先頭ではない
-                IntPtr hWnd = Hidemaru.Hidemaru_GetCurrentWindowHandle();
+                IntPtr hWnd = Api.Hidemaru_GetCurrentWindowHandle();
                 var list = GetWindowHidemaruHandleList();
                 if (list.Count > 0 && list[0] != hWnd)
                 {
@@ -300,7 +302,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                     bool mouseMoved;
                     bool cursorMoved;
                     var currentMousePoint = new POINT(0, 0);
-                    var currentHidemaruPosition_ = new Hidemaru.Position(0, 0);
+                    var currentHidemaruPosition_ = new Api.Position(0, 0);
 
 
                     if (GetCursorPos(ref currentMousePoint) == false)
@@ -311,7 +313,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                     mouseMoved = prevMousePoint_ != currentMousePoint;
                     prevMousePoint_ = currentMousePoint;
 
-                    if (Hidemaru.Hidemaru_GetCursorPosUnicode(ref currentHidemaruPosition_.line, ref currentHidemaruPosition_.column) == false)
+                    if (Api.Hidemaru_GetCursorPosUnicode(ref currentHidemaruPosition_.line, ref currentHidemaruPosition_.column) == false)
                     {
                         HideToolTips();
                         return;
@@ -334,7 +336,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                         else
                         {
                             int line = 0, column = 0;
-                            if (!Hidemaru.Hidemaru_GetCursorPosUnicodeFromMousePos(ref currentMousePoint, ref line, ref column))
+                            if (!Api.Hidemaru_GetCursorPosUnicodeFromMousePos(ref currentMousePoint, ref line, ref column))
                             {
                                 HideToolTips();
                                 return;

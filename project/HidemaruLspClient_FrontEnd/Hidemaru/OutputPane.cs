@@ -2,9 +2,9 @@
 using System.Runtime.InteropServices;
 using static HidemaruLspClient_FrontEnd.Native.UnsafeNativeMethods;
 
-namespace HidemaruLspClient_FrontEnd
-{    
-    class HmOutputPane
+namespace HidemaruLspClient_FrontEnd.Hidemaru
+{
+    class OutputPane
     {
         [DllImport("HmOutputPane.dll")]
         public static extern void Output(IntPtr hwndHidemaru, byte[] text);
@@ -16,7 +16,7 @@ namespace HidemaruLspClient_FrontEnd
         {
             //0x111=WM_COMMAND
             //1009=クリア
-            SendMessage(GetWindowHandle(hwndHidemaru), 0x111, 1009, new IntPtr(0)); 
+            SendMessage(GetWindowHandle(hwndHidemaru), 0x111, 1009, new IntPtr(0));
         }
     }
 }
