@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using HidemaruLspClient_FrontEnd.Hidemaru;
 
-namespace HidemaruLspClient_FrontEnd
+namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
 {
     public sealed class LocationContainerImpl
     {

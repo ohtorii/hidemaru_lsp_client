@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using HidemaruLspClient_FrontEnd.BackEndContractImpl;
+
 
 namespace HidemaruLspClient_FrontEnd
 {

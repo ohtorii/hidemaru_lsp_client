@@ -1,4 +1,6 @@
-﻿namespace HidemaruLspClient_FrontEnd
+﻿using HidemaruLspClient_FrontEnd.BackEndContractImpl;
+
+namespace HidemaruLspClient_FrontEnd
 {
     interface IService
     {

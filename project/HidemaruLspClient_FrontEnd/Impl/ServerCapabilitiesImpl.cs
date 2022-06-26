@@ -1,4 +1,4 @@
-﻿namespace HidemaruLspClient_FrontEnd
+﻿namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
 {
     public sealed class ServerCapabilitiesImpl : HidemaruLspClient_BackEndContract.IServerCapabilities
     {
