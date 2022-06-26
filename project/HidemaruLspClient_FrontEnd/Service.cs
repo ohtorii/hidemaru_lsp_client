@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using HidemaruLspClient_BackEndContract;
 using HidemaruLspClient_FrontEnd.Native;
 using HidemaruLspClient_FrontEnd.BackgroundTask;
-
+using HidemaruLspClient_FrontEnd.Facility;
 
 
 namespace HidemaruLspClient_FrontEnd

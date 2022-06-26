@@ -3,7 +3,8 @@ using System;
 using System.IO;
 using HidemaruLspClient_FrontEnd.Native;
 
-namespace HidemaruLspClient_FrontEnd
+namespace HidemaruLspClient_FrontEnd.Facility
+
 {
     /// <summary>
     /// Iniファイル

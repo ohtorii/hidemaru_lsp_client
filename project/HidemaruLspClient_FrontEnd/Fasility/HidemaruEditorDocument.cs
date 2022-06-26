@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace HidemaruLspClient_FrontEnd
+namespace HidemaruLspClient_FrontEnd.Facility
 {
     /// <summary>
     /// 秀丸エディタで編集しているドキュメントの情報

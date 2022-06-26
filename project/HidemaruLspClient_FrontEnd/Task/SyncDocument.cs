@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using HidemaruLspClient_FrontEnd.Facility;
 
 namespace HidemaruLspClient_FrontEnd.BackgroundTask
 {

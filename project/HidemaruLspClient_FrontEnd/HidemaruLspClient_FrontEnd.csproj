@@ -107,11 +107,11 @@
       <Link>COM\Contract.cs</Link>
     </Compile>
     <Compile Include="Configuration.cs" />
-    <Compile Include="Service\HidemaruEditorDocument.cs" />
+    <Compile Include="Fasility\HidemaruEditorDocument.cs" />
     <Compile Include="Microsoft.AppCenter\AppCenter.cs" />
     <Compile Include="Microsoft.AppCenter\AppSecret.cs" />
     <Compile Include="Native\Kernel32.cs" />
-    <Compile Include="Service\IniFileService.cs" />
+    <Compile Include="Fasility\IniFileService.cs" />
     <Compile Include="Utils\TextLines.cs" />
     <Compile Include="Native\IniFileNative.cs" />
     <Compile Include="IService.cs" />
