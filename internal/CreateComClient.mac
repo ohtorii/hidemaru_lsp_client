@@ -79,7 +79,7 @@ main:
     }else{
         ##index=val($$index);
     }
-    debuginfo 1;
+    debuginfo 0;
     debuginfo $labelTable[##index];
     call $labelTable[##index];
     if(! ##return){
