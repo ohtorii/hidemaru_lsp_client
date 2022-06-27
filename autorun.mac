@@ -1,0 +1,23 @@
+﻿/*「自動起動マクロ→ファイルを開いた直後」に登録するマクロ
+*/
+debuginfo 0;
+if(event==1){
+    //ファイルを開いた直後
+    debuginfo "Hidemaru: Opend";
+    $$internal=currentmacrodirectory+@"\internal\";
+    execmacro $$internal + "CreateComClient.mac";
+    execmacro $$internal + "EventFileOpen.mac";
+    endmacro;
+}
+if((event==3)&&(geteventparam(0)==1)){
+    //保存直後
+    debuginfo "Hidemaru: Saved";
+    execmacro  currentmacrodirectory + @"\internal\EventFileOpen.mac";
+    endmacro;
+}
+if(event==7){
+    //ファイルを閉じる直前
+    debuginfo "Hidemaru:  closing";
+    execmacro  currentmacrodirectory + @"\internal\EventFileClose.mac";
+    endmacro;
+}
