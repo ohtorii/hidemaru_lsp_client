@@ -52,6 +52,11 @@ namespace HidemaruLspClient_FrontEnd
             {
                 return false;
             }
+            if (!File.Exists(options.ExcutablePath))
+            {
+                logger_?.Error($"Not found excutable file. \nserverConfigFilename=\"{serverConfigFilename}\"\nExcutablePath=\"{options.ExcutablePath}\"");
+                return false;
+            }
             var hidemaruProcess = System.Diagnostics.Process.GetCurrentProcess();
             context_.worker = context_.server.CreateWorker(
                         options.ServerName,
