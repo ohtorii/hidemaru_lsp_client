@@ -124,9 +124,10 @@ namespace HidemaruLspClient
             string WorkspaceConfig,
             long   HidemaruProcessId)
         {
-            var logger = LogManager.GetCurrentClassLogger();
+            Logger logger = null;
             try
             {
+                logger =  LogManager.GetCurrentClassLogger();
                 var holderKey = new LspKey(ServerName, RootUri);
                 if (workerHolder_.ContainsKey(holderKey))
                 {
@@ -153,7 +154,7 @@ namespace HidemaruLspClient
                 return ins;
             }catch(Exception e)
             {
-                logger.Error(e);
+                logger?.Error(e);
             }
             return null;
         }
