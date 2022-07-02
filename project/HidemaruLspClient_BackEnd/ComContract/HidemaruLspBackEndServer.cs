@@ -2,18 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using HidemaruLspClient_BackEndContract;
-using System.IO;
+using HidemaruLspClient.Native;
+using HidemaruLspClient.LspClient;
 
-namespace HidemaruLspClient
+namespace HidemaruLspClient.ComContract
 {
     public sealed class HidemaruLspBackEndServer : IHidemaruLspBackEndServer
     {
-        static LspClientLogger lspClientLogger_ = null;
+        static LspClient.Logger lspClientLogger_ = null;
         static ComClientLogger comClientLogger_ = null;
 
         class WorkerPair
@@ -49,18 +46,18 @@ namespace HidemaruLspClient
             /// </summary>
             public int referenceCounter { get { return referenceCounter_; } }
         }
-        static Dictionary<LspKey, WorkerPair> workerHolder_ = new Dictionary<LspKey, WorkerPair>();
+        static Dictionary<LanguageServerIdentifier, WorkerPair> workerHolder_ = new Dictionary<LanguageServerIdentifier, WorkerPair>();
 
 
 
 
         public HidemaruLspBackEndServer()
         {
-            COMRegistration.Ole32.CoAddRefServerProcess();
+            Ole32.CoAddRefServerProcess();
         }
         ~HidemaruLspBackEndServer()
         {
-            if (COMRegistration.Ole32.CoReleaseServerProcess() == 0)
+            if (Ole32.CoReleaseServerProcess() == 0)
             {
                 const int success = 0;
                 Environment.Exit(success);
@@ -80,7 +77,7 @@ namespace HidemaruLspClient
         {
             if (lspClientLogger_ == null)
             {
-                lspClientLogger_ = new LspClientLogger(HidemaruLspClient_BackEnd.Constant.Logger.HeaderClient);
+                lspClientLogger_ = new LspClient.Logger(HidemaruLspClient.Constant.Logger.HeaderClient);
             }
 
             var logger = LogManager.GetCurrentClassLogger();
@@ -122,13 +119,13 @@ namespace HidemaruLspClient
             string Arguments,
             string RootUri,
             string WorkspaceConfig,
-            long   HidemaruProcessId)
+            long HidemaruProcessId)
         {
-            Logger logger = null;
+            NLog.Logger logger = null;
             try
             {
-                logger =  LogManager.GetCurrentClassLogger();
-                var holderKey = new LspKey(ServerName, RootUri);
+                logger = LogManager.GetCurrentClassLogger();
+                var holderKey = new LanguageServerIdentifier(ServerName, RootUri);
                 if (workerHolder_.ContainsKey(holderKey))
                 {
                     var w = workerHolder_[holderKey];
@@ -152,7 +149,8 @@ namespace HidemaruLspClient
                 logger.Debug("value.referenceCounter={0}", value.referenceCounter);
                 workerHolder_[holderKey] = value;
                 return ins;
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 logger?.Error(e);
             }
@@ -170,7 +168,7 @@ namespace HidemaruLspClient
                 var holderKey = ins.key;
                 var value = workerHolder_[holderKey];
 
-                logger.Debug("value.referenceCounter={0}",value.referenceCounter);
+                logger.Debug("value.referenceCounter={0}", value.referenceCounter);
                 if (value.UnUsed())
                 {
                     var ret = workerHolder_.Remove(holderKey);
@@ -178,7 +176,8 @@ namespace HidemaruLspClient
 
                     ins.Stop();
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 logger.Error(e);
             }

@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Diagnostics;
 using CommandLine;
-
+using HidemaruLspClient.Native;
 
 namespace HidemaruLspClient
 {
@@ -36,7 +36,7 @@ namespace HidemaruLspClient
                     return result;
                 }
                 var writer = (StringWriter)parser.Settings.HelpWriter;
-                Win32Native.MessageBox(IntPtr.Zero, writer.GetStringBuilder().ToString(), "Help", 0);
+                User32.MessageBox(IntPtr.Zero, writer.GetStringBuilder().ToString(), "Help", 0);
                 return null;
             }
         }

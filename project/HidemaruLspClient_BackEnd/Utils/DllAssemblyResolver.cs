@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HidemaruLspClient
+namespace HidemaruLspClient.Utils
 {
     internal class DllAssemblyResolver
     {
@@ -31,8 +31,8 @@ namespace HidemaruLspClient
                 //System.Diagnostics.Trace.WriteLine($"CurrentDomain_AssemblyResolve:{args.Name}"); // デバッグモニター表示用
 
                 // このdll自体を置いているフォルダに読み込み対象のアセンブリがあるかもしれない。
-                String self_full_path = Assembly.GetExecutingAssembly().Location;
-                String self_dir = Path.GetDirectoryName(self_full_path);
+                string self_full_path = Assembly.GetExecutingAssembly().Location;
+                string self_dir = Path.GetDirectoryName(self_full_path);
 
                 // このフルパスを整形することで、違うフォルダ、あるいはサブフォルダに配置してあるdllをアセンブリとして読み込ませることが出来る。
                 var targetfullpath = self_dir + $@"\{requestedAssembly.Name}.dll";

@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HidemaruLspClient
+namespace HidemaruLspClient.Native
 {
-    internal class Win32Native
+    internal class User32
     {
         public enum MessageBoxResult : uint
         {
@@ -25,7 +25,7 @@ namespace HidemaruLspClient
             Timeout = 32000
         }
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern MessageBoxResult MessageBox(IntPtr hWnd, String text, String caption, int options);
+        public static extern MessageBoxResult MessageBox(IntPtr hWnd, string text, string caption, int options);
 
     }
 }

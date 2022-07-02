@@ -1,11 +1,11 @@
 ﻿using LSP.Model;
 
-namespace HidemaruLspClient
+namespace HidemaruLspClient.LspClient
 {
-	class UtilInitializeParams
-	{
+    class UtilInitializeParams
+    {
         static public InitializeParams Initialzie()
-		{
+        {
             var param = new InitializeParams();
             param.initializationOptions = null;
             param.processId = System.Diagnostics.Process.GetCurrentProcess().Id;
@@ -186,5 +186,5 @@ namespace HidemaruLspClient
             }
             return param;
         }
-	}
+    }
 }

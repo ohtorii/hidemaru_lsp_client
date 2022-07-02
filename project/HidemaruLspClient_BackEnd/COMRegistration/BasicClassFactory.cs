@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace COMRegistration
+namespace HidemaruLspClient.ComRegistration
 {
     // https://docs.microsoft.com/windows/win32/api/unknwn/nn-unknwn-iclassfactory
     [ComImport]

@@ -4,10 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using COMRegistration;
+using HidemaruLspClient.ComRegistration;
 using NLog;
 using HidemaruLspClient_BackEndContract;
-
+using HidemaruLspClient.ComContract;
+using HidemaruLspClient.Utils;
 
 namespace HidemaruLspClient
 {
@@ -27,7 +28,7 @@ namespace HidemaruLspClient
 
             int exitCode = error;
 
-            using (var tracer = new LoggingOutToOneLocation(new ConsoleTraceListener(), new NLogTraceListener {Name=HidemaruLspClient_BackEnd.Constant.Logger.HeaderMain }))
+            using (var tracer = new LoggingOutToOneLocation(new ConsoleTraceListener(), new NLogTraceListener {Name=HidemaruLspClient.Constant.Logger.HeaderMain }))
             {
                 Trace.AutoFlush = true;
                 Trace.Listeners.Add(tracer);

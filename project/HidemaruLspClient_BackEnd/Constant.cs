@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HidemaruLspClient_BackEnd
+namespace HidemaruLspClient
 {
     class Constant
     {
+        public static string tempDirectoryName { get { return Environment.ExpandEnvironmentVariables(@"%TEMP%\hidemaru_lsp_client"); } }
         public class Logger
         {
             public const string HeaderMain="BackEnd.Main";

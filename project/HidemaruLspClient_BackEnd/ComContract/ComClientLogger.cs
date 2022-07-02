@@ -1,15 +1,15 @@
 ﻿using System;
 using HidemaruLspClient_BackEndContract;
 
-namespace HidemaruLspClient
+namespace HidemaruLspClient.ComContract
 {
     public sealed class ComClientLogger : ILspClientLogger
     {
         NLog.Logger logger_ = null;
-		public ComClientLogger(string name)
+        public ComClientLogger(string name)
         {
             logger_ = NLog.LogManager.GetLogger(name);
-		}
+        }
         sbyte ILspClientLogger.IsFatalEnabled => Convert.ToSByte(logger_.IsFatalEnabled);
 
         sbyte ILspClientLogger.IsErrorEnabled => Convert.ToSByte(logger_.IsErrorEnabled);
@@ -23,7 +23,7 @@ namespace HidemaruLspClient
         sbyte ILspClientLogger.IsTraceEnabled => Convert.ToSByte(logger_.IsTraceEnabled);
         void ILspClientLogger.Debug(string message)
         {
-			logger_.Debug(message);
+            logger_.Debug(message);
         }
 
         void ILspClientLogger.Error(string message)
@@ -33,22 +33,22 @@ namespace HidemaruLspClient
 
         void ILspClientLogger.Fatal(string message)
         {
-			logger_.Fatal(message);
+            logger_.Fatal(message);
         }
 
         void ILspClientLogger.Info(string message)
         {
-			logger_.Info(message);
+            logger_.Info(message);
         }
 
         void ILspClientLogger.Trace(string message)
         {
-			logger_.Trace(message);
+            logger_.Trace(message);
         }
 
         void ILspClientLogger.Warn(string message)
         {
-			logger_.Warn(message);
+            logger_.Warn(message);
         }
     }
 }

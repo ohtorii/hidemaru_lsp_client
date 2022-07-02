@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
-using Microsoft.Win32;
+using HidemaruLspClient.ComRegistration;
 
-namespace COMRegistration
+
+namespace HidemaruLspClient.Utils
 {
     public static class DllSurrogate
     {
@@ -13,16 +14,17 @@ namespace COMRegistration
             Trace.WriteLine($"CLSID: {clsid:B}");
             Trace.Unindent();
 
-            string serverKey = string.Format(KeyFormat.formatCLSID, clsid);
+            string serverKey = string.Format(RegistryKeys.formatCLSID, clsid);
 
             // Register App ID - use the CLSID as the App ID
-            using (var regKey = Registry.LocalMachine.CreateSubKey(serverKey)) {
+            using (var regKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(serverKey))
+            {
                 regKey.SetValue("AppID", clsid.ToString("B"));
             }
 
             // Register DLL surrogate - empty string for system-supplied surrogate
-            string appIdKey = string.Format(KeyFormat.formatAppID, clsid);
-            using (var appIdRegKey = Registry.LocalMachine.CreateSubKey(appIdKey))
+            string appIdKey = string.Format(RegistryKeys.formatAppID, clsid);
+            using (var appIdRegKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(appIdKey))
             {
                 appIdRegKey.SetValue("DllSurrogate", string.Empty);
             }
@@ -37,8 +39,8 @@ namespace COMRegistration
             Trace.Unindent();
 
             // Remove the App ID value
-            string serverKey = string.Format(KeyFormat.formatCLSID, clsid);
-            using (var regKey = Registry.LocalMachine.OpenSubKey(serverKey, writable: true))
+            string serverKey = string.Format(RegistryKeys.formatCLSID, clsid);
+            using (var regKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(serverKey, writable: true))
             {
                 if (regKey != null)
                 {
@@ -47,8 +49,8 @@ namespace COMRegistration
             }
 
             // Remove the App ID key
-            string appIdKey = string.Format(KeyFormat.formatAppID, clsid);
-            Registry.LocalMachine.DeleteSubKey(appIdKey, throwOnMissingSubKey: false);
+            string appIdKey = string.Format(RegistryKeys.formatAppID, clsid);
+            Microsoft.Win32.Registry.LocalMachine.DeleteSubKey(appIdKey, throwOnMissingSubKey: false);
 
 
         }

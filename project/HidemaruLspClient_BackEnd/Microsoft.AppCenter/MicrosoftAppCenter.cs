@@ -17,7 +17,7 @@ namespace HidemaruLspClient
             {
                 return;
             }
-            
+
             Crashes.ShouldAwaitUserConfirmation = () =>
             {
                 if (EnableSendCrashReport)

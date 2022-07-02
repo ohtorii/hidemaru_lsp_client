@@ -5,8 +5,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 using Microsoft.Win32;
+using HidemaruLspClient.Native;
 
-namespace COMRegistration
+namespace HidemaruLspClient.ComRegistration
 {
     sealed class LocalServer : IDisposable
     {
@@ -47,16 +48,16 @@ namespace COMRegistration
             RegistryKey dst;
             if (perUser)
             {
-                dst = Registry.CurrentUser;
+                dst = Microsoft.Win32.Registry.CurrentUser;
             }
             else
             {
-                dst = Registry.LocalMachine;
+                dst = Microsoft.Win32.Registry.LocalMachine;
             }
             Trace.WriteLine(string.Format("Target registory={0}",dst.Name));
 
             //create "SOFTWARE\Classes\CLSID" if not exists.
-            using (var keyClasses = dst.OpenSubKey(KeyFormat.Classes, true))
+            using (var keyClasses = dst.OpenSubKey(RegistryKeys.Classes, true))
             {
                 const string    keyCLSIDName    = "CLSID";
                 string          absClassesPath  = keyClasses.Name + @"\" + keyCLSIDName;
@@ -84,7 +85,7 @@ namespace COMRegistration
             }
 
             {
-                string serverKey = string.Format(KeyFormat.formatLocalServer32, clsid);
+                string serverKey = string.Format(RegistryKeys.formatLocalServer32, clsid);
                 using (var regKey = dst.CreateSubKey(serverKey))
                 {
                     regKey.SetValue(null, exePath);
@@ -94,7 +95,7 @@ namespace COMRegistration
 
             if (progId != null)
             {//Register ProgId
-                var progIdKeyName = string.Format(KeyFormat.formatProgIdCLSID, progId.Value);
+                var progIdKeyName = string.Format(RegistryKeys.formatProgIdCLSID, progId.Value);
                 using (var keyProgId = dst.CreateSubKey(progIdKeyName))
                 {
                     var clsidValue = string.Format("{{{0}}}", clsid);
@@ -143,22 +144,22 @@ namespace COMRegistration
             RegistryKey dst;
             if (perUser)
             {
-                dst = Registry.CurrentUser;
+                dst = Microsoft.Win32.Registry.CurrentUser;
             }
             else
             {
-                dst = Registry.LocalMachine;
+                dst = Microsoft.Win32.Registry.LocalMachine;
             }
             // Unregister local server
             {
-                string serverKey = string.Format(KeyFormat.formatCLSID, clsid);
+                string serverKey = string.Format(RegistryKeys.formatCLSID, clsid);
                 dst.DeleteSubKeyTree(serverKey, throwOnMissingSubKey: false);
             }
 
             if (progId!=null)
             {
                 //Unregister ProgId
-                var progIdKey = string.Format(KeyFormat.formatProgId, progId.Value);
+                var progIdKey = string.Format(RegistryKeys.formatProgId, progId.Value);
                 dst.DeleteSubKeyTree(progIdKey, throwOnMissingSubKey: false);
             }
             if ((tlbPath != null) && (tlbPath != ""))

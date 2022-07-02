@@ -1,6 +1,6 @@
-﻿namespace COMRegistration
+﻿namespace HidemaruLspClient.ComRegistration
 {
-    internal static class KeyFormat
+    internal static class RegistryKeys
     {
         public const string Classes     = @"SOFTWARE\Classes";
         public const string CLSID       = Classes + @"\CLSID";

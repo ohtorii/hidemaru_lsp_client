@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 using ComTypes = System.Runtime.InteropServices.ComTypes;
 
-namespace COMRegistration
+namespace HidemaruLspClient.Native
 {
     internal class OleAut32
     {

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using HidemaruLspClient.Native;
 
 using ComTypes = System.Runtime.InteropServices.ComTypes;
 
-namespace COMRegistration
+namespace HidemaruLspClient.ComRegistration
 {
     internal static class TypeLib
     {
