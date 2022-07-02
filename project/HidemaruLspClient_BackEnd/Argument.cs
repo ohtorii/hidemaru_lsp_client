@@ -7,10 +7,10 @@ using HidemaruLspClient.Native;
 
 namespace HidemaruLspClient
 {
-    internal class Options
+    internal class Argument
     {
-        internal static readonly Options Default   = new Options();
-        internal static readonly Options Embedding = new Options { Mode=RegistryMode.Unknown, Start=true};
+        internal static readonly Argument Default   = new Argument();
+        internal static readonly Argument Embedding = new Argument { Mode=RegistryMode.Unknown, Start=true};
 
         /// <summary>
         /// コマンドライン引数からOptionsを生成する
@@ -18,12 +18,12 @@ namespace HidemaruLspClient
         /// <param name="isConsoleApplication">コンソールアプリケーションかどうか</param>
         /// <param name="args">コマンドライン引数</param>
         /// <returns>--helpの場合はnullを返す</returns>
-        internal static Options Create(bool isConsoleApplication, string [] args) {
+        internal static Argument Create(bool isConsoleApplication, string [] args) {
             using (var parser = CreateParser(isConsoleApplication))
             {
-                Options result=null;
-                parser.ParseArguments<Options>(args)
-                    .WithParsed<Options>(o =>
+                Argument result=null;
+                parser.ParseArguments<Argument>(args)
+                    .WithParsed<Argument>(o =>
                     {
                         result = o;
                     });

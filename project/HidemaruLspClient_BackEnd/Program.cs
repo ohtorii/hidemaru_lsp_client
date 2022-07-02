@@ -55,21 +55,21 @@ namespace HidemaruLspClient
             Trace.WriteLine("======== Main ========");
             DumpArgs(args);
             Trace.WriteLine(string.Format("isConsoleApplication={0}", isConsoleApplication));
-            Options options;
+            Argument arguments;
             if (LaunchedViaCoCreateInstance(args))
             {
-                options = Options.Embedding;
+                arguments = Argument.Embedding;
             }
             else
             {
-                options = Options.Create(isConsoleApplication, args);
-                if (options == null)
+                arguments = Argument.Create(isConsoleApplication, args);
+                if (arguments == null)
                 {
                     //コマンドライン引数が不正なのでオプションが作れないが、代わりにヘルプが表示されるためsuccess扱いとした
                     return success;
                 }
             }
-            return Start(options) ? success : error;
+            return Start(arguments) ? success : error;
         }
         /// <summary>
         /// 引数をダンプする
@@ -97,7 +97,7 @@ namespace HidemaruLspClient
             }
             return false;
         }
-        static bool Start(Options options) {
+        static bool Start(Argument options) {
             if (!File.Exists(tlbPath))
             {
                 Trace.WriteLine($"Not found {tlbPath}");
@@ -122,7 +122,7 @@ namespace HidemaruLspClient
                 return false;
             }
         }
-        static bool ProcessRegistroy(Guid serverClassGuid, Options options)
+        static bool ProcessRegistroy(Guid serverClassGuid, Argument options)
         {
             var exePath = Process.GetCurrentProcess().MainModule.FileName;
 #if false
@@ -132,17 +132,17 @@ namespace HidemaruLspClient
 #endif
             switch (options.Mode)
             {
-                case Options.RegistryMode.RegServer:
+                case Argument.RegistryMode.RegServer:
                     return LocalServer.RegisterToLocalMachine(serverClassGuid, progId, exePath, tlbPath);
-                case Options.RegistryMode.RegServerPerUser:
+                case Argument.RegistryMode.RegServerPerUser:
                     return LocalServer.RegisterToCurrentUser(serverClassGuid, progId, exePath, tlbPath);
-                case Options.RegistryMode.UnRegServer:
+                case Argument.RegistryMode.UnRegServer:
                     LocalServer.UnregisterFromLocalMachine(serverClassGuid, progId, tlbPath);
                     return true;
-                case Options.RegistryMode.UnRegServerPerUser:
+                case Argument.RegistryMode.UnRegServerPerUser:
                     LocalServer.UnregisterToCurrentUser(serverClassGuid, progId, tlbPath);
                     return true;
-                case Options.RegistryMode.Unknown:
+                case Argument.RegistryMode.Unknown:
                     return true;
                 default:
                     Trace.TraceError($"Unknown mode. mode={options.Mode}");
