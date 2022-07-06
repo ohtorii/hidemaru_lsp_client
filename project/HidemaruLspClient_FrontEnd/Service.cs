@@ -492,7 +492,7 @@ namespace HidemaruLspClient_FrontEnd
         /// <returns></returns>
         public bool SyncDocument()
         {
-            return syncDocumentTask_.SyncDocument();
+            return syncDocumentTask_.SyncDocument_Debug();
         }
 
         /// <summary>

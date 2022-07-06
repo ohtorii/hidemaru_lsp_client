@@ -88,13 +88,6 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         System.Windows.Forms.Timer timer_;
         HidemaruEditorDocument openedFile_;
 
-        public void Finish()
-        {
-            if (openedFile_.IsValidFileName())
-            {
-                DidClose();
-            }
-        }
 
         public SyncDocumenmt(ILspClientLogger logger, CancellationToken cancellationToken)
         {
@@ -107,12 +100,19 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             timer_.Tick += Update;
             timer_.Start();
         }
+        public void Finish()
+        {
+            if (openedFile_.IsValidFileName())
+            {
+                DidClose();
+            }
+        }
 
         /// <summary>
         /// 秀丸エディタのテキストとサーバ側のテキストを明示的に同期する（デバッグ用途）
         /// </summary>
         /// <returns></returns>
-        public bool SyncDocument()
+        public bool SyncDocument_Debug()
         {
             try
             {
