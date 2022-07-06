@@ -13,7 +13,7 @@ namespace ClientExample
             {
                 var clientInfo = param.clientInfo;
                 clientInfo.name = "hidemal-lsp";
-                clientInfo.version = "0.5.0";
+                clientInfo.version = "0.6.0";
             }
             param.trace = "verbose";//"off";
             {

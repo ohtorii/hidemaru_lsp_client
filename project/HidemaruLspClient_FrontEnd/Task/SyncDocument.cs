@@ -7,6 +7,8 @@ using HidemaruLspClient_FrontEnd.Hidemaru;
 
 namespace HidemaruLspClient_FrontEnd.BackgroundTask
 {
+    //Todo: 状態遷移のクラスを利用し処理を単純化する
+
     class SyncDocumenmt
     {
         /// <summary>
@@ -32,6 +34,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             {
                 logger_?.Trace($"RaiseOpenEvent:e.FileName={e.FileName}");
                 OpenEvent(this, e);
+                calledDigOpen = true;
             }
         }
         /// <summary>
@@ -83,6 +86,32 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         }
 
 
+        /// <summary>
+        /// Save
+        /// </summary>
+        public class SaveEventArgs : EventArgs
+        {
+            public SaveEventArgs(string fileName,string text)
+            {
+                this.FileName = fileName;
+                this.Text = text;
+            }
+            public string FileName { get; }
+            public string Text { get; }
+        }
+        public delegate void SaveEventHandler(object sender, SaveEventArgs e);
+        public event SaveEventHandler SaveEvent;
+        void RaiseSaveEvent(SaveEventArgs e)
+        {
+            if (ChangeEvent != null)
+            {
+                logger_?.Trace($"RaiseSaveEvent:e.FileName={e.FileName}");
+                SaveEvent(this, e);
+            }
+        }
+
+        bool calledDigOpen = false;
+
         ILspClientLogger logger_;
         CancellationToken cancellationToken_;
         System.Windows.Forms.Timer timer_;
@@ -102,10 +131,17 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         }
         public void Finish()
         {
+            if (openedFile_ == null)
+            {
+                return;
+            }
+
             if (openedFile_.IsValidFileName())
             {
                 DidClose();
             }
+            openedFile_.Clear();
+            openedFile_ = null;
         }
 
         /// <summary>
@@ -130,6 +166,12 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         {
             return Workflow();
         }
+
+        /// <summary>
+        /// 定期的に実行する処理を記述する
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Update(object sender, EventArgs e)
         {
             try
@@ -142,6 +184,12 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 try
                 {
                     var _ = Workflow();
+                    if (calledDigOpen)
+                    {
+                        /* Workflowを呼んでからSaveイベントが発生するように処理順を調整
+                            */
+                        openedFile_.SaveEvent += OpenedFile__SaveEvent;
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -159,6 +207,10 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
             }
         }
 
+        private void OpenedFile__SaveEvent(object sender, EventArgs e)
+        {
+            RaiseSaveEvent(new SaveEventArgs(openedFile_.Filename, Api.GetTotalTextUnicode()));
+        }
 
         enum DigOpenStatus
         {

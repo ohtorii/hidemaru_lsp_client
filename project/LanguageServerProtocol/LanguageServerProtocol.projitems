@@ -46,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\DidChangeTextDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DidChangeWatchedFiles.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DidOpenTextDocument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\DidSaveTextDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DocumentColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DocumentFormatting.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DocumentHighlights.cs" />

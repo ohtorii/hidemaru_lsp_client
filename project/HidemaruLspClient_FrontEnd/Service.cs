@@ -169,6 +169,7 @@ namespace HidemaruLspClient_FrontEnd
                         syncDocumentTask_.OpenEvent += (sender, e) => context_.worker.DidOpen(e.FileName, e.Text, e.ContentsVersion);
                         syncDocumentTask_.ChangeEvent += (sender, e) =>context_.worker.DidChange(e.FileName, e.Text, e.ContentsVersion);
                         syncDocumentTask_.CloseEvent += (sender, e) =>context_.worker.DidClose(e.FileName);
+                        syncDocumentTask_.SaveEvent+=(sender, e) =>context_.worker.DidSave(e.FileName,e.Text);
                     }
                 });
             }

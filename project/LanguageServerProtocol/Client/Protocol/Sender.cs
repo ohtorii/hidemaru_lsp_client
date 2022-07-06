@@ -27,7 +27,7 @@ namespace LSP.Client
 			public readonly ResponseError Error;
 		}
 		Dictionary<RequestId, ResponseObject> response_ = new Dictionary<RequestId, ResponseObject>();
-		
+
         Action<RequestId, Action<ResponseMessage>> responseCallback_;
 		LanguageClient.LspParameter param_;
 		Func<LanguageClient.Mode> GetStatus_;
@@ -57,7 +57,7 @@ namespace LSP.Client
 		{
 			var arg = (JToken)response.result;
 			StoreResponse(
-				response.id, 
+				response.id,
 				response.error,
 				arg.ToObject<InitializeResult>(),
 				//Memo: response_[]とStatusは同時に設定する。
@@ -66,7 +66,7 @@ namespace LSP.Client
 		public void Initialized(IInitializedParams param)
 		{
 			Debug.Assert(GetStatus_()== Mode.ServerInitializeFinish);
-			//Memo: クライアントからサーバへの通知なので、サーバからクライアントへの返信は無い。			
+			//Memo: クライアントからサーバへの通知なので、サーバからクライアントへの返信は無い。
 			Notification(param, "initialized");
 			SetStatus_(Mode.ClientInitializeFinish);
 		}
@@ -90,7 +90,7 @@ namespace LSP.Client
 			{
 				SetStatus_(Mode.ClientInitializeFinish);
 			}
-			StoreResponse(response.id, response.error, response.error, null);			
+			StoreResponse(response.id, response.error, response.error, null);
 		}
 #endregion
 		public void LoggingResponseLeak()
@@ -129,6 +129,11 @@ namespace LSP.Client
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
 			Notification(param, "textDocument/didClose");
 		}
+		public void TextDocumentDidSave(IDidSaveTextDocumentParams param)
+        {
+			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
+			Notification(param, "textDocument/didSave");
+		}
 		public void WorkspaceDidChangeConfiguration(IDidChangeConfigurationParams param)
 		{
 			Debug.Assert(GetStatus_() == Mode.ClientInitializeFinish);
@@ -141,7 +146,7 @@ namespace LSP.Client
 			return Request(param, "textDocument/completion", ActionTextDocumentCompletion);
 		}
 		void ActionTextDocumentCompletion(ResponseMessage response)
-		{			
+		{
 			CompletionList f(JToken arg)
 			{
 				if (arg == null)
@@ -169,7 +174,7 @@ namespace LSP.Client
 
 		#region Goto
 		static Location[] ConvertToLocationArray(JToken arg)
-		{			
+		{
 			if (arg == null)
 			{
 				return null;
@@ -186,7 +191,7 @@ namespace LSP.Client
 				}
 				return result;
 			}
-			
+
 			var obj = arg.ToObject<JObject>();
 			if (obj.ContainsKey("uri"))
 			{
@@ -234,7 +239,7 @@ namespace LSP.Client
 				result = new Location[dic.Count];
 				foreach(var item in dic)
                 {
-					result[i] = item.Value;					
+					result[i] = item.Value;
 					++i;
                 }
 			}
@@ -292,16 +297,16 @@ namespace LSP.Client
 		}
 		public RequestId TextDocumentDeclaration(IDeclarationParams param)
         {
-			return TextDocumentGoto(param, "textDocument/declaration");			
-		}				
+			return TextDocumentGoto(param, "textDocument/declaration");
+		}
 		public RequestId TextDocumentDefinition(IDefinitionParams param)
         {
 			return TextDocumentGoto(param, "textDocument/definition");
-		}						
+		}
 		public RequestId TextDocumentTypeDefinition(ITypeDefinitionParams param)
 		{
 			return TextDocumentGoto(param, "textDocument/typeDefinition");
-		}		
+		}
 		public RequestId TextDocumentImplementation(IImplementationParams param)
 		{
 			return TextDocumentGoto(param, "textDocument/implementation");
@@ -327,7 +332,7 @@ namespace LSP.Client
 				{
 					hoverItem = token.ToObject<Hover>();
 				}
-			}			
+			}
 			StoreResponse(response.id, response.error, hoverItem, null);
 		}
         #endregion
@@ -514,7 +519,7 @@ namespace LSP.Client
 			}
 		}
 		void StoreResponse(int responseId, ResponseError error, object responseItem, Action postAction)
-        {			
+        {
 			var id = new RequestId(responseId);
 			var value = new ResponseObject(error, responseItem, true);
 			lock (response_)
@@ -529,7 +534,7 @@ namespace LSP.Client
 				{
 					postAction();
 				}
-			}			
+			}
 		}
 		#endregion
 	}

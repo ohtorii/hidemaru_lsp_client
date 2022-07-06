@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Threading;
+using System.ComponentModel;
 
 namespace HidemaruLspClient_FrontEnd.Utils
 {
@@ -75,6 +76,6 @@ namespace HidemaruLspClient_FrontEnd.Utils
                 return form_.Invoke(method);
             }
         }
-
+        public static ISynchronizeInvoke SynchronizingObject { get { return form_; } }
     }
 }

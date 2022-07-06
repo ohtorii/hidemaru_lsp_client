@@ -209,6 +209,7 @@ interface IWorker :IDispatch
     HRESULT DidOpen([in]BSTR absFilename, [in]BSTR text, [in]int contentsVersion);
     HRESULT DidChange([in]BSTR absFilename, [in]BSTR text, [in]int contentsVersion);
     HRESULT DidClose([in]BSTR absFilename);
+    HRESULT DidSave([in]BSTR absFilename, [in]BSTR text);
     HRESULT Completion([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out,retval]BSTR*retval);
     HRESULT PullDiagnosticsParams([out, retval] IPublishDiagnosticsParamsContainer** ret);
     HRESULT Declaration([in]BSTR absFilename, [in]hyper line, [in]hyper column, [out, retval]ILocationContainer** ret);

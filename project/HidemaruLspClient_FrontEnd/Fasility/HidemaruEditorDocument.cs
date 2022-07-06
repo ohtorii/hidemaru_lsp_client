@@ -1,10 +1,11 @@
 ﻿using System;
+using System.IO;
 
 
 namespace HidemaruLspClient_FrontEnd.Facility
 {
     /// <summary>
-    /// 秀丸エディタで編集しているドキュメントの情報
+    /// 秀丸エディタで編集しているドキュメント
     /// </summary>
     class HidemaruEditorDocument
     {
@@ -12,6 +13,18 @@ namespace HidemaruLspClient_FrontEnd.Facility
         Uri Uri_;
         int hidemaruUpdateCount_;
         int contentsVersion_;
+
+        /// <summary>
+        /// 秀丸エディタのファイルセーブを検出するのが目的
+        /// </summary>
+        FileSystemWatcher fileWatcher_;
+
+        public delegate void SaveEventHandler(object sender, EventArgs e);
+        /// <summary>
+        /// ファイルセーブが発生した時に呼ばれる
+        /// </summary>
+        public event SaveEventHandler SaveEvent;
+
         /// <summary>
         /// ドキュメントのファイル名を取得を試みる
         /// </summary>
@@ -61,15 +74,51 @@ namespace HidemaruLspClient_FrontEnd.Facility
         {
             Initialize();
         }
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="filename">絶対パス</param>
+        /// <param name="uri">filenameのUri表記</param>
+        /// <param name="hidemaruUpdateCount"></param>
+        /// <param name="contentsVersion"></param>
         public void Setup(string filename, Uri uri, int hidemaruUpdateCount, int contentsVersion)
         {
             this.Filename_ = filename;
             this.Uri_ = uri;
             this.hidemaruUpdateCount_ = hidemaruUpdateCount;
             this.contentsVersion_ = contentsVersion;
+
+            if (this.fileWatcher_ != null){
+                this.fileWatcher_.Dispose();
+                this.fileWatcher_ = null;
+            }
+            this.fileWatcher_ = new FileSystemWatcher(Path.GetDirectoryName(filename),Path.GetFileName(filename));
+            this.fileWatcher_.NotifyFilter = NotifyFilters.LastWrite;
+            this.fileWatcher_.SynchronizingObject = Utils.UIThread.SynchronizingObject;
+            this.fileWatcher_.Changed += FileWatcher__Changed;
+            this.fileWatcher_.EnableRaisingEvents = true; ;
         }
+
+        private void FileWatcher__Changed(object sender, FileSystemEventArgs e)
+        {
+            if (e.ChangeType != WatcherChangeTypes.Changed)
+            {
+                return;
+            }
+            if (SaveEvent == null) {
+                return;
+            }
+            SaveEvent(this,new EventArgs());
+        }
+
+
         public void Clear()
         {
+            if (this.fileWatcher_ != null)
+            {
+                this.fileWatcher_.Dispose();
+                this.fileWatcher_ = null;
+            }
             Initialize();
         }
         public void UpdateContentsVersion(int hidemaruUpdateCount){
@@ -82,6 +131,7 @@ namespace HidemaruLspClient_FrontEnd.Facility
             Uri_ = null;
             hidemaruUpdateCount_ = 0;
             contentsVersion_ = 0;
+            fileWatcher_ = null;
         }
     }
 

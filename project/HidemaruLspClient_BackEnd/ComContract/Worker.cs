@@ -247,6 +247,14 @@ namespace HidemaruLspClient.ComContract
             param.textDocument.uri = sourceUri.AbsoluteUri;
             client_.Send.TextDocumentDidClose(param);
         }
+        void IWorker.DidSave(string absFilename, string text)
+        {
+            var sourceUri = new Uri(absFilename);
+            var param = new  DidSaveTextDocumentParams();
+            param.textDocument.uri = sourceUri.AbsoluteUri;
+            param.text = text;
+            client_.Send.TextDocumentDidSave(param);
+        }
         static bool ResponseIsCorrect(Sender.ResponseResult response)
         {
             if (response == null)
