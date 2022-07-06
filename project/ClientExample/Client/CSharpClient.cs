@@ -1,4 +1,4 @@
-﻿using LSP.Implementation;
+﻿using LSP.Client;
 using System;
 using System.IO;
 
@@ -36,9 +36,9 @@ namespace ClientExample
             Environment.ExpandEnvironmentVariables(@"%HOMEDRIVE%%HOMEPATH%\\.vscode\extensions\ms-dotnettools.csharp-1.23.14\.omnisharp\1.37.14\OmniSharp.exe");
 #endif
 
-            var client = new LSP.Implementation.LanguageClient();
+            var client = new LSP.Client.LanguageClient();
             client.Start(
-                new LSP.Implementation.LanguageClient.LspParameter
+                new LSP.Client.LanguageClient.LspParameter
                 {
                     exeFileName = FileName,
                     exeArguments = Arguments,

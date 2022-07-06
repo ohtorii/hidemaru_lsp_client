@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace LSP.Implementation
+namespace LSP.Client
 {
 	class LanguageClient
 	{
@@ -73,7 +73,7 @@ namespace LSP.Implementation
 			Status = Mode.Init;
 		}
 		public void Start(LspParameter param)
-		{            
+		{
 			Debug.Assert(Status == Mode.Init);
 			if (param.logger == null)
 			{
@@ -82,7 +82,7 @@ namespace LSP.Implementation
 			param_ = param;
 			clientEvents_ = new ClientEvents(param_, this.EventResponseProxy);
 			mediator_ = new Mediator(source_.Token, param_.logger);
-			
+
 			{
                 var Protocol = mediator_.Protocol;
 				Protocol.OnWindowLogMessage				  += this.clientEvents_.OnWindowLogMessage;
@@ -97,12 +97,10 @@ namespace LSP.Implementation
 			server_ = new ServerProcess(param.exeFileName, param.exeArguments, param.exeWorkingDirectory);
 			Send = new Sender(param, mediator_.StoreResponseCallback, Status_Get, Status_Set, server_.WriteStandardInput);
 
-			server_.StartProcess();
-			server_.standardErrorReceived  += Client_standardErrorReceived;
-			server_.standardOutputReceived += Client_standardOutputReceived;
-			server_.Exited += Server_Exited;
-			server_.StartRedirect();
-			server_.StartThreadLoop();
+            server_.standardErrorReceived += Client_standardErrorReceived;
+            server_.standardOutputReceived += Client_standardOutputReceived;
+            server_.Exited += Server_Exited;
+            server_.StartProcess();
 		}
         #region LSP_Server
         void Client_standardOutputReceived(object sender, byte[] e)
@@ -149,7 +147,7 @@ namespace LSP.Implementation
 			Debug.Assert(Status == Mode.ClientInitializeFinish);
 			Send.Response(any, request_id, NullValueHandling.Include);
 		}
-		
+
 		public Sender.ResponseResult QueryResponse(RequestId id, int millisecondsTimeout = -1)
         {
 			try

@@ -1,4 +1,4 @@
-﻿using LSP.Implementation;
+﻿using LSP.Client;
 using LSP.Model;
 using System;
 using System.IO;
@@ -19,7 +19,7 @@ namespace ClientExample
 
         internal override CompilationPosition compilationPosition => new CompilationPosition { line = 1, character = 10 };
 
-        internal override LSP.Implementation.LanguageClient CreateClient()
+        internal override LSP.Client.LanguageClient CreateClient()
         {
 #if false
 			//Memo:問題なく動作する
@@ -58,9 +58,9 @@ namespace ClientExample
             var WorkingDirectory = Path.GetDirectoryName(sourceUri.AbsolutePath);
 #endif
 
-            var client = new LSP.Implementation.LanguageClient();
+            var client = new LSP.Client.LanguageClient();
             client.Start(
-                new LSP.Implementation.LanguageClient.LspParameter
+                new LSP.Client.LanguageClient.LspParameter
                 {
                     exeFileName = FileName,
                     exeArguments = Arguments,
@@ -71,7 +71,7 @@ namespace ClientExample
             return client;
         }
 
-        internal override RequestId InitializeServer(LSP.Implementation.LanguageClient client)
+        internal override RequestId InitializeServer(LSP.Client.LanguageClient client)
         {
             var param = UtilInitializeParams.Initialzie();
             param.rootUri = rootUri.AbsoluteUri;
@@ -100,7 +100,7 @@ namespace ClientExample
             return client.Send.Initialize(param);
         }
 
-        internal override void DigOpen(LSP.Implementation.LanguageClient client)
+        internal override void DigOpen(LSP.Client.LanguageClient client)
         {
             base.DigOpen(client);
             //Todo: サーバが準備できるまで正攻法でまつ

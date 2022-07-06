@@ -20,17 +20,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Model\StringOrMarkupContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Model\TextEdit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Server\Capabilities\TextDocumentSync.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Client\AsyncStreamReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\IO\AsyncStreamReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\ClientEvents.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Client\NullLogger.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Client\Sender.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\Logger\NullLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\Protocol\Sender.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\Util.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DidCloseTextDocument.cs" />
-    <Compile Include="..\LanguageServerProtocol\Client\ILogger.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Client\RequestIdGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\Logger\ILogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\Protocol\RequestIdGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\LanguageClient.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Client\Mediator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Client\Protocol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\Protocol\Mediator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Client\Protocol\Protocol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Client\ServerProcess.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Capabilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\CodeAction.cs" />
@@ -97,5 +97,8 @@
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\Protocol\Serialization\" />
     <Folder Include="$(MSBuildThisFileDirectory)3rd-party\OmniSharp\JsonRpc\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Client\Logger\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Client\IO\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Client\Protocol\" />
   </ItemGroup>
 </Project>

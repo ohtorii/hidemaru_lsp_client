@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
-using static LSP.Implementation.LanguageClient;
+using static LSP.Client.LanguageClient;
 
-namespace LSP.Implementation
+namespace LSP.Client
 {
     class Sender
     {

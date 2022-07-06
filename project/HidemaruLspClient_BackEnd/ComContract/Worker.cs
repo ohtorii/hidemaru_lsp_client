@@ -1,4 +1,4 @@
-﻿using LSP.Implementation;
+﻿using LSP.Client;
 using LSP.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

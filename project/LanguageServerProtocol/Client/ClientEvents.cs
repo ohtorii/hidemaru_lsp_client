@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 
-namespace LSP.Implementation
+namespace LSP.Client
 {
     class ClientEvents
     {

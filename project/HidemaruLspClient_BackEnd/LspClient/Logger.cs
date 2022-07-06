@@ -1,6 +1,6 @@
 ﻿namespace HidemaruLspClient.LspClient
 {
-    class Logger : LSP.Implementation.ILogger
+    class Logger : LSP.Client.ILogger
     {
         public NLog.Logger nlog_ { get; private set; }
 

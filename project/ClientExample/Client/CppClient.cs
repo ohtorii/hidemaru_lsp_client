@@ -10,7 +10,7 @@ namespace ClientExample
         internal override string languageId => "cpp";
         internal override CompilationPosition compilationPosition => new CompilationPosition { line = 9, character = 25 };
 
-        internal override LSP.Implementation.LanguageClient CreateClient()
+        internal override LSP.Client.LanguageClient CreateClient()
         {
 #if false
 			//OK
@@ -34,9 +34,9 @@ namespace ClientExample
 			var Arguments = @"";
 			var WorkingDirectory = rootPath;
 #endif
-            var client = new LSP.Implementation.LanguageClient();
+            var client = new LSP.Client.LanguageClient();
             client.Start(
-                new LSP.Implementation.LanguageClient.LspParameter
+                new LSP.Client.LanguageClient.LspParameter
                 {
                     exeFileName = FileName,
                     exeArguments = Arguments,

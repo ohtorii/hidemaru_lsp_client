@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Threading;
 
 
-namespace LSP.Implementation
+namespace LSP.Client
 {
 	class ServerProcess
 	{
@@ -65,13 +65,11 @@ namespace LSP.Implementation
 
         private ProcessStartInfo processStartInfo_ = null;
         private Process process_ = null;
-        private AsyncStreamReader standardOutput_ =null;
-        private AsyncStreamReader standardError_ = null;
+        private AsyncStreamReader standardOutput_ =new AsyncStreamReader();
+        private AsyncStreamReader standardError_ = new AsyncStreamReader();
 
         public ServerProcess(string filename, string arguments, string WorkingDirectory)
 		{
-            standardOutput_ = new AsyncStreamReader();
-            standardError_ = new AsyncStreamReader();
             if ((WorkingDirectory == null)||(WorkingDirectory.Length==0))
             {
                 WorkingDirectory = System.IO.Path.GetDirectoryName(filename);
@@ -101,15 +99,24 @@ namespace LSP.Implementation
                 return;
 			}
             process_ = Process.Start(processStartInfo_);
+            process_.Exited += (sender,e)=>StopRedirect();
             standardOutput_.SetStreamReader(process_.StandardOutput);
             standardError_.SetStreamReader(process_.StandardError);
+            StartRedirect();
+            StartThreadLoop();
         }
-        public void StartRedirect()
+
+        void StartRedirect()
         {
             standardOutput_.Start();
             standardError_.Start();
         }
-        public void StartThreadLoop()
+        void StopRedirect()
+        {
+            standardOutput_.Stop();
+            standardError_.Stop();
+        }
+        void StartThreadLoop()
         {
             var _ = Task.Run(async () =>
             {
@@ -146,8 +153,10 @@ namespace LSP.Implementation
         }
         public void Kill()
 		{
+            standardOutput_.Stop();
+            standardError_.Stop();
             process_.Kill();
-		}
+        }
         public int GetExitCode()
         {
             return process_.ExitCode;

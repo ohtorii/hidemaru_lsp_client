@@ -57,7 +57,7 @@ namespace ClientExample
     }
 }");
 
-        internal override LSP.Implementation.LanguageClient CreateClient()
+        internal override LSP.Client.LanguageClient CreateClient()
         {
 #if true
             string logFilename = @"D:\temp\LSP-Server\lsp_server_response_lua.txt";
@@ -68,8 +68,8 @@ namespace ClientExample
             var WorkingDirectory = "";
 #endif
 
-            var client = new LSP.Implementation.LanguageClient();
-            client.Start(new LSP.Implementation.LanguageClient.LspParameter
+            var client = new LSP.Client.LanguageClient();
+            client.Start(new LSP.Client.LanguageClient.LspParameter
             {
                 exeFileName = FileName,
                 exeArguments = Arguments,
@@ -80,7 +80,7 @@ namespace ClientExample
             return client;
         }
 
-        internal override void DigOpen(LSP.Implementation.LanguageClient client)
+        internal override void DigOpen(LSP.Client.LanguageClient client)
         {
             base.DigOpen(client);
             //　$/progress　を待つ

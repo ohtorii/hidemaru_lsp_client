@@ -1,4 +1,4 @@
-﻿using LSP.Implementation;
+﻿using LSP.Client;
 using LSP.Model;
 using System;
 using System.Diagnostics;
@@ -36,7 +36,7 @@ namespace ClientExample
             {
                 var initializeId = InitializeServer(client);
                 var result = (InitializeResult)client.QueryResponse(initializeId).item;
-                Debug.Assert(client.Status == LSP.Implementation.LanguageClient.Mode.ServerInitializeFinish);
+                Debug.Assert(client.Status == LSP.Client.LanguageClient.Mode.ServerInitializeFinish);
             }
 
             Console.WriteLine("==== InitializedClient ====");
@@ -112,7 +112,7 @@ namespace ClientExample
             }
         }
 
-        internal virtual void DidChange(LSP.Implementation.LanguageClient client)
+        internal virtual void DidChange(LSP.Client.LanguageClient client)
         {
             var text = File.ReadAllText(sourceUri.AbsolutePath, System.Text.Encoding.UTF8);
             ++sourceVersion;//ソースを更新したので+1する
@@ -123,14 +123,14 @@ namespace ClientExample
             param.textDocument.version = sourceVersion;
         }
 
-        internal virtual void DidChangeConfiguration(LSP.Implementation.LanguageClient client)
+        internal virtual void DidChangeConfiguration(LSP.Client.LanguageClient client)
         {
             var param = new DidChangeConfigurationParams();
             param.settings = new object();
             client.Send.WorkspaceDidChangeConfiguration(param);
         }
 
-        internal virtual void DigOpen(LSP.Implementation.LanguageClient client)
+        internal virtual void DigOpen(LSP.Client.LanguageClient client)
         {
             sourceVersion = 1;//Openしたのでとりあえず1にする。
 
@@ -141,19 +141,19 @@ namespace ClientExample
             param.textDocument.languageId = languageId;
             client.Send.TextDocumentDidOpen(param);
         }
-        internal virtual void DigClose(LSP.Implementation.LanguageClient client)
+        internal virtual void DigClose(LSP.Client.LanguageClient client)
         {
             var param = new DidCloseTextDocumentParams();
             param.textDocument.uri = sourceUri.AbsoluteUri;
             client.Send.TextDocumentDidClose(param);
         }
-        internal virtual void InitializedClient(LSP.Implementation.LanguageClient client)
+        internal virtual void InitializedClient(LSP.Client.LanguageClient client)
         {
             var param = new InitializedParams();
             client.Send.Initialized(param);
         }
 
-        internal virtual RequestId InitializeServer(LSP.Implementation.LanguageClient client)
+        internal virtual RequestId InitializeServer(LSP.Client.LanguageClient client)
         {
             var param = UtilInitializeParams.Initialzie();
             param.rootUri = rootUri.AbsoluteUri;

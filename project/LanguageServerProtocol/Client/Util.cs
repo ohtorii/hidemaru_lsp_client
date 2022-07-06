@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace LSP.Implementation
+namespace LSP.Client
 {
     class Util
     {
