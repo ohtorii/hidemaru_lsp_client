@@ -1,4 +1,5 @@
 ﻿using LSP.Model;
+using System.Reflection;
 
 namespace ClientExample
 {
@@ -12,8 +13,8 @@ namespace ClientExample
             param.capabilities = new ClientCapabilities();
             {
                 var clientInfo = param.clientInfo;
-                clientInfo.name = "hidemal-lsp";
-                clientInfo.version = "0.6.0";
+                clientInfo.name = "example";
+                clientInfo.version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             }
             param.trace = "verbose";//"off";
             {
