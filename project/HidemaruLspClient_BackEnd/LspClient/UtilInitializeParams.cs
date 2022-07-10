@@ -1,4 +1,5 @@
 ﻿using LSP.Model;
+using System.Reflection;
 
 namespace HidemaruLspClient.LspClient
 {
@@ -13,7 +14,7 @@ namespace HidemaruLspClient.LspClient
             {
                 var clientInfo = param.clientInfo;
                 clientInfo.name = "hidemal-lsp";
-                clientInfo.version = "0.5.0";
+                clientInfo.version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             }
             param.trace = "verbose";//"off";
             {
