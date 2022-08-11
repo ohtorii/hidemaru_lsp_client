@@ -18,13 +18,17 @@
 
 using System;
 
-namespace Microsoft.Python.LanguageServer.Protocol {
+namespace Microsoft.Python.LanguageServer.Protocol
+{
     /// <summary>
     /// Required layout for the initializationOptions member of initializeParams
     /// </summary>
-    public sealed class PythonInitializationOptions {
-        public struct Interpreter {
-            public sealed class InterpreterProperties {
+    public sealed class PythonInitializationOptions
+    {
+        public struct Interpreter
+        {
+            public sealed class InterpreterProperties
+            {
                 public string Version;
                 public string InterpreterPath;
                 public string DatabasePath;

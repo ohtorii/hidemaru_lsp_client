@@ -1,14 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
-	interface IInitializedParams
-	{
-	}
-	class InitializedParams : IInitializedParams
-	{
-	}		
+    interface IInitializedParams
+    {
+    }
+    class InitializedParams : IInitializedParams
+    {
+    }
 }

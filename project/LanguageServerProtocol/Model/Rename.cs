@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
 #if false
 	export namespace PrepareSupportDefaultBehavior
@@ -53,11 +49,12 @@ namespace LSP.Model
 		public bool honorsChangeAnnotations;
 	}
 
-	interface IRenameOptions :IWorkDoneProgressOptions
+	interface IRenameOptions : IWorkDoneProgressOptions
 	{
-		bool prepareProvider { get; set;  }
+		bool prepareProvider { get; set; }
 	}
-	interface IRenameRegistrationOptions:ITextDocumentRegistrationOptions, IRenameOptions {
+	interface IRenameRegistrationOptions : ITextDocumentRegistrationOptions, IRenameOptions
+	{
 	}
 
 	class RenameOptions : IRenameOptions
@@ -71,7 +68,8 @@ namespace LSP.Model
 		public bool prepareProvider { get; set; }
 		public bool workDoneProgress { get; set; }
 	}
-	interface RenameParams : ITextDocumentPositionParams,IWorkDoneProgressParams {
+	interface RenameParams : ITextDocumentPositionParams, IWorkDoneProgressParams
+	{
 		/**
 		 * The new name of the symbol. If the given name is not valid the
 		 * request must return a [ResponseError](#ResponseError) with an

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
 	class CodeLensClientCapabilities
 	{
@@ -12,10 +8,11 @@ namespace LSP.Model
 		public bool dynamicRegistration;
 	}
 	interface ICodeLensOptions : IWorkDoneProgressOptions
-	{		
+	{
 		bool resolveProvider { get; set; }
 	}
-	interface ICodeLensRegistrationOptions:ITextDocumentRegistrationOptions, ICodeLensOptions {
+	interface ICodeLensRegistrationOptions : ITextDocumentRegistrationOptions, ICodeLensOptions
+	{
 	}
 
 	class CodeLensOptions : ICodeLensOptions

@@ -1,9 +1,9 @@
 ﻿using HidemaruLspClient_BackEndContract;
+using HidemaruLspClient_FrontEnd.Facility;
+using HidemaruLspClient_FrontEnd.Hidemaru;
 using System;
 using System.Diagnostics;
 using System.Threading;
-using HidemaruLspClient_FrontEnd.Facility;
-using HidemaruLspClient_FrontEnd.Hidemaru;
 
 namespace HidemaruLspClient_FrontEnd.BackgroundTask
 {
@@ -26,7 +26,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 this.ContentsVersion = version;
             }
             public string FileName { get; }
-            public string Text{ get; }
+            public string Text { get; }
             public int ContentsVersion { get; }
         }
         public delegate void OpenEventHandler(object sender, OpenEventArgs e);
@@ -69,7 +69,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         /// <summary>
         /// CloseEvent
         /// </summary>
-        public class CloseEventArgs:EventArgs
+        public class CloseEventArgs : EventArgs
         {
             public CloseEventArgs(string filename)
             {
@@ -94,7 +94,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         /// </summary>
         public class SaveEventArgs : EventArgs
         {
-            public SaveEventArgs(string fileName,string text)
+            public SaveEventArgs(string fileName, string text)
             {
                 this.FileName = fileName;
                 this.Text = text;
@@ -119,26 +119,26 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         class DidSaveTransition
         {
             public bool digOpenWasCalled = false;
-            public bool registEvent      = false;
+            public bool registEvent = false;
             /// <summary>
             /// SaveEvventに登録する必要があるかどうか
             /// </summary>
             public bool ShouldRegisterSaveEvent { get { return digOpenWasCalled && (!registEvent); } }
         }
 
-        DidSaveTransition           didSaveTransition;
-        ILspClientLogger            logger_;
-        CancellationToken           cancellationToken_;
-        System.Windows.Forms.Timer  timer_;
-        HidemaruEditorDocument      openedFile_;
+        DidSaveTransition didSaveTransition;
+        ILspClientLogger logger_;
+        CancellationToken cancellationToken_;
+        System.Windows.Forms.Timer timer_;
+        HidemaruEditorDocument openedFile_;
 
 
         public SyncDocumenmt(ILspClientLogger logger, CancellationToken cancellationToken)
         {
             logger_ = logger;
             cancellationToken_ = cancellationToken;
-            openedFile_  = new HidemaruEditorDocument();
-            didSaveTransition=new DidSaveTransition();
+            openedFile_ = new HidemaruEditorDocument();
+            didSaveTransition = new DidSaveTransition();
 
             timer_ = new System.Windows.Forms.Timer();
             timer_.Interval = 1000;
@@ -210,9 +210,9 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 {
                     OutputPane.OutputW(Api.Hidemaru_GetCurrentWindowHandle(), exception.ToString());
                     logger_.Error(exception.ToString());
-                    return ;
+                    return;
                 }
-                return ;
+                return;
             }
             catch (Exception exce)
             {
@@ -283,7 +283,7 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 Debug.Assert(openedFile_.IsValidFileName());
 
                 var currentUpdateCount = Api.GetUpdateCount();
-                var prevUpdateCount    = openedFile_.hidemaruUpdateCount;
+                var prevUpdateCount = openedFile_.hidemaruUpdateCount;
                 if (currentUpdateCount == prevUpdateCount)
                 {
                     return DigChangeStatus.NoChanged;
@@ -291,7 +291,8 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 openedFile_.UpdateContentsVersion(currentUpdateCount);
                 RaiseChangeEvent(new ChangeEventArgs(openedFile_.Filename, Api.GetTotalTextUnicode(), openedFile_.countentsVersion));
                 return DigChangeStatus.Changed;
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 if (logger_ != null)
                 {
@@ -310,24 +311,24 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
         const string fileNotFound = "";
         string DigOpenProc(string currentHidemaruFilePath)
         {
-             switch (TryDigOpen(currentHidemaruFilePath))
-             {
-                 case DigOpenStatus.Opened:
-                     return currentHidemaruFilePath;
+            switch (TryDigOpen(currentHidemaruFilePath))
+            {
+                case DigOpenStatus.Opened:
+                    return currentHidemaruFilePath;
 
-                 case DigOpenStatus.AlreadyOpened:
-                     return currentHidemaruFilePath;
+                case DigOpenStatus.AlreadyOpened:
+                    return currentHidemaruFilePath;
 
-                 case DigOpenStatus.Failed:
-                     logger_.Warn("DigOpenStatus.Failed");
-                     return fileNotFound;
+                case DigOpenStatus.Failed:
+                    logger_.Warn("DigOpenStatus.Failed");
+                    return fileNotFound;
 
-                 default:
-                     logger_.Warn("DigOpenStatus.???");
-                     break;
-             }
-             return fileNotFound;
-         }
+                default:
+                    logger_.Warn("DigOpenStatus.???");
+                    break;
+            }
+            return fileNotFound;
+        }
         /// <summary>
         /// 状態更新
         /// </summary>
@@ -361,7 +362,8 @@ namespace HidemaruLspClient_FrontEnd.BackgroundTask
                 DidClose();
                 return DigOpenProc(currentHidemaruFilePath);
             }
-            else {
+            else
+            {
                 //初めてファイルを開く場合
                 currentHidemaruFilePath = Api.GetFileFullPath();
                 if (String.IsNullOrEmpty(currentHidemaruFilePath))

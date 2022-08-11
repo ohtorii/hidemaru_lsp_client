@@ -1,7 +1,7 @@
 ﻿using HidemaruLspClient_BackEndContract;
+using HidemaruLspClient_FrontEnd.Native;
 using System;
 using System.IO;
-using HidemaruLspClient_FrontEnd.Native;
 
 namespace HidemaruLspClient_FrontEnd.Facility
 
@@ -24,7 +24,7 @@ namespace HidemaruLspClient_FrontEnd.Facility
             watcher_ = new FileSystemWatcher();
             watcher_.Path = iniFileDirectory_;
             watcher_.Filter = Path.GetFileName(iniFilename);
-            watcher_.NotifyFilter = NotifyFilters.LastWrite|NotifyFilters.Size;
+            watcher_.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size;
             watcher_.IncludeSubdirectories = false;
             watcher_.Changed += Watcher__Changed;
             watcher_.EnableRaisingEvents = true;
@@ -38,7 +38,8 @@ namespace HidemaruLspClient_FrontEnd.Facility
             }
         }
 
-        public static IniFileService Create(string iniFilename) {
+        public static IniFileService Create(string iniFilename)
+        {
             if (!File.Exists(iniFilename))
             {
                 return null;
@@ -57,12 +58,12 @@ namespace HidemaruLspClient_FrontEnd.Facility
         string SearchExistServerIni()
         {
             const string sectionName = "SearchServerIni";
-            const int    keyFirst    = 1;
-            const int    keyLast     = 5;
+            const int keyFirst = 1;
+            const int keyLast = 5;
 
             for (int i = keyFirst; i < keyLast; ++i)
             {
-                var keyName  = $"FileName{i}";
+                var keyName = $"FileName{i}";
                 var keyValue = iniReader_.Read(keyName, sectionName);
                 if (string.IsNullOrEmpty(keyValue))
                 {
@@ -80,7 +81,8 @@ namespace HidemaruLspClient_FrontEnd.Facility
                     //iniFileからの相対パス→絶対パス
                     absFileName = Path.GetFullPath(Path.Combine(iniFileDirectory_, expandedFileName));
                 }
-                if (File.Exists(absFileName)) {
+                if (File.Exists(absFileName))
+                {
                     logger_?.Debug($"Ini file exist. sectionName={sectionName} / keyName={keyName} / keyValue={keyValue} / absFileName={absFileName}");
                     return absFileName;
                 }
@@ -101,7 +103,7 @@ namespace HidemaruLspClient_FrontEnd.Facility
             string absFileName = null;
             try
             {
-                var serverIniFilename    = SearchExistServerIni();
+                var serverIniFilename = SearchExistServerIni();
                 if (string.IsNullOrEmpty(serverIniFilename))
                 {
                     return null;
@@ -109,7 +111,7 @@ namespace HidemaruLspClient_FrontEnd.Facility
 
                 var serverIniReader = new IniFileNative(serverIniFilename);
                 const string sectionName = "ServerConfig";
-                var path            = serverIniReader.Read(fileExtension, sectionName);
+                var path = serverIniReader.Read(fileExtension, sectionName);
                 if (string.IsNullOrEmpty(path))
                 {
                     logger_?.Info($"Not found key in ini file. section={sectionName} / key={fileExtension} / serverIniFilename={serverIniFilename}");
@@ -128,7 +130,8 @@ namespace HidemaruLspClient_FrontEnd.Facility
             {
                 logger_?.Error(e.ToString());
             }
-            finally{
+            finally
+            {
                 logger_?.Info($"FindServerConfig return. \"{fileExtension}\" -> \"{absFileName}\"");
             }
             return null;
@@ -139,7 +142,7 @@ namespace HidemaruLspClient_FrontEnd.Facility
         /// <returns></returns>
         public bool ReadEnableCrashReport()
         {
-            string crashReport="";
+            string crashReport = "";
             try
             {
                 crashReport = iniReader_.Read("SendCrashReport", "MacroImprovementProgram");
@@ -156,7 +159,7 @@ namespace HidemaruLspClient_FrontEnd.Facility
             return false;
         }
 
-        static bool StringToBoolean(string value, bool @default=false)
+        static bool StringToBoolean(string value, bool @default = false)
         {
             switch (value.ToLower())
             {

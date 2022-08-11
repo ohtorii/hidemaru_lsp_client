@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Newtonsoft.Json;
 /*using OmniSharp.Extensions.LanguageServer.Protocol.Generation;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
@@ -31,7 +30,8 @@ namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Models
         public InsertReplaceEdit/*?*/ InsertReplaceEdit
         {
             get => _insertReplaceEdit;
-            set {
+            set
+            {
                 _insertReplaceEdit = value;
                 _textEdit = null;
             }
@@ -42,7 +42,8 @@ namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Models
         public TextEdit/*?*/ TextEdit
         {
             get => _textEdit;
-            set {
+            set
+            {
                 _insertReplaceEdit = default;
                 _textEdit = value;
             }
@@ -50,9 +51,10 @@ namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Models
 
         public object/*?*/ RawValue
         {
-            get {
-				if (IsTextEdit) return TextEdit;
-				if (IsInsertReplaceEdit) return InsertReplaceEdit;
+            get
+            {
+                if (IsTextEdit) return TextEdit;
+                if (IsInsertReplaceEdit) return InsertReplaceEdit;
                 return default;
             }
         }

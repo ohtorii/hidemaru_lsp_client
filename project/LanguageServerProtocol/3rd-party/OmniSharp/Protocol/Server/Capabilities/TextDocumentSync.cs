@@ -13,7 +13,7 @@ namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabi
         public TextDocumentSyncKind Kind { get; set; }
         public bool HasOptions => Options != null;
         public TextDocumentSyncOptions/*?*/ Options { get; set; }
-        public object Value => Options ?? (object) Kind;
+        public object Value => Options ?? (object)Kind;
 
         public static implicit operator TextDocumentSync(TextDocumentSyncKind value) => new TextDocumentSync(value);
 

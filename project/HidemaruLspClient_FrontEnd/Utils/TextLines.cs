@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HidemaruLspClient_FrontEnd.Utils
 {
@@ -90,11 +86,12 @@ namespace HidemaruLspClient_FrontEnd.Utils
         /// <param name="option"></param>
         /// <returns></returns>
         /// Todo: 秀丸エディタで編集中のファイルを検索対象に加える。
-        public static SortedDictionary<string,List<LineItem>> Gather(in Option option) {
-            var result= new SortedDictionary<string, List<LineItem>>();
-            foreach (KeyValuePair<string,FileItem> KeyValue in option.keyValuePairs)
+        public static SortedDictionary<string, List<LineItem>> Gather(in Option option)
+        {
+            var result = new SortedDictionary<string, List<LineItem>>();
+            foreach (KeyValuePair<string, FileItem> KeyValue in option.keyValuePairs)
             {
-                result[KeyValue.Key]= GatherTextLines(KeyValue.Value);
+                result[KeyValue.Key] = GatherTextLines(KeyValue.Value);
             }
             return result;
         }
@@ -103,10 +100,10 @@ namespace HidemaruLspClient_FrontEnd.Utils
         {
             var result = new List<LineItem>();
             var allLines = File.ReadAllLines(fileItem.AbsFilename);
-            foreach(var item in fileItem.LineItems)
+            foreach (var item in fileItem.LineItems)
             {
-                var newItem = new LineItem(item.Line,item.UserData);
-                newItem.Text=allLines[item.Line].Trim();
+                var newItem = new LineItem(item.Line, item.UserData);
+                newItem.Text = allLines[item.Line].Trim();
                 result.Add(newItem);
             }
             return result;

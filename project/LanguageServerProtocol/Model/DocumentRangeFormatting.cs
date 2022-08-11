@@ -1,33 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
-	class DocumentRangeFormattingClientCapabilities
-	{
-		/**
+    class DocumentRangeFormattingClientCapabilities
+    {
+        /**
 		 * Whether formatting supports dynamic registration.
 		 */
-		public bool dynamicRegistration;
-	}
-	interface IDocumentRangeFormattingOptions:IWorkDoneProgressOptions
-	{
-	}
+        public bool dynamicRegistration;
+    }
+    interface IDocumentRangeFormattingOptions : IWorkDoneProgressOptions
+    {
+    }
 
-	interface IDocumentRangeFormattingRegistrationOptions :ITextDocumentRegistrationOptions, IDocumentRangeFormattingOptions {
+    interface IDocumentRangeFormattingRegistrationOptions : ITextDocumentRegistrationOptions, IDocumentRangeFormattingOptions
+    {
 
-	}
+    }
 
-	class DocumentRangeFormattingOptions : IDocumentRangeFormattingOptions
-	{
-		public bool workDoneProgress { get; set; }
-	}
-	class DocumentRangeFormattingRegistrationOptions : IDocumentRangeFormattingRegistrationOptions
-	{
-		public DocumentFilter[] documentSelector { get; set; }
-		public bool workDoneProgress { get; set; }
-	}
+    class DocumentRangeFormattingOptions : IDocumentRangeFormattingOptions
+    {
+        public bool workDoneProgress { get; set; }
+    }
+    class DocumentRangeFormattingRegistrationOptions : IDocumentRangeFormattingRegistrationOptions
+    {
+        public DocumentFilter[] documentSelector { get; set; }
+        public bool workDoneProgress { get; set; }
+    }
 #if false
 	interface DocumentRangeFormattingParams extends WorkDoneProgressParams {
 		/**

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
 	class SignatureHelpClientCapabilities
 	{
@@ -15,7 +11,8 @@ namespace LSP.Model
 		 * The client supports the following `SignatureInformation`
 		 * specific properties.
 		 */
-		public class _signatureInformation {
+		public class _signatureInformation
+		{
 			/**
 			 * Client supports the following content formats for the documentation
 			 * property. The order describes the preferred format of the client.
@@ -25,7 +22,8 @@ namespace LSP.Model
 			/**
 			 * Client capabilities specific to parameter information.
 			 */
-			public class _parameterInformation {
+			public class _parameterInformation
+			{
 				/**
 				 * The client supports processing label offsets instead of a
 				 * simple label string.

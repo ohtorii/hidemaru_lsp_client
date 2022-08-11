@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
 #if false
 	enum SemanticTokenTypes
@@ -64,7 +60,7 @@ namespace LSP.Model
 		/**
 		 * The token modifiers a server uses.
 		 */
-		string[]  tokenModifiers { get; set; }
+		string[] tokenModifiers { get; set; }
 	}
 #if false
 	interface ISemanticTokensClientCapabilities

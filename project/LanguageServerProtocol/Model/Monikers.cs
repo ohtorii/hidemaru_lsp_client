@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
 
-	interface IMonikerClientCapabilities {
+	interface IMonikerClientCapabilities
+	{
 		/**
 		 * Whether implementation supports dynamic registration. If this is set to
 		 * `true` the client supports the new `(TextDocumentRegistrationOptions &
@@ -14,9 +11,11 @@ namespace LSP.Model
 		 */
 		bool dynamicRegistration { get; set; }
 	}
-	interface IMonikerOptions :IWorkDoneProgressOptions {
+	interface IMonikerOptions : IWorkDoneProgressOptions
+	{
 	}
-	interface IMonikerRegistrationOptions :ITextDocumentRegistrationOptions, IMonikerOptions {
+	interface IMonikerRegistrationOptions : ITextDocumentRegistrationOptions, IMonikerOptions
+	{
 	}
 
 #if false

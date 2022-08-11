@@ -1,8 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LSP.Model
 {
@@ -16,7 +13,7 @@ namespace LSP.Model
 		/**
 		 * The actual filters.
 		 */
-		public FileOperationFilter[]  filters;
+		public FileOperationFilter[] filters;
 	}
 
 	/**
@@ -31,13 +28,13 @@ namespace LSP.Model
 		/**
 		 * The pattern matches a file only.
 		 */
-		file=0,
+		file = 0,
 
 		/**
 		 * The pattern matches a folder only.
 		 */
-		folder=1,
-	}	
+		folder = 1,
+	}
 
 	/**
 	 * Matching options for the file operation pattern.

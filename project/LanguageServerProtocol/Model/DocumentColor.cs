@@ -1,22 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
 	class DocumentColorClientCapabilities
 	{
 		/**
 		 * Whether document color supports dynamic registration.
 		 */
-		public bool dynamicRegistration=false;
+		public bool dynamicRegistration = false;
 	}
 
-	interface IDocumentColorOptions : IWorkDoneProgressOptions {
+	interface IDocumentColorOptions : IWorkDoneProgressOptions
+	{
 	}
-	interface IDocumentColorRegistrationOptions :ITextDocumentRegistrationOptions, IStaticRegistrationOptions,IDocumentColorOptions {
+	interface IDocumentColorRegistrationOptions : ITextDocumentRegistrationOptions, IStaticRegistrationOptions, IDocumentColorOptions
+	{
 	}
-	interface DocumentColorParams : IWorkDoneProgressParams,IPartialResultParams {
+	interface DocumentColorParams : IWorkDoneProgressParams, IPartialResultParams
+	{
 		/**
 		 * The text document.
 		 */

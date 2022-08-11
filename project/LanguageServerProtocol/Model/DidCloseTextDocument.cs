@@ -1,9 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
     interface IDidCloseTextDocumentParams
     {
@@ -15,7 +10,7 @@ namespace LSP.Model
 
     class DidCloseTextDocumentParams : IDidCloseTextDocumentParams
     {
-        public TextDocumentIdentifier textDocument { get; set; } = new TextDocumentIdentifier();        
+        public TextDocumentIdentifier textDocument { get; set; } = new TextDocumentIdentifier();
     }
 
 

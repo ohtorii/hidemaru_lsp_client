@@ -1,10 +1,9 @@
-﻿using NLog;
+﻿using HidemaruLspClient.Native;
+using HidemaruLspClient_BackEndContract;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using HidemaruLspClient_BackEndContract;
-using HidemaruLspClient.Native;
-using HidemaruLspClient.LspClient;
 
 namespace HidemaruLspClient.ComContract
 {

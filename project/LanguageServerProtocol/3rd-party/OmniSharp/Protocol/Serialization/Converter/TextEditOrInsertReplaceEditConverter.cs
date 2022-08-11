@@ -1,6 +1,6 @@
-using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 //using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Converters

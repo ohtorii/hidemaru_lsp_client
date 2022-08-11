@@ -51,7 +51,7 @@ namespace HidemaruLspClient_FrontEnd.Facility
         public bool IsSameFileName(string filename)
         {
             string currentFileName;
-            if(TryGetFileName(out currentFileName))
+            if (TryGetFileName(out currentFileName))
             {
                 return filename == currentFileName;
             }
@@ -88,11 +88,12 @@ namespace HidemaruLspClient_FrontEnd.Facility
             this.hidemaruUpdateCount_ = hidemaruUpdateCount;
             this.contentsVersion_ = contentsVersion;
 
-            if (this.fileWatcher_ != null){
+            if (this.fileWatcher_ != null)
+            {
                 this.fileWatcher_.Dispose();
                 this.fileWatcher_ = null;
             }
-            this.fileWatcher_ = new FileSystemWatcher(Path.GetDirectoryName(filename),Path.GetFileName(filename));
+            this.fileWatcher_ = new FileSystemWatcher(Path.GetDirectoryName(filename), Path.GetFileName(filename));
             this.fileWatcher_.NotifyFilter = NotifyFilters.LastWrite;
             this.fileWatcher_.SynchronizingObject = Utils.UIThread.SynchronizingObject;
             this.fileWatcher_.Changed += FileWatcher__Changed;
@@ -105,10 +106,11 @@ namespace HidemaruLspClient_FrontEnd.Facility
             {
                 return;
             }
-            if (SaveEvent == null) {
+            if (SaveEvent == null)
+            {
                 return;
             }
-            SaveEvent(this,new EventArgs());
+            SaveEvent(this, new EventArgs());
         }
 
 
@@ -121,12 +123,14 @@ namespace HidemaruLspClient_FrontEnd.Facility
             }
             Initialize();
         }
-        public void UpdateContentsVersion(int hidemaruUpdateCount){
-            hidemaruUpdateCount_= hidemaruUpdateCount;
+        public void UpdateContentsVersion(int hidemaruUpdateCount)
+        {
+            hidemaruUpdateCount_ = hidemaruUpdateCount;
             ++contentsVersion_;
         }
 
-        void Initialize() {
+        void Initialize()
+        {
             Filename_ = "";
             Uri_ = null;
             hidemaruUpdateCount_ = 0;

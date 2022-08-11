@@ -1,12 +1,12 @@
-﻿using LSP.Client;
+﻿using HidemaruLspClient.LspClient;
+using HidemaruLspClient.Utils;
+using HidemaruLspClient_BackEndContract;
+using LSP.Client;
 using LSP.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
-using HidemaruLspClient_BackEndContract;
-using HidemaruLspClient.Utils;
-using HidemaruLspClient.LspClient;
 
 namespace HidemaruLspClient.ComContract
 {
@@ -250,7 +250,7 @@ namespace HidemaruLspClient.ComContract
         void IWorker.DidSave(string absFilename, string text)
         {
             var sourceUri = new Uri(absFilename);
-            var param = new  DidSaveTextDocumentParams();
+            var param = new DidSaveTextDocumentParams();
             param.textDocument.uri = sourceUri.AbsoluteUri;
             param.text = text;
             client_.Send.TextDocumentDidSave(param);

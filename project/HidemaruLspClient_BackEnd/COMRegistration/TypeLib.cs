@@ -1,8 +1,7 @@
-﻿using System;
+﻿using HidemaruLspClient.Native;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using HidemaruLspClient.Native;
-
 using ComTypes = System.Runtime.InteropServices.ComTypes;
 
 namespace HidemaruLspClient.ComRegistration

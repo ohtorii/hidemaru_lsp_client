@@ -1,6 +1,6 @@
-using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 //using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 
 namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Converters
@@ -29,7 +29,7 @@ namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Serialization
             switch (reader.TokenType)
             {
                 case JsonToken.Integer:
-                    return new TextDocumentSync((TextDocumentSyncKind) Convert.ToInt32(reader.Value));
+                    return new TextDocumentSync((TextDocumentSyncKind)Convert.ToInt32(reader.Value));
                 case JsonToken.Null:
                 case JsonToken.Undefined:
                     return new TextDocumentSync(TextDocumentSyncKind.None);

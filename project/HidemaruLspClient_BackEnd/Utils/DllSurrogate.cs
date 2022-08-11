@@ -1,6 +1,6 @@
-﻿using System;
+﻿using HidemaruLspClient.ComRegistration;
+using System;
 using System.Diagnostics;
-using HidemaruLspClient.ComRegistration;
 
 
 namespace HidemaruLspClient.Utils

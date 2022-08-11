@@ -1,5 +1,5 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System;
 //using OmniSharp.Extensions.DebugAdapter.Protocol.Models;
 
 namespace LSP.Model //mniSharp.Extensions.DebugAdapter.Protocol.Serialization
@@ -18,7 +18,7 @@ namespace LSP.Model //mniSharp.Extensions.DebugAdapter.Protocol.Serialization
         {
 #if true
             switch (reader.TokenType)
-			{
+            {
                 case JsonToken.Integer:
                     return new ProgressToken((long)reader.Value);
                 case JsonToken.String when reader.Value is string str && !string.IsNullOrWhiteSpace(str):

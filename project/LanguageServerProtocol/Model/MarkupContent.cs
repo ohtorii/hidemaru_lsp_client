@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System.Runtime.Serialization;
 
 namespace LSP.Model
 {
@@ -11,13 +10,13 @@ namespace LSP.Model
 		/// <summary>
 		/// Plain text is supported as a content format
 		/// </summary>
-		plaintext=0, 
+		plaintext = 0,
 		/// <summary>
 		/// Markdown is supported as a content format
 		/// </summary>
-		markdown=1,
+		markdown = 1,
 	}
-	
+
 
 	/**
 	 * A `MarkupContent` literal represents a string value which content is

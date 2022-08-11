@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LSP.Client
 {
@@ -31,7 +27,7 @@ namespace LSP.Client
             this.Active = false;
         }
         public void SetStreamReader(StreamReader readerToBypass)
-		{
+        {
             this.reader = readerToBypass;
         }
         /// <summary>
@@ -64,8 +60,8 @@ namespace LSP.Client
         private void ReadCallback(IAsyncResult asyncResult)
         {
             var bytesRead = reader.BaseStream.EndRead(asyncResult);
-			if (bytesRead <= 0)
-			{
+            if (bytesRead <= 0)
+            {
                 //callback without data - stop async
                 Stop();
                 return;
@@ -74,7 +70,7 @@ namespace LSP.Client
             if (this.DataReceived != null)
             {
                 var dst = new byte[bytesRead];
-                Array.Copy(this.buffer,dst,bytesRead);
+                Array.Copy(this.buffer, dst, bytesRead);
                 this.DataReceived.Invoke(this, dst);
             }
 

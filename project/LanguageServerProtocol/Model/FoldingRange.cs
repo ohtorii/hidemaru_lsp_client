@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
 	class FoldingRangeClientCapabilities
 	{
@@ -31,9 +27,11 @@ namespace LSP.Model
 	{
 	}
 	interface IFoldingRangeRegistrationOptions :
-		ITextDocumentRegistrationOptions, IFoldingRangeOptions, IStaticRegistrationOptions {
+		ITextDocumentRegistrationOptions, IFoldingRangeOptions, IStaticRegistrationOptions
+	{
 	}
-	interface IFoldingRangeParams : IWorkDoneProgressParams,IPartialResultParams {
+	interface IFoldingRangeParams : IWorkDoneProgressParams, IPartialResultParams
+	{
 		/**
 		 * The text document.
 		 */

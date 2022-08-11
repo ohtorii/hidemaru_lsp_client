@@ -6,17 +6,17 @@
 //
 
 
+using HidemaruLspClient_BackEndContract;
+using HidemaruLspClient_FrontEnd.Hidemaru;
 using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Drawing;
-using System.Collections.Generic;
-using System.Text;
-using HidemaruLspClient_BackEndContract;
-using static HidemaruLspClient_FrontEnd.Native.UnsafeNativeMethods;
 using static HidemaruLspClient_FrontEnd.Native.NativeMethods;
-using HidemaruLspClient_FrontEnd.Hidemaru;
+using static HidemaruLspClient_FrontEnd.Native.UnsafeNativeMethods;
 
 
 namespace HidemaruLspClient_FrontEnd.BackgroundTask

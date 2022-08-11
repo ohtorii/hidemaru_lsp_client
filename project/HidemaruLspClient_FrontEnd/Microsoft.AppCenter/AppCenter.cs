@@ -1,7 +1,6 @@
 ﻿using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
-using System.Threading.Tasks;
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -10,7 +9,7 @@ namespace HidemaruLspClient_FrontEnd
         /// <summary>
         /// CrashReport送信の有効化/無効化
         /// </summary>
-        public static bool EnableSendCrashReport { get; set;}=false;
+        public static bool EnableSendCrashReport { get; set; } = false;
 
         public static void Start()
         {

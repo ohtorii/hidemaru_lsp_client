@@ -2,9 +2,8 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -28,32 +27,32 @@ namespace LSP.Client
         /// <summary>
         /// method: ‘window/logMessage’
         /// </summary>
-        public event WindowLogMessageHandler    OnWindowLogMessage;
+        public event WindowLogMessageHandler OnWindowLogMessage;
         /// <summary>
         /// method: ‘window/showMessage’
         /// </summary>
-        public event WindowShowMessageHandler   OnWindowShowMessage;
+        public event WindowShowMessageHandler OnWindowShowMessage;
         /// <summary>
         /// method: 'workspace/configuration'
         /// </summary>
-        public event WorkspaceConfigurationHandler          OnWorkspaceConfiguration;
+        public event WorkspaceConfigurationHandler OnWorkspaceConfiguration;
         /// <summary>
         /// method: 'workspace/semanticTokens/refresh'
         /// </summary>
-        public event WorkspaceSemanticTokensRefreshHandler  OnWorkspaceSemanticTokensRefresh;
+        public event WorkspaceSemanticTokensRefreshHandler OnWorkspaceSemanticTokensRefresh;
         /// <summary>
         /// method: 'client/registerCapability'
         /// </summary>
-        public event ClientRegisterCapabilityHandler        OnClientRegisterCapability;
-        public event WindowWorkDoneProgressCreateHandler    OnWindowWorkDoneProgressCreate;
+        public event ClientRegisterCapabilityHandler OnClientRegisterCapability;
+        public event WindowWorkDoneProgressCreateHandler OnWindowWorkDoneProgressCreate;
         /// <summary>
         /// method: ‘$/progress
         /// </summary>
-        public event ProgressHandler                        OnProgress;
+        public event ProgressHandler OnProgress;
         /// <summary>
         /// method: ‘textDocument/publishDiagnostics'
         /// </summary>
-        public event TextDocumentPublishDiagnosticsHandler  OnTextDocumentPublishDiagnostics;
+        public event TextDocumentPublishDiagnosticsHandler OnTextDocumentPublishDiagnostics;
         enum Mode
         {
             FindContextLength,
@@ -62,7 +61,7 @@ namespace LSP.Client
             ParseContext,
         }
         Mode mode_ = Mode.FindContextLength;
-        Dictionary<RequestId, Action<ResponseMessage>> responseCallback_ =new Dictionary<RequestId, Action<ResponseMessage>>();
+        Dictionary<RequestId, Action<ResponseMessage>> responseCallback_ = new Dictionary<RequestId, Action<ResponseMessage>>();
 
         CancellationToken cancelToken_;
 
@@ -74,12 +73,12 @@ namespace LSP.Client
         ILogger logger_;
 
         public Protocol(CancellationToken token, ILogger logger)
-		{
+        {
             this.cancelToken_ = token;
-            this.logger_=logger;
+            this.logger_ = logger;
         }
         public bool StoreBuffer(byte[] streamString)
-		{
+        {
             if (streamString.Length == 0)
             {
                 return false;
@@ -92,7 +91,7 @@ namespace LSP.Client
             }
         }
         public void StoreResponseCallback(RequestId id, Action<ResponseMessage> callback)
-		{
+        {
             lock (responseCallback_)
             {
                 Debug.Assert(responseCallback_.ContainsKey(id) == false);
@@ -112,7 +111,7 @@ namespace LSP.Client
                         case Mode.FindContextLength:
                             if (OnFindContextLength() == false)
                             {
-                                await Task.Delay(sleepTime,cancelToken_);
+                                await Task.Delay(sleepTime, cancelToken_);
                                 break;
                             }
                             mode_ = Mode.ParseContextLength;
@@ -256,17 +255,17 @@ namespace LSP.Client
                  *                 separatorFirstIndex;
                  */
                 var separatorFirstIndex = ByteListUtil.StrStr(bufferStreamUTF8_, "\r\n");
-				if (separatorFirstIndex == -1)
-				{
+                if (separatorFirstIndex == -1)
+                {
                     return false;
-				}
-                var separatorEndIndex =ByteListUtil.StrSpn(bufferStreamUTF8_, separatorFirstIndex, "\r\n");
-				if (separatorEndIndex == -1)
-				{
+                }
+                var separatorEndIndex = ByteListUtil.StrSpn(bufferStreamUTF8_, separatorFirstIndex, "\r\n");
+                if (separatorEndIndex == -1)
+                {
                     return false;
-				}
+                }
                 bufferStreamUTF8_.RemoveRange(0, separatorEndIndex);
-                Debug.Assert(bufferStreamUTF8_[0]== Convert.ToByte('{'));
+                Debug.Assert(bufferStreamUTF8_[0] == Convert.ToByte('{'));
                 /*(After) bufferStreamUTF8={"method":"initialized",...
                  */
             }
@@ -315,30 +314,30 @@ namespace LSP.Client
                  */
                 bufferStreamUTF8_.RemoveRange(0, contentLength);
             }
-            var containMethod=receiver.ContainsKey("method");
+            var containMethod = receiver.ContainsKey("method");
             var containId = receiver.ContainsKey("id");
-			if (containMethod)
-			{
-				if (containId)
-				{
+            if (containMethod)
+            {
+                if (containId)
+                {
                     Request(receiver);
                     return true;
                 }
-				else
-				{
+                else
+                {
                     Notification(receiver);
                     return true;
                 }
-			}
-			else
-			{
+            }
+            else
+            {
                 if (containId)
-				{
+                {
                     Response(receiver);
                     return true;
-				}
-				else
-				{
+                }
+                else
+                {
                     Debug.Assert(false);
                     logger_.Error("[Error]Unknown receiver.");
                     return false;
@@ -348,14 +347,14 @@ namespace LSP.Client
 
         }
         void Request(JObject receiver)
-		{
+        {
             //Todo: switchをやめて動的登録にする
             var request = receiver.ToObject<RequestMessage>();
-            var requestParams= (JObject)request.@params;
+            var requestParams = (JObject)request.@params;
             switch (request.method)
-			{
+            {
                 case "workspace/configuration":
-                    this.OnWorkspaceConfiguration(request.id,requestParams.ToObject<ConfigurationParams>());
+                    this.OnWorkspaceConfiguration(request.id, requestParams.ToObject<ConfigurationParams>());
                     return;
                 case "client/registerCapability":
                     this.OnClientRegisterCapability(request.id, requestParams.ToObject<RegistrationParams>());
@@ -370,12 +369,12 @@ namespace LSP.Client
                     }
                     return;
             }
-		}
+        }
         void Notification(JObject receiver)
-		{
+        {
             //Todo: switchをやめて動的登録にする
             var notification = receiver.ToObject<NotificationMessage>();
-            var notificationParams=notification.@params as JObject;
+            var notificationParams = notification.@params as JObject;
             switch (notification.method)
             {
                 case "textDocument/publishDiagnostics":
@@ -406,8 +405,8 @@ namespace LSP.Client
             }
         }
         void Response(JObject receiver)
-		{
-            Action<ResponseMessage> callback=null;
+        {
+            Action<ResponseMessage> callback = null;
             {
                 var id = new RequestId(receiver["id"].ToObject<int>());
                 try
@@ -518,7 +517,7 @@ namespace LSP.Client
             /// <returns></returns>
             public static int StrSpn(List<byte> buf, string bufCharSet)
             {
-                return StrSpn(buf,0,bufCharSet);
+                return StrSpn(buf, 0, bufCharSet);
             }
             /// <summary>
             /// 文字列の中で、文字セットに含まれない最初の文字へのインデックスを返します。
@@ -528,16 +527,16 @@ namespace LSP.Client
             /// <param name="strCharSet"></param>
             /// <returns></returns>
             public static int StrSpn(List<byte> buf, int startIndex, string strCharSet)
-			{
+            {
                 const int NotFound = -1;
                 var byteCharSet = Encoding.UTF8.GetBytes(strCharSet);
                 var bufCount = (buf.Count - byteCharSet.Length) + 1;
                 for (int i = startIndex; i < bufCount; ++i)
                 {
-					if (byteCharSet.Contains(buf[i]))
-					{
+                    if (byteCharSet.Contains(buf[i]))
+                    {
                         continue;
-					}
+                    }
                     return i;
                 }
                 return NotFound;

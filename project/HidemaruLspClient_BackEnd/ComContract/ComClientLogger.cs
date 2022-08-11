@@ -1,5 +1,5 @@
-﻿using System;
-using HidemaruLspClient_BackEndContract;
+﻿using HidemaruLspClient_BackEndContract;
+using System;
 
 namespace HidemaruLspClient.ComContract
 {

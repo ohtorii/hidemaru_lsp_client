@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using URI = System.String;
+﻿using URI = System.String;
 
 namespace LSP.Model
 {
@@ -65,6 +62,6 @@ namespace LSP.Model
 		 * A boolean indicating if the show was successful.
 		 */
 		public bool success;
-	}	
-	
+	}
+
 }

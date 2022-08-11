@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
-	class  DocumentFormattingClientCapabilities
+	class DocumentFormattingClientCapabilities
 	{
 		/**
 		 * Whether formatting supports dynamic registration.
@@ -15,7 +11,8 @@ namespace LSP.Model
 	interface IDocumentFormattingOptions : IWorkDoneProgressOptions
 	{
 	}
-	interface IDocumentFormattingRegistrationOptions : ITextDocumentRegistrationOptions, IDocumentFormattingOptions {
+	interface IDocumentFormattingRegistrationOptions : ITextDocumentRegistrationOptions, IDocumentFormattingOptions
+	{
 	}
 
 	class DocumentFormattingOptions : IDocumentFormattingOptions

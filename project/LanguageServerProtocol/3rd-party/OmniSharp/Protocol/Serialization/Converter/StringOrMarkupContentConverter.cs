@@ -1,6 +1,6 @@
-using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 //using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LSP.Model /*OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Converters*/
@@ -25,7 +25,8 @@ namespace LSP.Model /*OmniSharp.Extensions.LanguageServer.Protocol.Serialization
             {
                 var result = JObject.Load(reader);
                 return new StringOrMarkupContent(
-                    new MarkupContent {
+                    new MarkupContent
+                    {
                         kind = Enum.TryParse<MarkupKind>(result["kind"]?.Value<string>(), true, out var kind) ? kind : MarkupKind.plaintext,
                         value = result["value"].Value<string>()
                     }

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LanguageServerProcess
 {
@@ -68,17 +65,17 @@ namespace LanguageServerProcess
         /// <returns>ソリューションファイル(.sln)への絶対パス、または、空文字</returns>
         public static string FindVisualStudioSolutionFileName()
         {
-            string solutionFileName="";
-            Func<string,bool> findSolutionFileName = (dir)=>
+            string solutionFileName = "";
+            Func<string, bool> findSolutionFileName = (dir) =>
             {
-                foreach(var file in Directory.EnumerateFiles(dir, "*.sln"))
+                foreach (var file in Directory.EnumerateFiles(dir, "*.sln"))
                 {
                     solutionFileName = file;
                     return false;
                 }
                 return true;
             };
-            EnumerationParentDirectory(currentWorkingDirectory_,findSolutionFileName);
+            EnumerationParentDirectory(currentWorkingDirectory_, findSolutionFileName);
             return solutionFileName;
         }
         /// <summary>
@@ -119,9 +116,9 @@ namespace LanguageServerProcess
                    @"\_darcs"
             };
 
-        static void EnumerationParentDirectory(string currentDirectory, Func<string,bool>func)
+        static void EnumerationParentDirectory(string currentDirectory, Func<string, bool> func)
         {
-            EnumerationParentDirectoryMain(currentDirectory,func);
+            EnumerationParentDirectoryMain(currentDirectory, func);
         }
         static bool EnumerationParentDirectoryMain(string currentDirectory, Func<string, bool> func)
         {

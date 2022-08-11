@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
 	class CodeLensWorkspaceClientCapabilities
 	{
@@ -16,5 +12,5 @@ namespace LSP.Model
 		 * change that requires such a calculation.
 		 */
 		public bool refreshSupport;
-}
+	}
 }

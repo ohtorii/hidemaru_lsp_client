@@ -1,9 +1,9 @@
-﻿using System;
+﻿using HidemaruLspClient_BackEndContract;
+using HidemaruLspClient_FrontEnd.Hidemaru;
+using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using HidemaruLspClient_BackEndContract;
-using HidemaruLspClient_FrontEnd.Hidemaru;
 
 namespace HidemaruLspClient_FrontEnd.BackgroundTask
 {

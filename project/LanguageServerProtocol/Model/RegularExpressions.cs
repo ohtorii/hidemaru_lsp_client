@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
-	/**
+    /**
 	 * Client capabilities specific to regular expressions.
 	 */
-	class RegularExpressionsClientCapabilities
-	{
-		/**
+    class RegularExpressionsClientCapabilities
+    {
+        /**
 		 * The engine's name.
 		 */
-		public string engine;
+        public string engine;
 
-		/**
+        /**
 		 * The engine's version.
 		 */
-		public string version;
-	}
+        public string version;
+    }
 }

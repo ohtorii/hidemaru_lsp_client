@@ -1,7 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LSP.Model
 {
@@ -58,13 +55,13 @@ namespace LSP.Model
 				return m_codeActionLiteralSupport;
 			}
 		}
-		[JsonIgnore] _codeActionLiteralSupport m_codeActionLiteralSupport=null;
+		[JsonIgnore] _codeActionLiteralSupport m_codeActionLiteralSupport = null;
 		/**
 		 * Whether code action supports the `isPreferred` property.
 		 *
 		 * @since 3.15.0
 		 */
-		public bool isPreferredSupport ;
+		public bool isPreferredSupport;
 
 		/**
 		 * Whether code action supports the `disabled` property.
@@ -89,7 +86,8 @@ namespace LSP.Model
 		 *
 		 * @since 3.16.0
 		 */
-		public class _resolveSupport  {
+		public class _resolveSupport
+		{
 			/**
 			 * The properties that a client can resolve lazily.
 			 */
@@ -105,12 +103,13 @@ namespace LSP.Model
 		 *
 		 * @since 3.16.0
 		 */
-		public bool honorsChangeAnnotations ;
+		public bool honorsChangeAnnotations;
 	}
 
 	interface ICodeActionOptions : IWorkDoneProgressOptions
 	{
-		/*CodeActionKind[]*/ string[] codeActionKinds  { get;set; }
+		/*CodeActionKind[]*/
+		string[] codeActionKinds { get; set; }
 		/**
 		 * The server provides support to resolve additional
 		 * information for a code action.
@@ -119,18 +118,19 @@ namespace LSP.Model
 		 */
 		bool resolveProvider { get; set; }
 	}
-	interface ICodeActionRegistrationOptions : ITextDocumentRegistrationOptions, ICodeActionOptions {
+	interface ICodeActionRegistrationOptions : ITextDocumentRegistrationOptions, ICodeActionOptions
+	{
 	}
 
 	class CodeActionOptions : ICodeActionOptions
-	{		
+	{
 		public bool workDoneProgress { get; set; }
 		public /*CodeActionKind[]*/ string[] codeActionKinds { get; set; }
 		public bool resolveProvider { get; set; }
 	}
 	class CodeActionRegistrationOptions : ICodeActionRegistrationOptions
 	{
-		public DocumentFilter[] documentSelector { get; set; }		
+		public DocumentFilter[] documentSelector { get; set; }
 		public bool workDoneProgress { get; set; }
 		public /*CodeActionKind[]*/ string[] codeActionKinds { get; set; }
 		public bool resolveProvider { get; set; }
@@ -168,7 +168,7 @@ export interface CodeActionParams extends WorkDoneProgressParams,
 	 * to the server during initialization.
 	 */
 	//export type CodeActionKind = string;
-	
+
 	/// <summary>
 	/// The kind of a code action. Kinds are a hierarchical list of identifiers separated by <c>.</c>, e.g. <c>"refactor.extract.function"</c>.
 	/// </summary>

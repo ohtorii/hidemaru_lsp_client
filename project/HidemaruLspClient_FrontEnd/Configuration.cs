@@ -1,4 +1,5 @@
 ﻿//using NLog;
+using HidemaruLspClient_BackEndContract;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -6,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using HidemaruLspClient_BackEndContract;
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -62,13 +62,13 @@ namespace HidemaruLspClient_FrontEnd
             {
                 var result = new Option();
                 {
-                    var codeDom = CodeDomProvider.CreateProvider("CSharp", new Dictionary<string, string>() { { "TargetFrameworkVersion", "v4.8" }});
+                    var codeDom = CodeDomProvider.CreateProvider("CSharp", new Dictionary<string, string>() { { "TargetFrameworkVersion", "v4.8" } });
                     var compileParameters = new CompilerParameters
                     {
-                        CompilerOptions  = MakeCompilerOptions(),
-                        GenerateExecutable=false,
-                        TreatWarningsAsErrors =false,
-                        IncludeDebugInformation =false,
+                        CompilerOptions = MakeCompilerOptions(),
+                        GenerateExecutable = false,
+                        TreatWarningsAsErrors = false,
+                        IncludeDebugInformation = false,
                         /*Memo:メモリに生成すると GetType()==null となる*/
                         GenerateInMemory = false,
 
@@ -86,7 +86,8 @@ namespace HidemaruLspClient_FrontEnd
                     var cr = codeDom.CompileAssemblyFromSource(compileParameters, code);
                     if (0 < cr.Errors.Count)
                     {
-                        foreach (var err in cr.Errors){
+                        foreach (var err in cr.Errors)
+                        {
                             logger_?.Error(err.ToString());
                         }
                         return null;
@@ -99,7 +100,7 @@ namespace HidemaruLspClient_FrontEnd
                         var mi = t.GetMethod(method.name);
                         var s = mi.Invoke(instance, null);
                         method.action(result, s);
-                        logger_?.Info(string.Format("{0}={1}",method.name,s));
+                        logger_?.Info(string.Format("{0}={1}", method.name, s));
                     }
                 }
                 return result;
@@ -115,8 +116,8 @@ namespace HidemaruLspClient_FrontEnd
         }
         static string DllPath(string dllName)
         {
-            var self_full_path  = Assembly.GetExecutingAssembly().Location;
-            var self_dir        = Path.GetDirectoryName(self_full_path);
+            var self_full_path = Assembly.GetExecutingAssembly().Location;
+            var self_dir = Path.GetDirectoryName(self_full_path);
             return Path.GetFullPath(Path.Combine(self_dir, dllName));
         }
     }

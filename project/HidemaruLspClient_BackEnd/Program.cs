@@ -1,26 +1,26 @@
-﻿using System;
+﻿using HidemaruLspClient.ComContract;
+using HidemaruLspClient.ComRegistration;
+using HidemaruLspClient.Utils;
+using HidemaruLspClient_BackEndContract;
+using NLog;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using HidemaruLspClient.ComRegistration;
-using NLog;
-using HidemaruLspClient_BackEndContract;
-using HidemaruLspClient.ComContract;
-using HidemaruLspClient.Utils;
 
 namespace HidemaruLspClient
 {
     partial class Program
     {
-        static DllAssemblyResolver dasmr          = new DllAssemblyResolver();
-        static readonly string tlbPath            = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb"));
+        static DllAssemblyResolver dasmr = new DllAssemblyResolver();
+        static readonly string tlbPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HidemaruLspClient_BackEndContract.tlb"));
         static readonly bool isConsoleApplication = IsConsoleApplication();
-        static readonly Guid serverClassGuid      = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
+        static readonly Guid serverClassGuid = new Guid((Attribute.GetCustomAttribute(typeof(ServerClass), typeof(GuidAttribute)) as GuidAttribute).Value);
 
         const int success = 0;
-        const int error   = 1;
+        const int error = 1;
 
         static int Main(string[] args)
         {
@@ -28,17 +28,17 @@ namespace HidemaruLspClient
 
             int exitCode = error;
 
-            using (var tracer = new LoggingOutToOneLocation(new ConsoleTraceListener(), new NLogTraceListener {Name=HidemaruLspClient.Constant.Logger.HeaderMain }))
+            using (var tracer = new LoggingOutToOneLocation(new ConsoleTraceListener(), new NLogTraceListener { Name = HidemaruLspClient.Constant.Logger.HeaderMain }))
             {
                 Trace.AutoFlush = true;
                 Trace.Listeners.Add(tracer);
 
                 try
                 {
-                    exitCode= PostMain(args);
+                    exitCode = PostMain(args);
                     return exitCode;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Trace.TraceError(e.ToString());
                 }
@@ -91,13 +91,16 @@ namespace HidemaruLspClient
         /// </summary>
         /// <param name="args">Mainに渡されたコマンドライン引数</param>
         /// <returns></returns>
-        static bool LaunchedViaCoCreateInstance(string[] args){
-            if((args.Count() == 1) && (args[0] == "-Embedding")){
+        static bool LaunchedViaCoCreateInstance(string[] args)
+        {
+            if ((args.Count() == 1) && (args[0] == "-Embedding"))
+            {
                 return true;
             }
             return false;
         }
-        static bool Start(Argument options) {
+        static bool Start(Argument options)
+        {
             if (!File.Exists(tlbPath))
             {
                 Trace.WriteLine($"Not found {tlbPath}");
@@ -116,9 +119,9 @@ namespace HidemaruLspClient
                 }
                 return true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                Trace.WriteLine("Exception:"+e.ToString());
+                Trace.WriteLine("Exception:" + e.ToString());
                 return false;
             }
         }

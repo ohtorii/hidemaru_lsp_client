@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Windows.Forms;
-using System.Threading;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace HidemaruLspClient_FrontEnd.Utils
 {
@@ -11,7 +11,8 @@ namespace HidemaruLspClient_FrontEnd.Utils
     /// </summary>
     class UIThread
     {
-        class HiddenForm : Form {
+        class HiddenForm : Form
+        {
             public HiddenForm()
             {
                 this.Text = "HidemaruLspClient";
@@ -66,7 +67,7 @@ namespace HidemaruLspClient_FrontEnd.Utils
         /// <returns></returns>
         public static object Invoke(Delegate method)
         {
-            Debug.Assert(form_!=null);
+            Debug.Assert(form_ != null);
             if (IsMainThread)
             {
                 return method.DynamicInvoke();

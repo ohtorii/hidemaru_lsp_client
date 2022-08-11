@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using DocumentUri = System.String;
+﻿using DocumentUri = System.String;
 
 namespace LSP.Model
 {
@@ -18,11 +15,12 @@ namespace LSP.Model
 		 *
 		 * @since 3.15.0
 		 */
-		public class _tagSupport {
+		public class _tagSupport
+		{
 			/**
 			 * The tags supported by the client.
 			 */
-			public DiagnosticTag[]  valueSet;
+			public DiagnosticTag[] valueSet;
 		};
 		public _tagSupport tagSupport;
 		/**
@@ -68,7 +66,7 @@ namespace LSP.Model
 		/**
 		 * An array of diagnostic information items.
 		 */
-		public Diagnostic[]  diagnostics;
+		public Diagnostic[] diagnostics;
 	}
 
 }

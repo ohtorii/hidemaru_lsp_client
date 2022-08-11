@@ -6,7 +6,7 @@ namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
     [JsonConverter(typeof(BooleanOrConverter))]
     class BooleanOr<T> where T : class/*?*/
-	{
+    {
         private /*readonly*/ T/*?*/_value;
         private bool? _bool;
 
@@ -31,8 +31,8 @@ namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Models
         public T Value
         {
             get => _value;
-			set
-			{
+            set
+            {
                 _value = value;
                 _bool = null;
             }
@@ -52,7 +52,8 @@ namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Models
 
         public object/*?*/ RawValue
         {
-            get {
+            get
+            {
                 if (IsBool) return Bool;
                 if (IsValue) return Value;
                 return null;

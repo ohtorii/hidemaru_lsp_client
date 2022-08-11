@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
 	interface ICallHierarchyClientCapabilities
 	{
@@ -17,10 +13,10 @@ namespace LSP.Model
 	interface ICallHierarchyOptions : IWorkDoneProgressOptions
 	{
 	}
-	interface ICallHierarchyRegistrationOptions :ITextDocumentRegistrationOptions, ICallHierarchyOptions,IStaticRegistrationOptions 
+	interface ICallHierarchyRegistrationOptions : ITextDocumentRegistrationOptions, ICallHierarchyOptions, IStaticRegistrationOptions
 	{
 	}
-	interface ICallHierarchyPrepareParams : ITextDocumentPositionParams,IWorkDoneProgressParams 
+	interface ICallHierarchyPrepareParams : ITextDocumentPositionParams, IWorkDoneProgressParams
 	{
 	}
 

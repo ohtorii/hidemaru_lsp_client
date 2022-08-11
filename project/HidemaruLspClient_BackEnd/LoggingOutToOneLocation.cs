@@ -9,7 +9,8 @@ namespace HidemaruLspClient
     class LoggingOutToOneLocation : TraceListener
     {
         List<TraceListener> Listners;// = new TraceListener[] {new ConsoleTraceListener(), new NLogTraceListener()};
-        public LoggingOutToOneLocation() {
+        public LoggingOutToOneLocation()
+        {
             Listners = new List<TraceListener>();
         }
         public LoggingOutToOneLocation(TraceListener lister0)
@@ -41,7 +42,7 @@ namespace HidemaruLspClient
 
         public override void Write(string? message)
         {
-            foreach(var l in Listners)
+            foreach (var l in Listners)
             {
                 l.Write(message);
             }
@@ -108,21 +109,21 @@ namespace HidemaruLspClient
         {
             foreach (var l in Listners)
             {
-                l.TraceEvent(eventCache, source, eventType,id, message);
+                l.TraceEvent(eventCache, source, eventType, id, message);
             }
         }
         public override void TraceEvent(TraceEventCache? eventCache, string source, TraceEventType eventType, int id, string format, params object?[]? args)
         {
             foreach (var l in Listners)
             {
-                l.TraceEvent(eventCache, source,eventType,id,format, args);
+                l.TraceEvent(eventCache, source, eventType, id, format, args);
             }
         }
         public override void TraceTransfer(TraceEventCache? eventCache, string source, int id, string? message, System.Guid relatedActivityId)
         {
             foreach (var l in Listners)
             {
-                l.TraceTransfer(eventCache, source, id,message, relatedActivityId);
+                l.TraceTransfer(eventCache, source, id, message, relatedActivityId);
             }
         }
         public override void Write(object? o)
@@ -143,14 +144,14 @@ namespace HidemaruLspClient
         {
             foreach (var l in Listners)
             {
-                l.Write(o,category);
+                l.Write(o, category);
             }
         }
         public override void WriteLine(string? message, string? category)
         {
             foreach (var l in Listners)
             {
-                l.WriteLine(message,category);
+                l.WriteLine(message, category);
             }
         }
 

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿using HidemaruLspClient.Native;
+using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
-
-using Microsoft.Win32;
-using HidemaruLspClient.Native;
 
 namespace HidemaruLspClient.ComRegistration
 {
@@ -54,13 +53,13 @@ namespace HidemaruLspClient.ComRegistration
             {
                 dst = Microsoft.Win32.Registry.LocalMachine;
             }
-            Trace.WriteLine(string.Format("Target registory={0}",dst.Name));
+            Trace.WriteLine(string.Format("Target registory={0}", dst.Name));
 
             //create "SOFTWARE\Classes\CLSID" if not exists.
             using (var keyClasses = dst.OpenSubKey(RegistryKeys.Classes, true))
             {
-                const string    keyCLSIDName    = "CLSID";
-                string          absClassesPath  = keyClasses.Name + @"\" + keyCLSIDName;
+                const string keyCLSIDName = "CLSID";
+                string absClassesPath = keyClasses.Name + @"\" + keyCLSIDName;
 
                 if (keyClasses.GetSubKeyNames().Contains(keyCLSIDName))
                 {
@@ -112,11 +111,11 @@ namespace HidemaruLspClient.ComRegistration
         }
         public static void UnregisterFromLocalMachine(Guid clsid, ProgIdAttribute progId, string tlbPath)
         {
-            Unregister(clsid,progId, tlbPath,false);
+            Unregister(clsid, progId, tlbPath, false);
         }
         public static void UnregisterToCurrentUser(Guid clsid, ProgIdAttribute progId, string tlbPath)
         {
-            Unregister(clsid,progId, tlbPath,true);
+            Unregister(clsid, progId, tlbPath, true);
         }
         /// <summary>
         /// Unregistering server
@@ -156,7 +155,7 @@ namespace HidemaruLspClient.ComRegistration
                 dst.DeleteSubKeyTree(serverKey, throwOnMissingSubKey: false);
             }
 
-            if (progId!=null)
+            if (progId != null)
             {
                 //Unregister ProgId
                 var progIdKey = string.Format(RegistryKeys.formatProgId, progId.Value);
@@ -221,7 +220,8 @@ namespace HidemaruLspClient.ComRegistration
                 {
                     Trace.WriteLine($"Cookie: {cookie}");
                     int hr = Ole32.CoRevokeClassObject(cookie);
-                    if (hr < 0) {
+                    if (hr < 0)
+                    {
                         Trace.TraceError($"CoRevokeClassObject failed ({hr:x}). Cookie: {cookie}");
                     }
                 }

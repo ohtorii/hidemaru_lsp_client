@@ -1,7 +1,7 @@
-using System;
-using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Reflection;
 //using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Converters
@@ -53,7 +53,7 @@ namespace LSP.Model //OmniSharp.Extensions.LanguageServer.Protocol.Serialization
         {
             if (reader.TokenType == JsonToken.Boolean)
             {
-                return new BooleanOr<T>((bool) reader.Value);
+                return new BooleanOr<T>((bool)reader.Value);
             }
 
             if (reader.TokenType == JsonToken.StartObject)

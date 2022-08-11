@@ -6,7 +6,7 @@ namespace LSP.Model //OmniSharp.Extensions.DebugAdapter.Protocol.Models
 {
     [JsonConverter(typeof(ProgressTokenConverter))]
     [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
-	public class ProgressToken : IEquatable<long>, IEquatable<string>
+    public class ProgressToken : IEquatable<long>, IEquatable<string>
     {
         private long? _long;
         private string _string;
@@ -34,7 +34,8 @@ namespace LSP.Model //OmniSharp.Extensions.DebugAdapter.Protocol.Models
         public long Long
         {
             get => _long ?? 0;
-            set {
+            set
+            {
                 _string = null;
                 _long = value;
             }
@@ -45,7 +46,8 @@ namespace LSP.Model //OmniSharp.Extensions.DebugAdapter.Protocol.Models
         public string String
         {
             get => _string ?? string.Empty;
-            set {
+            set
+            {
                 _string = value;
                 _long = null;
             }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
 	class DocumentLinkClientCapabilities
 	{
@@ -20,18 +16,19 @@ namespace LSP.Model
 	}
 
 
-	interface IDocumentLinkOptions :IWorkDoneProgressOptions
+	interface IDocumentLinkOptions : IWorkDoneProgressOptions
 	{
 		/**
 		 * Document links have a resolve provider as well.
 		 */
 		bool resolveProvider { get; set; }
 	}
-	interface IDocumentLinkRegistrationOptions :ITextDocumentRegistrationOptions, IDocumentLinkOptions 
+	interface IDocumentLinkRegistrationOptions : ITextDocumentRegistrationOptions, IDocumentLinkOptions
 	{
 	}
 
-	interface IDocumentLinkParams : IWorkDoneProgressParams,IPartialResultParams {
+	interface IDocumentLinkParams : IWorkDoneProgressParams, IPartialResultParams
+	{
 		/**
 		 * The document to provide document links for.
 		 */

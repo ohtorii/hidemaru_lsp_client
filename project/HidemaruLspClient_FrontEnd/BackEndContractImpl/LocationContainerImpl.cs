@@ -1,6 +1,6 @@
-﻿using System;
+﻿using HidemaruLspClient_FrontEnd.Hidemaru;
+using System;
 using System.Collections.Generic;
-using HidemaruLspClient_FrontEnd.Hidemaru;
 
 namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
 {
@@ -8,7 +8,7 @@ namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
     {
         public class WithContent
         {
-            public WithContent(HidemaruLspClient_BackEndContract.ILocation location, string contentText="")
+            public WithContent(HidemaruLspClient_BackEndContract.ILocation location, string contentText = "")
             {
                 this.location = location;
                 this.text = contentText;

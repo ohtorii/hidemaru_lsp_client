@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HidemaruLspClient_FrontEnd.Native
 {
@@ -117,7 +112,7 @@ namespace HidemaruLspClient_FrontEnd.Native
             TTM_SETTITLE = TTM.TTM_SETTITLEW,
             TTM_TRACKPOSITION = TTM.TTM_TRACKPOSITION,
             TTM_TRACKACTIVATE = TTM.TTM_TRACKACTIVATE,
-            TTM_SETMAXTIPWIDTH=TTM.TTM_SETMAXTIPWIDTH,
+            TTM_SETMAXTIPWIDTH = TTM.TTM_SETMAXTIPWIDTH,
         }
         //		public const uint WS_POPUP		=	0x80000000;
         public const int CW_USEDEFAULT = -1; //0x80000000;

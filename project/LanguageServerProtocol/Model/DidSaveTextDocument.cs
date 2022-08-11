@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LSP.Model
+﻿namespace LSP.Model
 {
     interface ISaveOptions
     {
@@ -16,7 +12,7 @@ namespace LSP.Model
         /**
          * The client is supposed to include the content on save.
          */
-        bool includeText{ set; get; }
+        bool includeText { set; get; }
     }
 
     interface IDidSaveTextDocumentParams
@@ -24,13 +20,13 @@ namespace LSP.Model
         /**
          * The document that was saved.
          */
-        ITextDocumentIdentifier textDocument{ set; get; }
+        ITextDocumentIdentifier textDocument { set; get; }
 
-	    /**
+        /**
 	     * Optional the content when saved. Depends on the includeText value
 	     * when the save notification was requested.
 	     */
-	    string text{ set; get; }
+        string text { set; get; }
     }
 
     class DidSaveTextDocumentParams : IDidSaveTextDocumentParams

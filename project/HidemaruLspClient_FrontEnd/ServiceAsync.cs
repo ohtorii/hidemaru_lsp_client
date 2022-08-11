@@ -1,7 +1,7 @@
-﻿using System;
+﻿using HidemaruLspClient_FrontEnd.BackEndContractImpl;
+using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using HidemaruLspClient_FrontEnd.BackEndContractImpl;
 
 
 namespace HidemaruLspClient_FrontEnd
@@ -11,10 +11,10 @@ namespace HidemaruLspClient_FrontEnd
     /// </summary>
     [ComVisible(true)]
     [Guid("0B0A4550-4B16-456C-B7C7-9EE172234251")]
-    public sealed class ServiceAsync :IService
+    public sealed class ServiceAsync : IService
     {
 
-        Service service_=null;
+        Service service_ = null;
         Timer timer_ = null;
         string fileType_ = "";
         string sourceCodeDirectory_ = "";
@@ -28,7 +28,7 @@ namespace HidemaruLspClient_FrontEnd
             CheckFrontEnd,
             Done,
         };
-        InitializeStatus initializeStatus_=InitializeStatus.InitializeBackend;
+        InitializeStatus initializeStatus_ = InitializeStatus.InitializeBackend;
 
         private void MainLoop(object sender, EventArgs e)
         {
@@ -45,7 +45,7 @@ namespace HidemaruLspClient_FrontEnd
                     goto case InitializeStatus.CheckBackend;
 
                 case InitializeStatus.CheckBackend:
-                    if (service_.CheckBackEndService()==false)
+                    if (service_.CheckBackEndService() == false)
                     {
                         return;
                     }
@@ -167,6 +167,6 @@ namespace HidemaruLspClient_FrontEnd
             return service_.TypeDefinition(hidemaruLine, hidemaruColumn);
         }
 
-#endregion
+        #endregion
     }
 }
