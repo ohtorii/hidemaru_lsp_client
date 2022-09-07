@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,21 +47,20 @@ namespace LSP.Client
         {
             add
             {
-                lock (process_)
+                lock (exitedHandlers_)
                 {
-                    process_.Exited += value;
+                    exitedHandlers_.Add(value);
                 }
             }
             remove
             {
-                lock (process_)
+                lock (exitedHandlers_)
                 {
-                    process_.Exited -= value;
+                    exitedHandlers_.Remove(value);
                 }
             }
         }
-        public bool HasExited { get { return process_.HasExited; } }
-
+        private List<EventHandler> exitedHandlers_ = new List<EventHandler>(); 
         private ProcessStartInfo processStartInfo_ = null;
         private Process process_ = null;
         private AsyncStreamReader standardOutput_ = new AsyncStreamReader();
@@ -97,7 +97,14 @@ namespace LSP.Client
                 return;
             }
             process_ = Process.Start(processStartInfo_);
-            process_.Exited += (sender, e) => StopRedirect();
+            process_.Exited += (sender, e) =>
+            {
+                StopRedirect();
+                foreach (var item in exitedHandlers_)
+                {
+                    item(sender, e);
+                }
+            };
             standardOutput_.SetStreamReader(process_.StandardOutput);
             standardError_.SetStreamReader(process_.StandardError);
             StartRedirect();
