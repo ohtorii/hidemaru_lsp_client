@@ -137,6 +137,6 @@ Global
 		LanguageServerProtocol\LanguageServerProtocol.projitems*{3ac45af0-e188-45b2-a8e8-f5e3688b31a0}*SharedItemsImports = 5
 		LanguageServerProtocol\LanguageServerProtocol.projitems*{59d513f0-4fd2-49ad-a79a-848752ea8750}*SharedItemsImports = 13
 		LanguageServerProtocol\LanguageServerProtocol.projitems*{c433a9a6-1efc-4229-a670-8458d3f7d95a}*SharedItemsImports = 5
-		LanguageServerProtocol\LanguageServerProtocol.projitems*{c7a9ddb7-73dc-4fb5-8624-cc9caa0401f3}*SharedItemsImports = 4
+		LanguageServerProtocol\LanguageServerProtocol.projitems*{c7a9ddb7-73dc-4fb5-8624-cc9caa0401f3}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
