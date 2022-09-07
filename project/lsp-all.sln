@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31129.286
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LanguageServerProtocol", "LanguageServerProtocol\LanguageServerProtocol.shproj", "{59D513F0-4FD2-49AD-A79A-848752EA8750}"
 EndProject
@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTe
 		{3AC45AF0-E188-45B2-A8E8-F5E3688B31A0} = {3AC45AF0-E188-45B2-A8E8-F5E3688B31A0}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientExample", "ClientExample\ClientExample.csproj", "{C433A9A6-1EFC-4229-A670-8458D3F7D95A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientExample", "ClientExample\ClientExample.csproj", "{C433A9A6-1EFC-4229-A670-8458D3F7D95A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B6DAB53D-B2EC-4D57-AFE7-649C54554D4D} = {B6DAB53D-B2EC-4D57-AFE7-649C54554D4D}
 		{65C8B342-BEC1-4BE8-A1A6-5E63122F5D92} = {65C8B342-BEC1-4BE8-A1A6-5E63122F5D92}
@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientExample", "ClientExam
 		{3AC45AF0-E188-45B2-A8E8-F5E3688B31A0} = {3AC45AF0-E188-45B2-A8E8-F5E3688B31A0}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServerProcess", "LanguageServerProcess\LanguageServerProcess.csproj", "{65C8B342-BEC1-4BE8-A1A6-5E63122F5D92}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LanguageServerProcess", "LanguageServerProcess\LanguageServerProcess.csproj", "{65C8B342-BEC1-4BE8-A1A6-5E63122F5D92}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HidemaruLspClient_BackEnd", "HidemaruLspClient_BackEnd\HidemaruLspClient_BackEnd.csproj", "{29694BDD-A9D5-4DA5-A946-BF3FCA210E34}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -30,7 +30,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HidemaruLspClient_BackEnd",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hidemaru", "Hidemaru", "{98A2EDFF-6D28-48CB-B585-780C2956400D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HidemaruLspClient_FrontEnd", "HidemaruLspClient_FrontEnd\HidemaruLspClient_FrontEnd.csproj", "{3AC45AF0-E188-45B2-A8E8-F5E3688B31A0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HidemaruLspClient_FrontEnd", "HidemaruLspClient_FrontEnd\HidemaruLspClient_FrontEnd.csproj", "{3AC45AF0-E188-45B2-A8E8-F5E3688B31A0}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B6DAB53D-B2EC-4D57-AFE7-649C54554D4D} = {B6DAB53D-B2EC-4D57-AFE7-649C54554D4D}
 	EndProjectSection
@@ -38,12 +38,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HidemaruLspClient_BackEndContract", "HidemaruLspClient_BackEndContract\HidemaruLspClient_BackEndContract.vcxproj", "{B6DAB53D-B2EC-4D57-AFE7-649C54554D4D}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		LanguageServerProtocol\LanguageServerProtocol.projitems*{29694bdd-a9d5-4da5-a946-bf3fca210e34}*SharedItemsImports = 5
-		LanguageServerProtocol\LanguageServerProtocol.projitems*{59d513f0-4fd2-49ad-a79a-848752ea8750}*SharedItemsImports = 13
-		LanguageServerProtocol\LanguageServerProtocol.projitems*{c433a9a6-1efc-4229-a670-8458d3f7d95a}*SharedItemsImports = 4
-		LanguageServerProtocol\LanguageServerProtocol.projitems*{c7a9ddb7-73dc-4fb5-8624-cc9caa0401f3}*SharedItemsImports = 4
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
@@ -137,5 +131,12 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0028BCC8-EE41-471C-B4FC-664C8C2C75CC}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		LanguageServerProtocol\LanguageServerProtocol.projitems*{29694bdd-a9d5-4da5-a946-bf3fca210e34}*SharedItemsImports = 5
+		LanguageServerProtocol\LanguageServerProtocol.projitems*{3ac45af0-e188-45b2-a8e8-f5e3688b31a0}*SharedItemsImports = 5
+		LanguageServerProtocol\LanguageServerProtocol.projitems*{59d513f0-4fd2-49ad-a79a-848752ea8750}*SharedItemsImports = 13
+		LanguageServerProtocol\LanguageServerProtocol.projitems*{c433a9a6-1efc-4229-a670-8458d3f7d95a}*SharedItemsImports = 5
+		LanguageServerProtocol\LanguageServerProtocol.projitems*{c7a9ddb7-73dc-4fb5-8624-cc9caa0401f3}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal
