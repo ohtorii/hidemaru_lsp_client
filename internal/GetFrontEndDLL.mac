@@ -14,7 +14,7 @@ main:
     }else{
         $$platform="x86";
     }
-    call GetAbsolutePathName currentmacrodirectory+sprintf(@"\..\project\HidemaruLspClient_FrontEnd\bin\%s\%s\HidemaruLspClient_FrontEnd.dll", $$platform,$$target);
+    call GetAbsolutePathName currentmacrodirectory+sprintf(@"\..\project\HidemaruLspClient_FrontEnd\bin\%s\%s\net5.0-windows\HidemaruLspClient_FrontEnd.dll", $$platform,$$target);
     return $$return;
 
 GetAbsolutePathName:
