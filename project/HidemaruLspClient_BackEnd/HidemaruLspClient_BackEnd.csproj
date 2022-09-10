@@ -49,6 +49,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.tlb" Link="HidemaruLspClient_BackEndContract.tlb" Condition="'$(PlatformName)' == 'AnyCPU' Or '$(PlatformName)' == 'x64' ">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\HidemaruLspClient_Contract\bin\x86\HidemaruLspClient_BackEndContract.tlb" Link="HidemaruLspClient_BackEndContract.tlb" Condition="'$(PlatformName)' == 'x86'" >
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Microsoft.AppCenter" Version="4.5.0" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.5.0" />
@@ -59,11 +68,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'AnyCPU'">
-      <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'x64'">
+    <Reference Include="HidemaruLspClient_BackEndContract" Condition="'$(PlatformName)' == 'AnyCPU' Or '$(PlatformName)' == 'x64' ">
       <HintPath>..\HidemaruLspClient_Contract\bin\x64\HidemaruLspClient_BackEndContract.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
@@ -74,6 +79,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="HidemaruLspClient_BackEndContract.tlb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
