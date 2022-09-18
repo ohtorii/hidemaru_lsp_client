@@ -152,7 +152,7 @@ namespace HidemaruLspClient_FrontEnd
             return service_.References(hidemaruLine, hidemaruColumn);
         }
 
-        public ServerCapabilitiesImpl ServerCapabilities()
+        public HidemaruLspClient_BackEndContract.IServerCapabilities ServerCapabilities()
         {
             return service_.ServerCapabilities();
         }

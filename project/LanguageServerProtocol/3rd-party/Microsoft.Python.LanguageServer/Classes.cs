@@ -23,7 +23,7 @@ namespace Microsoft.Python.LanguageServer.Protocol
     /// <summary>
     /// Required layout for the initializationOptions member of initializeParams
     /// </summary>
-    public sealed class PythonInitializationOptions
+    sealed class PythonInitializationOptions
     {
         public struct Interpreter
         {

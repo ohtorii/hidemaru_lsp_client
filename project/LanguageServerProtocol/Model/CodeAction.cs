@@ -172,7 +172,7 @@ export interface CodeActionParams extends WorkDoneProgressParams,
 	/// <summary>
 	/// The kind of a code action. Kinds are a hierarchical list of identifiers separated by <c>.</c>, e.g. <c>"refactor.extract.function"</c>.
 	/// </summary>
-	public static class CodeActionKind
+	static class CodeActionKind
 	{
 
 		/// <summary>

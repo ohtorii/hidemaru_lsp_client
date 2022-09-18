@@ -9,7 +9,7 @@ namespace LSP.Model
     *
     * @since 3.15.0
     */
-    public class ClientInfo_
+    class ClientInfo_
     {
         public string name;
         public string version;

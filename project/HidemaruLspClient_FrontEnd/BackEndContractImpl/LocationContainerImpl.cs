@@ -1,14 +1,18 @@
 ﻿using HidemaruLspClient_FrontEnd.Hidemaru;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
 {
-    public sealed class LocationContainerImpl
+    //todo: インターフェースと実装に分離する
+	[ComVisible(true)]
+	[Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9592")]
+	public sealed class LocationContainerImpl
     {
-        public class WithContent
-        {
-            public WithContent(HidemaruLspClient_BackEndContract.ILocation location, string contentText = "")
+       internal class WithContent
+       {
+            internal WithContent(HidemaruLspClient_BackEndContract.ILocation location, string contentText = "")
             {
                 this.location = location;
                 this.text = contentText;
@@ -20,7 +24,7 @@ namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
             public string text { get; set; }
         }
 
-        public LocationContainerImpl(List<LocationContainerImpl.WithContent> locations)
+        internal LocationContainerImpl(List<LocationContainerImpl.WithContent> locations)
         {
             locations_ = locations;
         }
@@ -48,9 +52,12 @@ namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
         readonly List<LocationContainerImpl.WithContent> locations_;
     }
 
-    public sealed class PositionImpl
+	//todo: インターフェースと実装に分離する
+	[ComVisible(true)]
+	[Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9594")]
+	public sealed class PositionImpl
     {
-        public PositionImpl(HidemaruLspClient_BackEndContract.IPosition position)
+        internal PositionImpl(HidemaruLspClient_BackEndContract.IPosition position)
         {
             if (position == null)
             {
@@ -69,9 +76,13 @@ namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
         readonly long hidemaruCharacter_;
         readonly long hidemaruLine_;
     }
-    public sealed class RangeImpl
+
+    //todo: インターフェースと実装に分離する
+    [ComVisible(true)]
+	[Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9595")]
+	public sealed class RangeImpl
     {
-        public RangeImpl(HidemaruLspClient_BackEndContract.IRange range)
+        internal RangeImpl(HidemaruLspClient_BackEndContract.IRange range)
         {
             range_ = range;
         }
@@ -99,9 +110,13 @@ namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
         }
         readonly HidemaruLspClient_BackEndContract.IRange range_;
     }
-    public sealed class LocationImpl
+
+	//todo: インターフェースと実装に分離する
+	[ComVisible(true)]
+	[Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9596")]
+	public sealed class LocationImpl
     {
-        public LocationImpl(LocationContainerImpl.WithContent location)
+        internal LocationImpl(LocationContainerImpl.WithContent location)
         {
             location_ = location;
         }

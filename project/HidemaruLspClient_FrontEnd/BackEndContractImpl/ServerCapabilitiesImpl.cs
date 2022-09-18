@@ -1,6 +1,10 @@
-﻿namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
+﻿using System.Runtime.InteropServices;
+
+namespace HidemaruLspClient_FrontEnd.BackEndContractImpl
 {
-    public sealed class ServerCapabilitiesImpl : HidemaruLspClient_BackEndContract.IServerCapabilities
+	[ComVisible(true)]
+	[Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B95A0")]
+	sealed class ServerCapabilitiesImpl : HidemaruLspClient_BackEndContract.IServerCapabilities
     {
         HidemaruLspClient_BackEndContract.IServerCapabilities serverCapabilities_;
         public ServerCapabilitiesImpl(HidemaruLspClient_BackEndContract.IServerCapabilities serverCapabilities)

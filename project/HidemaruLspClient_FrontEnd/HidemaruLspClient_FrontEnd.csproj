@@ -1,20 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
-  <TargetFramework>net5.0-windows</TargetFramework>
+  <TargetFramework>net5.0-windows7.0</TargetFramework>
   <UseWindowsForms>true</UseWindowsForms>
   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-  <SignAssembly>true</SignAssembly>
-  <AssemblyOriginatorKeyFile>FrontEnd.snk</AssemblyOriginatorKeyFile>
   <Platforms>AnyCPU;x64;x86</Platforms>
   <ApplicationIcon />
   <StartupObject />
-  <Version>0.6.0</Version>
+  <Version>0.7.0</Version>
   <Nullable>disable</Nullable>
-  <AssemblyVersion>0.6.0.0</AssemblyVersion>
-  <FileVersion>0.6.0.0</FileVersion>
+  <AssemblyVersion>0.7.0.0</AssemblyVersion>
+  <FileVersion>0.7.0.0</FileVersion>
   <Copyright>Ohtorii</Copyright>
   <Company />
   <Authors>Ohtorii</Authors>
+  <EnableComHosting>true</EnableComHosting>
+  <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -76,7 +76,35 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DebugFrontEnd\DebugFrontEnd.csproj" />
     <ProjectReference Include="..\LanguageServerProcess\LanguageServerProcess.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <Import Project="..\LanguageServerProtocol\LanguageServerProtocol.projitems" Label="Shared" />

@@ -1,6 +1,6 @@
 ﻿namespace LSP.Client
 {
-    public class RequestId
+    class RequestId
     {
         public RequestId(int id)
         {

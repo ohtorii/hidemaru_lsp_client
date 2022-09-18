@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "HidemaruLspClient_FrontEnd": {
+      "commandName": "Project"
+    },
+    "プロファイル 1": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Hidemaru\\Hidemaru.exe",
+      "nativeDebugging": true
+    }
+  }
+}

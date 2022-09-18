@@ -21,7 +21,7 @@ namespace HidemaruLspClient_FrontEnd
     /// </summary>
     [ComVisible(true)]
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
-    public sealed partial class Service : IService
+    public sealed class Service : IService
     {
         static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
 
@@ -482,7 +482,7 @@ namespace HidemaruLspClient_FrontEnd
             GC.Collect();
         }
 
-        public ServerCapabilitiesImpl ServerCapabilities()
+        public HidemaruLspClient_BackEndContract.IServerCapabilities ServerCapabilities()
         {
             if (context_.worker == null)
             {

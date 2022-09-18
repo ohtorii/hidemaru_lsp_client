@@ -6,7 +6,7 @@ namespace LSP.Model //OmniSharp.Extensions.DebugAdapter.Protocol.Models
 {
     [JsonConverter(typeof(ProgressTokenConverter))]
     [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
-    public class ProgressToken : IEquatable<long>, IEquatable<string>
+    class ProgressToken : IEquatable<long>, IEquatable<string>
     {
         private long? _long;
         private string _string;
