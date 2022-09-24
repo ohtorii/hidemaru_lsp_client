@@ -20,7 +20,7 @@ exit /b %errorlevel%
     @echo on
     reg delete "HKEY_CURRENT_USER\SOFTWARE\Classes\CLSID\{0B0A4550-4B16-456C-B7C7-9EE172234251}"    /f %BIT_OPTION%
     reg delete "HKEY_CURRENT_USER\SOFTWARE\Classes\CLSID\{0B0A4550-A71F-4142-A4EC-BC6DF50B9590}"    /f %BIT_OPTION%
-    reg delete "HKEY_CURRENT_USER\SOFTWARE\Classes\CLSID\{ef516543-d040-46cc-88b3-fd64c09db652}"    /f %BIT_OPTION%
+    reg delete "HKEY_CURRENT_USER\SOFTWARE\CLASSES\CLSID\{EF516543-D040-46CC-88B3-FD64C09DB652}"    /f %BIT_OPTION%
     reg delete "HKEY_CURRENT_USER\SOFTWARE\Classes\HidemaruLspClient_FrontEnd.Service"              /f %BIT_OPTION%
     reg delete "HKEY_CURRENT_USER\SOFTWARE\Classes\HidemaruLspClient_FrontEnd.ServiceAsync"         /f %BIT_OPTION%
     reg delete "HKEY_CURRENT_USER\SOFTWARE\Classes\TypeLib\{27E4EB65-F8C3-4191-BF62-E46D85964111}"  /f %BIT_OPTION%

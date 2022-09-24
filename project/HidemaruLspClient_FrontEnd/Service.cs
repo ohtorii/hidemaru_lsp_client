@@ -23,7 +23,7 @@ namespace HidemaruLspClient_FrontEnd
     [Guid("0B0A4550-A71F-4142-A4EC-BC6DF50B9590")]
     public sealed class Service : IService
     {
-        static DllAssemblyResolver dasmr_ = new DllAssemblyResolver();
+        static DllAssemblyResolver dasmr_;// = new DllAssemblyResolver();
 
         class Context
         {
@@ -31,6 +31,7 @@ namespace HidemaruLspClient_FrontEnd
             public IWorker worker { get; set; }
         }
         Context context_ = null;
+        //Memo: logger_はBackEndService起動後に取得可能
         ILspClientLogger logger_ = null;
 
         CancellationTokenSource tokenSource_ = null;
@@ -180,8 +181,22 @@ namespace HidemaruLspClient_FrontEnd
         }
 
         #region Public methods
+        /*Memo:コンストラクタを記述するとCOM生成に失敗委する
         public Service()
+        {            
+        }
+        */
+        private bool initializeCalled_ = false;
+        private bool initializeRsult_ = false;
+        public bool Initialize()
         {
+            if(initializeCalled_)
+            {
+                return initializeRsult_;
+            }
+            initializeCalled_ = true;
+            initializeRsult_ = false;
+
             try
             {
                 MicrosoftAppCenter.Start();
@@ -194,12 +209,12 @@ namespace HidemaruLspClient_FrontEnd
             {
                 OutputPane.OutputW(Api.Hidemaru_GetCurrentWindowHandle(), e.ToString());
                 logger_?.Error(e.ToString());
+                return false;
             }
+            initializeRsult_ = true;
+            return true;
         }
-
-        public bool Initialize(string iniFileName)
-        {
-            //Memo: logger_はBackEndService起動後に取得可能
+        public bool InitializeIni(string iniFileName) { 
             try
             {
                 iniFile_ = IniFileService.Create(iniFileName);

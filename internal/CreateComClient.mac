@@ -12,8 +12,8 @@
 //
 //LSP
 //
-$comService         ="HidemaruLspClient_FrontEnd.Service";
-$comServiceAsync    ="HidemaruLspClient_FrontEnd.ServiceAsync";
+$comService         ="{0B0A4550-A71F-4142-A4EC-BC6DF50B9590}";
+$comServiceAsync    ="{0B0A4550-4B16-456C-B7C7-9EE172234251}";
 $comServiceName     ="";
 
 $privateComObjectName ="lsp.client.private.obj";
@@ -29,22 +29,24 @@ if(#useAsync){
         $labelTable[0]="SpawnBackEndCOMServer";
         $labelTable[1]="CreateFrontEndCOM";
         $labelTable[2]="Initialize";
-        $labelTable[3]="InitializeServiceAsync";
-        $labelTable[4]="CheckService";
-        $labelTable[5]="Finish";
-        $labelTable[6]="Nop";
+        $labelTable[3]="InitializeIni";
+        $labelTable[4]="InitializeServiceAsync";
+        $labelTable[5]="CheckService";
+        $labelTable[6]="Finish";
+        $labelTable[7]="Nop";
     }else{
         //Concurrent
         $comServiceName=$comService;
         $labelTable[0]="SpawnBackEndCOMServer";
         $labelTable[1]="CreateFrontEndCOM";
         $labelTable[2]="Initialize";
-        $labelTable[3]="InitializeBackEndServiceAsync";
-        $labelTable[4]="CheckBackEndService";
-        $labelTable[5]="InitializeFrontEndServiceAsync";
-        $labelTable[6]="CheckFrontEndService";
-        $labelTable[7]="Finish";
-        $labelTable[8]="Nop";
+        $labelTable[3]="InitializeIni";
+        $labelTable[4]="InitializeBackEndServiceAsync";
+        $labelTable[5]="CheckBackEndService";
+        $labelTable[6]="InitializeFrontEndServiceAsync";
+        $labelTable[7]="CheckFrontEndService";
+        $labelTable[8]="Finish";
+        $labelTable[9]="Nop";
     }
 }else{
     //Sync
@@ -52,10 +54,11 @@ if(#useAsync){
     $labelTable[0]="SpawnBackEndCOMServer";
     $labelTable[1]="CreateFrontEndCOM";
     $labelTable[2]="Initialize";
-    $labelTable[3]="InitializeBackEndService";
-    $labelTable[4]="InitializeFrontEndService";
-    $labelTable[5]="Finish";
-    $labelTable[6]="Nop";
+    $labelTable[3]="InitializeIni";
+    $labelTable[4]="InitializeBackEndService";
+    $labelTable[5]="InitializeFrontEndService";
+    $labelTable[6]="Finish";
+    $labelTable[7]="Nop";
 }
 
 
@@ -79,7 +82,7 @@ main:
     }else{
         ##index=val($$index);
     }
-    debuginfo 0;
+    debuginfo 1;
     debuginfo $labelTable[##index];
     call $labelTable[##index];
     if(! ##return){
@@ -140,14 +143,24 @@ CreateFrontEndCOM:
     return true;
 
 Initialize:
+    $$obj=getstaticvariable($privateComObjectName,#comShareMode);
+    ##obj=val($$obj);
+    ##success=member(##obj,"Initialize");
+    if(! ##success){
+        //message "[Failed] Initialize";
+        return false;
+    }
+    return true;
+
+InitializeIni:
     call GetAbsolutePathName $iniServerConfig;
     $$ini=$$return;
 
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
-    ##success=member(##obj,"Initialize",$$ini);
+    ##success=member(##obj,"InitializeIni",$$ini);
     if(! ##success){
-        //message "[Failed] Initialize";
+        //message "[Failed] InitializeIni";
         return false;
     }
     return true;

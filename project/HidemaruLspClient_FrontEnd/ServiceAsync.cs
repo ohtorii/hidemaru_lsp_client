@@ -1,8 +1,9 @@
 ﻿using HidemaruLspClient_FrontEnd.BackEndContractImpl;
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
-
+using Timer = System.Windows.Forms.Timer;
 
 namespace HidemaruLspClient_FrontEnd
 {
@@ -18,7 +19,7 @@ namespace HidemaruLspClient_FrontEnd
         Timer timer_ = null;
         string fileType_ = "";
         string sourceCodeDirectory_ = "";
-        System.Threading.CancellationToken cancellationToken_;
+        CancellationToken cancellationToken_;
 
         enum InitializeStatus
         {
@@ -71,14 +72,37 @@ namespace HidemaruLspClient_FrontEnd
         }
 
         #region Public Interface
-        public ServiceAsync()
-        {
-            service_ = new Service();
-            cancellationToken_ = service_.GetCancellationToken();
+        /*Memo:コンストラクタを記述するとCOM生成に失敗委する
+        public ServiceASync()
+        {            
         }
-        public bool Initialize(string iniFileName)
+        */
+        public bool Initialize()
         {
-            return service_.Initialize(iniFileName);
+            try
+            {
+                if (service_ == null)
+                {
+                    service_ = new Service();
+                    if (!service_.Initialize())
+                    {
+                        service_ = null;
+                        return false;
+                    }
+                } 
+                if (cancellationToken_ == CancellationToken.None)
+                {
+                    cancellationToken_ = service_.GetCancellationToken();
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        public bool InitializeIni(string iniFileName) { 
+            return service_.InitializeIni(iniFileName);
         }
         public void SetFileType(string fileType)
         {
