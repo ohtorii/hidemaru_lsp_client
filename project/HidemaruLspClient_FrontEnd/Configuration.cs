@@ -1,10 +1,8 @@
-﻿//using NLog;
-using HidemaruLspClient_BackEndContract;
+﻿using HidemaruLspClient_BackEndContract;
+using HidemaruLspClient_FrontEnd.DynamicRun;
+using NLog;
 using System;
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -58,42 +56,11 @@ namespace HidemaruLspClient_FrontEnd
         public static Option Eval(string serverConfigFilename, string currentSourceCodeDirectory)
         {
             LanguageServerProcess.Environment.Initialize(currentSourceCodeDirectory);
-
-            {
-                var result = new Option();
-                {
-                    var codeDom = CodeDomProvider.CreateProvider("CSharp", new Dictionary<string, string>() { { "TargetFrameworkVersion", "v4.8" } });
-                    var compileParameters = new CompilerParameters
-                    {
-                        CompilerOptions = MakeCompilerOptions(),
-                        GenerateExecutable = false,
-                        TreatWarningsAsErrors = false,
-                        IncludeDebugInformation = false,
-                        /*Memo:メモリに生成すると GetType()==null となる*/
-                        GenerateInMemory = false,
-
-                    };
-                    logger_?.Debug(string.Format("CompilerOptions={0}", compileParameters.CompilerOptions));
-                    compileParameters.ReferencedAssemblies.AddRange(ReferencedAssemblies);
-                    if (Convert.ToBoolean(logger_?.IsDebugEnabled))
-                    {
-                        logger_?.Debug(string.Format("compileParameters.ReferencedAssemblies[]={0}", ReferencedAssemblies.ToList()));
-                    }
-
-                    logger_?.Info(string.Format("filename={0}", serverConfigFilename));
-
-                    var code = File.ReadAllText(serverConfigFilename);
-                    var cr = codeDom.CompileAssemblyFromSource(compileParameters, code);
-                    if (0 < cr.Errors.Count)
-                    {
-                        foreach (var err in cr.Errors)
-                        {
-                            logger_?.Error(err.ToString());
-                        }
-                        return null;
-                    }
-                    var a = cr.CompiledAssembly;
-                    var instance = a.CreateInstance("LanguageServerProcess.ServerConfiguration");
+            var result = new Option();
+            Runner.Execute(
+                Compiler.CompilingFile(serverConfigFilename,logger_), 
+                "LanguageServerProcess.ServerConfiguration", 
+                instance => {
                     var t = instance.GetType();
                     foreach (var method in Methods)
                     {
@@ -102,9 +69,8 @@ namespace HidemaruLspClient_FrontEnd
                         method.action(result, s);
                         logger_?.Info(string.Format("{0}={1}", method.name, s));
                     }
-                }
-                return result;
-            }
+                });
+            return result;
         }
         static string MakeCompilerOptions()
         {
