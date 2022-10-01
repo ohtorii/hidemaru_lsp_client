@@ -10,9 +10,9 @@ namespace HidemaruLspClient_FrontEnd.DynamicRun
 {
     internal class Runner
     {
-        public void Execute(byte[] compiledAssembly, string[] args)
+        public static void Execute(byte[] compiledAssembly,string typeName,Action<object>onInstanceCreated)
         {
-            var assemblyLoadContextWeakRef = LoadAndExecute(compiledAssembly, args);
+            var assemblyLoadContextWeakRef = LoadAndExecute(compiledAssembly,typeName,onInstanceCreated);
 
             for (var i = 0; i < 8 && assemblyLoadContextWeakRef.IsAlive; i++)
             {
@@ -24,20 +24,22 @@ namespace HidemaruLspClient_FrontEnd.DynamicRun
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static WeakReference LoadAndExecute(byte[] compiledAssembly, string[] args)
+        private static WeakReference LoadAndExecute(byte[] compiledAssembly, string typeName,Action<object> onInstanceCreated)
         {
             using (var asm = new MemoryStream(compiledAssembly))
             {
                 var assemblyLoadContext = new SimpleUnloadableAssemblyLoadContext();
 
                 var assembly = assemblyLoadContext.LoadFromStream(asm);
-                var classType = assembly.GetType("LanguageServerProcess.ServerConfiguration");
+                var classType = assembly.GetType(typeName);
                 //var invokeResult = (string)classType.GetMethod("GetServerName").Invoke(null, null);
 
                 //var instance = Activator.CreateInstance(classType);
 
 
                 var instance = Activator.CreateInstance(classType);
+                onInstanceCreated(instance);
+
                 var t = instance.GetType();
                 var mi = t.GetMethod("GetServerName");
                 var s = mi.Invoke(instance, null);
