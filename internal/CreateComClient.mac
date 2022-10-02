@@ -184,7 +184,11 @@ InitializeBackEndServiceAsync:
 InitializeServiceAsync:
     $$obj=getstaticvariable($privateComObjectName,#comShareMode);
     ##obj=val($$obj);
-    ##_=member(##obj,"InitializeServiceAsync",filetype,directory2);
+    ##n=member(##obj,"InitializeServiceAsync",filetype,directory2);
+    if(##n==false){
+        //message "[Failed] InitializeServiceAsync";
+        return false;
+    }
     return true;
 
 CheckService:
