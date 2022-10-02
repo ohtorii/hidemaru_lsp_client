@@ -35,7 +35,9 @@ namespace HidemaruLspClient_FrontEnd
         {
             if (cancellationToken_.IsCancellationRequested)
             {
-                timer_.Stop();
+                if (timer_ != null) {
+                    timer_.Stop();
+                }
                 return;
             }
             switch (initializeStatus_)
@@ -104,25 +106,25 @@ namespace HidemaruLspClient_FrontEnd
         public bool InitializeIni(string iniFileName) { 
             return service_.InitializeIni(iniFileName);
         }
-        public void SetFileType(string fileType)
+        public bool InitializeServiceAsync(string fileExtension, string currentSourceCodeDirectory)
         {
-            fileType_ = fileType;
-        }
-        public void SetSourceCodeDirectory(string sourceCodeDirectory)
-        {
-            sourceCodeDirectory_ = sourceCodeDirectory;
-        }
-        public void InitializeServiceAsync(string fileExtension, string currentSourceCodeDirectory)
-        {
-            fileType_ = fileExtension;
-            sourceCodeDirectory_ = currentSourceCodeDirectory;
-
-            if (timer_ == null)
+            try
             {
-                timer_ = new Timer();
+                fileType_ = fileExtension;
+                sourceCodeDirectory_ = currentSourceCodeDirectory;
+
+                if (timer_ == null)
+                {
+                    timer_ = new Timer();
+                }
                 timer_.Interval = 200;
                 timer_.Tick += MainLoop;
                 timer_.Start();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
         public bool CheckService()
