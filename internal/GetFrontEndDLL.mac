@@ -8,8 +8,8 @@ endmacro $$return;
 
 main:
     $$framework="net5.0-windows7.0";
-    $$target="Release";
-    //$$target="Debug";
+    //$$target="Release";
+    $$target="Debug";
     if(platform & 0x00080000){
         $$platform="x64";
     }else{
